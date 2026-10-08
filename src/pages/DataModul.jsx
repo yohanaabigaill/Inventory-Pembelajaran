@@ -154,7 +154,7 @@ const STATUS_OPTIONS = [
   'Habis'
 ];
 
-export default function DataModulPage() {
+export default function DataModul() {
   const fileInputRef = useRef(null);
   const [modulList, setModulList] = useState([
     {
@@ -472,114 +472,116 @@ export default function DataModulPage() {
 
           {/* Data Table */}
           <div style={styles.tableContainer}>
-            <table style={styles.table}>
-              <thead>
-                <tr style={styles.tableHeaderRow}>
-                  <th style={{ ...styles.th, width: '48px', textAlign: 'center' }}>NO</th>
-                  <th style={{ ...styles.th, width: '70px', textAlign: 'center' }}>FOTO</th>
-                  <th style={styles.th}>JUDUL MODUL</th>
-                  <th style={styles.th}>JENIS</th>
-                  <th style={styles.th}>HPP</th>
-                  <th style={styles.th}>HARGA JUAL</th>
-                  <th style={styles.th}>STOK MODUL</th>
-                  <th style={styles.th}>STATUS</th>
-                  <th style={{ ...styles.th, textAlign: 'center' }}>AKSI</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredList.map((item, index) => {
-                  return (
-                    <tr key={item.id} style={styles.tr}>
-                      {/* NO */}
-                      <td style={{ ...styles.td, textAlign: 'center', fontWeight: '600', color: '#64748b' }}>
-                        {index + 1}
-                      </td>
+            <div style={styles.tableResponsive}>
+              <table style={styles.table}>
+                <thead>
+                  <tr style={styles.tableHeaderRow}>
+                    <th style={{ ...styles.th, width: '48px', textAlign: 'center' }}>NO</th>
+                    <th style={{ ...styles.th, width: '70px', textAlign: 'center' }}>FOTO</th>
+                    <th style={styles.th}>JUDUL MODUL</th>
+                    <th style={styles.th}>JENIS</th>
+                    <th style={styles.th}>HPP</th>
+                    <th style={styles.th}>HARGA JUAL</th>
+                    <th style={styles.th}>STOK MODUL</th>
+                    <th style={styles.th}>STATUS</th>
+                    <th style={{ ...styles.th, textAlign: 'center' }}>AKSI</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredList.map((item, index) => {
+                    return (
+                      <tr key={item.id} style={styles.tr}>
+                        {/* NO */}
+                        <td style={{ ...styles.td, textAlign: 'center', fontWeight: '600', color: '#64748b' }}>
+                          {index + 1}
+                        </td>
 
-                      {/* FOTO */}
-                      <td style={{ ...styles.td, textAlign: 'center' }}>
-                        <img
-                          src={coverModul}
-                          alt="Cover Modul"
-                          style={styles.coverThumb}
-                        />
-                      </td>
+                        {/* FOTO */}
+                        <td style={{ ...styles.td, textAlign: 'center' }}>
+                          <img
+                            src={coverModul}
+                            alt="Cover Modul"
+                            style={styles.coverThumb}
+                          />
+                        </td>
 
-                      {/* Judul Modul */}
-                      <td style={styles.td}>
-                        <div style={styles.namaModulOnly}>{item.nama}</div>
-                      </td>
+                        {/* Judul Modul */}
+                        <td style={styles.td}>
+                          <div style={styles.namaModulOnly}>{item.nama}</div>
+                        </td>
 
-                      {/* Jenis */}
-                      <td style={styles.td}>
-                        <div style={styles.jenisTextPlainBold}>{item.kategori}</div>
-                      </td>
+                        {/* Jenis */}
+                        <td style={styles.td}>
+                          <div style={styles.jenisTextPlainBold}>{item.kategori}</div>
+                        </td>
 
-                      {/* HPP */}
-                      <td style={styles.td}>
-                        <div style={styles.priceHighlight}>{formatRupiah(item.hpp)}</div>
-                      </td>
+                        {/* HPP */}
+                        <td style={styles.td}>
+                          <div style={styles.priceHighlight}>{formatRupiah(item.hpp)}</div>
+                        </td>
 
-                      {/* Harga Jual */}
-                      <td style={styles.td}>
-                        <div style={styles.priceHighlight}>{formatRupiah(item.hargaJual)}</div>
-                      </td>
+                        {/* Harga Jual */}
+                        <td style={styles.td}>
+                          <div style={styles.priceHighlight}>{formatRupiah(item.hargaJual)}</div>
+                        </td>
 
-                      {/* Stok Modul */}
-                      <td style={styles.td}>
-                        <span style={styles.stokValue}>{item.stok}</span>
-                      </td>
+                        {/* Stok Modul */}
+                        <td style={styles.td}>
+                          <span style={styles.stokValue}>{item.stok}</span>
+                        </td>
 
-                      {/* Status */}
-                      <td style={styles.td}>
-                        {item.status === 'Tersedia' && (
-                          <span style={styles.statusTersediaNoDot}>Tersedia</span>
-                        )}
-                        {item.status === 'Stok Menipis' && (
-                          <span style={styles.statusMenipisNoDot}>Stok Menipis</span>
-                        )}
-                        {item.status === 'Habis' && (
-                          <span style={styles.statusHabisNoDot}>Habis</span>
-                        )}
-                      </td>
+                        {/* Status */}
+                        <td style={styles.td}>
+                          {item.status === 'Tersedia' && (
+                            <span style={styles.statusTersediaNoDot}>Tersedia</span>
+                          )}
+                          {item.status === 'Stok Menipis' && (
+                            <span style={styles.statusMenipisNoDot}>Stok Menipis</span>
+                          )}
+                          {item.status === 'Habis' && (
+                            <span style={styles.statusHabisNoDot}>Habis</span>
+                          )}
+                        </td>
 
-                      {/* Action Buttons */}
-                      <td style={{ ...styles.td, textAlign: 'center' }}>
-                        <div style={styles.actionFlex}>
-                          <button
-                            onClick={() => handleOpenEdit(item)}
-                            title="Edit Modul"
-                            style={styles.btnActionEdit}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={() => handleRequestDelete(item.id)}
-                            title="Hapus Modul"
-                            style={styles.btnActionDelete}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <polyline points="3 6 5 6 21 6" />
-                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                            </svg>
-                          </button>
-                        </div>
+                        {/* Action Buttons */}
+                        <td style={{ ...styles.td, textAlign: 'center' }}>
+                          <div style={styles.actionFlex}>
+                            <button
+                              onClick={() => handleOpenEdit(item)}
+                              title="Edit Modul"
+                              style={styles.btnActionEdit}
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => handleRequestDelete(item.id)}
+                              title="Hapus Modul"
+                              style={styles.btnActionDelete}
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+
+                  {filteredList.length === 0 && (
+                    <tr>
+                      <td colSpan="9" style={{ textAlign: 'center', padding: '40px', color: '#64748b', fontSize: '14px' }}>
+                        Tidak ada data modul yang sesuai dengan pencarian.
                       </td>
                     </tr>
-                  );
-                })}
-
-                {filteredList.length === 0 && (
-                  <tr>
-                    <td colSpan="9" style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
-                      Tidak ada data modul yang sesuai dengan pencarian.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
 
             {/* Pagination */}
             <div className="pagination-responsive" style={styles.paginationRow}>
@@ -790,21 +792,21 @@ const styles = {
   layoutContainer: {
     display: 'flex',
     minHeight: '100vh',
-    backgroundColor: '#ffffff'
+    backgroundColor: '#f8faf9'
   },
   mainWrapper: {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
     overflowX: 'hidden',
-    backgroundColor: '#ffffff'
+    backgroundColor: '#f8faf9'
   },
   contentBody: {
-    padding: '24px 32px',
+    padding: '24px 32px 32px',
     display: 'flex',
     flexDirection: 'column',
     gap: '20px',
-    backgroundColor: '#ffffff'
+    backgroundColor: '#f8faf9'
   },
   filterCard: {
     backgroundColor: '#ffffff',
@@ -834,17 +836,12 @@ const styles = {
     width: '300px',
     padding: '10px 14px 10px 38px',
     fontSize: '13px',
-    border: '1px solid #c7d9cd',
+    border: '1px solid #23573c',
     borderRadius: '10px',
     outline: 'none',
     backgroundColor: '#f6faf7'
   },
 
-  customSelectWrapper: {
-    position: 'relative',
-    display: 'inline-flex',
-    alignItems: 'center'
-  },
   customSelect: {
     padding: '10px 14px',
     fontSize: '13px',
@@ -855,11 +852,6 @@ const styles = {
     backgroundColor: '#f6faf7',
     color: '#1a3e2b',
     cursor: 'pointer'
-  },
-  customSelectArrow: {
-    position: 'absolute',
-    right: '12px',
-    pointerEvents: 'none'
   },
 
   btnAdd: {
@@ -880,9 +872,14 @@ const styles = {
     backgroundColor: '#ffffff',
     borderRadius: '16px',
     border: '1px solid #dce4de',
+    boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden'
+  },
+  tableResponsive: {
     overflowX: 'auto',
-    WebkitOverflowScrolling: 'touch',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.02)'
+    WebkitOverflowScrolling: 'touch'
   },
   table: {
     width: '100%',
@@ -944,34 +941,52 @@ const styles = {
   },
 
   statusTersediaNoDot: {
-    display: 'inline-block',
-    backgroundColor: '#e2f2e6',
-    color: '#1b692b',
-    padding: '5px 14px',
-    borderRadius: '20px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '105px',
+    height: '28px',
+    backgroundColor: '#dcfce7',
+    color: '#15803d',
+    borderRadius: '6px',
     fontSize: '11.5px',
     fontWeight: '700',
-    whiteSpace: 'nowrap'
+    letterSpacing: '0.4px',
+    border: '1px solid #bbf7d0',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
   },
   statusMenipisNoDot: {
-    display: 'inline-block',
-    backgroundColor: '#fff4e5',
-    color: '#b76e00',
-    padding: '5px 14px',
-    borderRadius: '20px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '105px',
+    height: '28px',
+    backgroundColor: '#fef9c3',
+    color: '#854d0e',
+    borderRadius: '6px',
     fontSize: '11.5px',
     fontWeight: '700',
-    whiteSpace: 'nowrap'
+    letterSpacing: '0.4px',
+    border: '1px solid #fef08a',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
   },
   statusHabisNoDot: {
-    display: 'inline-block',
-    backgroundColor: '#fde8e8',
-    color: '#9b1c1c',
-    padding: '5px 14px',
-    borderRadius: '20px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '105px',
+    height: '28px',
+    backgroundColor: '#fee2e2',
+    color: '#b91c1c',
+    borderRadius: '6px',
     fontSize: '11.5px',
     fontWeight: '700',
-    whiteSpace: 'nowrap'
+    letterSpacing: '0.4px',
+    border: '1px solid #fecaca',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
   },
 
   actionFlex: {
@@ -999,6 +1014,8 @@ const styles = {
 
   paginationRow: {
     padding: '16px 24px',
+    minHeight: '64px',
+    boxSizing: 'border-box',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -1248,9 +1265,9 @@ const styles = {
   btnModalCancel: {
     padding: '9px 20px',
     borderRadius: '8px',
-    border: 'none',
-    backgroundColor: '#e2e8f0',
-    color: '#334155',
+    border: '1px solid #23573c',
+    backgroundColor: '#ffffff',
+    color: '#23573c',
     fontSize: '13px',
     fontWeight: '600',
     cursor: 'pointer'
@@ -1310,9 +1327,9 @@ const styles = {
     flex: 1,
     padding: '10px 16px',
     borderRadius: '8px',
-    border: '1px solid #c7d9cd',
+    border: '1px solid #23573c',
     backgroundColor: '#ffffff',
-    color: '#334155',
+    color: '#23573c',
     fontSize: '13.5px',
     fontWeight: '600',
     cursor: 'pointer'

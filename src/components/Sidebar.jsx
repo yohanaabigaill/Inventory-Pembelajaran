@@ -1,21 +1,44 @@
 import React from 'react';
-import logoRsq from '../assets/logo-rsq.png';
+import { useNavigate } from 'react-router-dom';
+import logoRsq from '../assets/logo rsq.jpeg';
 
-export default function Sidebar({ activeMenu = 'Data Modul', isOpen = false, onClose = () => {} }) {
+import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
+import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
+import UploadFileOutlinedIcon from '@mui/icons-material/UploadFileOutlined';
+import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined';
+import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
+import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
+
+export default function Sidebar({
+  role = 'admin', //admin/super admin
+  activeMenu = 'Data Modul',
+  isOpen = false,
+  onClose = () => {},
+  onSelectMenu
+}) {
+  const navigate = useNavigate();
+  const isSuperAdmin = role === 'super_admin' || role === 'SUPER ADMIN' || role === 'superadmin';
+
+  const handleMenuClick = (item) => {
+    if (onSelectMenu) {
+      onSelectMenu(item.name);
+    }
+    if (item.path) {
+      navigate(item.path);
+    }
+    onClose();
+  };
+
   const menuSections = [
     {
       title: 'UTAMA',
       items: [
         {
           name: 'Dashboard',
-          icon: (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="3" width="7" height="7" rx="1" />
-              <rect x="14" y="3" width="7" height="7" rx="1" />
-              <rect x="14" y="14" width="7" height="7" rx="1" />
-              <rect x="3" y="14" width="7" height="7" rx="1" />
-            </svg>
-          )
+          path: '/dashboard',
+          icon: <GridViewOutlinedIcon sx={{ fontSize: 20 }} />
         }
       ]
     },
@@ -24,46 +47,30 @@ export default function Sidebar({ activeMenu = 'Data Modul', isOpen = false, onC
       items: [
         {
           name: 'Data Modul',
-          icon: (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-              <line x1="9" y1="7" x2="15" y2="7" />
-              <line x1="9" y1="11" x2="15" y2="11" />
-            </svg>
-          )
+          path: '/data-modul',
+          icon: <MenuBookOutlinedIcon sx={{ fontSize: 20 }} />
         },
         {
           name: 'Modul Masuk',
-          icon: (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-              <line x1="12" y1="18" x2="12" y2="12" />
-              <line x1="9" y1="15" x2="12" y2="12" />
-              <line x1="15" y1="15" x2="12" y2="12" />
-            </svg>
-          )
+          path: '/modul-masuk',
+          icon: <UploadFileOutlinedIcon sx={{ fontSize: 20 }} />
         },
-        {
-          name: 'Stok Opname',
-          icon: (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 11l3 3L22 4" />
-              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-            </svg>
-          )
-        },
+        // Jika Super Admin Verifikasi Stok Opname, Jika Admin Stok Opname
+        isSuperAdmin
+          ? {
+              name: 'Verifikasi Stok Opname',
+              path: '/verifikasi-stok-opname',
+              icon: <FactCheckOutlinedIcon sx={{ fontSize: 20 }} />
+            }
+          : {
+              name: 'Stok Opname',
+              path: '/stok-opname',
+              icon: <FactCheckOutlinedIcon sx={{ fontSize: 20 }} />
+            },
         {
           name: 'Pesanan & Kirim',
-          icon: (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="1" y="3" width="15" height="13" />
-              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
-              <circle cx="5.5" cy="18.5" r="2.5" />
-              <circle cx="18.5" cy="18.5" r="2.5" />
-            </svg>
-          )
+          path: '/pesanan-kirim',
+          icon: <LocalShippingOutlinedIcon sx={{ fontSize: 20 }} />
         }
       ]
     },
@@ -72,13 +79,8 @@ export default function Sidebar({ activeMenu = 'Data Modul', isOpen = false, onC
       items: [
         {
           name: 'Laporan Stok',
-          icon: (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="18" y1="20" x2="18" y2="10" />
-              <line x1="12" y1="20" x2="12" y2="4" />
-              <line x1="6" y1="20" x2="6" y2="14" />
-            </svg>
-          )
+          path: '/laporan-stok',
+          icon: <BarChartOutlinedIcon sx={{ fontSize: 20 }} />
         }
       ]
     }
@@ -92,13 +94,12 @@ export default function Sidebar({ activeMenu = 'Data Modul', isOpen = false, onC
       )}
 
       <aside className={`sidebar-aside ${isOpen ? 'sidebar-open' : ''}`} style={styles.sidebar}>
+        {/* Header Logo & Judul*/}
         <div style={styles.brandContainer}>
           <div style={styles.brandLogoWrapper}>
-            <img src={logoRsq} alt="Logo Rumah Sahabat Qur'an" style={styles.logoImage} />
+            <img src={logoRsq} alt="Logo RSQ" style={styles.logoImage} />
           </div>
-          <div style={{ flex: 1 }}>
-            <div style={styles.brandTitle}>Inventory RSQ</div>
-          </div>
+          <div style={styles.brandTitle}>Inventory RSQ</div>
           <button onClick={onClose} className="mobile-close-btn">&times;</button>
         </div>
 
@@ -112,13 +113,15 @@ export default function Sidebar({ activeMenu = 'Data Modul', isOpen = false, onC
                 return (
                   <div
                     key={itemIdx}
-                    onClick={onClose}
+                    onClick={() => handleMenuClick(item)}
                     style={{
                       ...styles.navItem,
                       ...(isActive ? styles.navItemActive : {})
                     }}
                   >
-                    <span style={isActive ? styles.navIconActive : styles.navIcon}>{item.icon}</span>
+                    <span style={isActive ? styles.navIconActive : styles.navIcon}>
+                      {item.icon}
+                    </span>
                     <span style={styles.navLabel}>{item.name}</span>
                   </div>
                 );
@@ -127,22 +130,15 @@ export default function Sidebar({ activeMenu = 'Data Modul', isOpen = false, onC
           ))}
         </div>
 
-        {/* Footer / Account Section */}
+        {/* Footer Profil & Logout */}
         <div style={styles.sidebarFooter}>
-          <div style={styles.footerItem}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-            <span>Profil Saya</span>
+          <div style={styles.footerItem} onClick={() => navigate('/profil')}>
+            <PersonOutlineOutlinedIcon sx={{ fontSize: 20, color: '#3d5246' }} />
+            <span style={styles.footerLabel}>Profil Saya</span>
           </div>
-          <div style={{ ...styles.footerItem, color: '#c62828' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
-            <span>Keluar</span>
+          <div style={{ ...styles.footerItem, color: '#c62828' }} onClick={() => navigate('/login')}>
+            <LogoutOutlinedIcon sx={{ fontSize: 20, color: '#c62828' }} />
+            <span style={{ ...styles.footerLabel, color: '#c62828' }}>Keluar</span>
           </div>
         </div>
       </aside>
@@ -154,22 +150,23 @@ const styles = {
   sidebar: {
     width: '260px',
     minWidth: '260px',
-    height: '100vh',
+    minHeight: '100vh',
+    alignSelf: 'stretch',
     backgroundColor: '#ffffff',
-    borderRight: '1px solid #dce4de',
+    borderRight: '1px solid #eef2ef',
     display: 'flex',
     flexDirection: 'column',
     fontFamily: "'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-    position: 'sticky',
-    top: 0,
-    boxShadow: '2px 0 10px rgba(0,0,0,0.02)',
-    userSelect: 'none'
+    userSelect: 'none',
+    boxSizing: 'border-box'
   },
   brandContainer: {
-    padding: '12px 20px 10px',
+    height: '74px',
+    padding: '0 18px',
     display: 'flex',
     alignItems: 'center',
-    gap: '12px'
+    gap: '12px',
+    boxSizing: 'border-box'
   },
   brandLogoWrapper: {
     display: 'flex',
@@ -178,40 +175,41 @@ const styles = {
     flexShrink: 0
   },
   logoImage: {
-    width: '54px',
-    height: '54px',
+    width: '56px',
+    height: '56px',
     objectFit: 'contain'
   },
   brandTitle: {
-    fontSize: '16px',
+    fontSize: '18px',
     fontWeight: '700',
     color: '#1a3e2b',
-    lineHeight: '1.2'
+    letterSpacing: '-0.2px',
+    whiteSpace: 'nowrap'
   },
   navScroll: {
     flex: 1,
     overflowY: 'auto',
-    padding: '0 12px 16px'
+    padding: '8px 16px 20px'
   },
   sectionContainer: {
-    marginBottom: '20px'
+    marginBottom: '22px'
   },
   sectionTitle: {
-    fontSize: '10px',
+    fontSize: '11px',
     fontWeight: '700',
     color: '#8da897',
-    letterSpacing: '1px',
-    padding: '0 12px',
-    marginBottom: '8px'
+    letterSpacing: '0.8px',
+    padding: '0 8px',
+    marginBottom: '10px'
   },
   navItem: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
-    padding: '10px 14px',
-    borderRadius: '10px',
+    gap: '14px',
+    padding: '11px 16px',
+    borderRadius: '12px',
     color: '#3d5246',
-    fontSize: '13px',
+    fontSize: '14px',
     fontWeight: '500',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
@@ -221,12 +219,12 @@ const styles = {
     backgroundColor: '#23573c',
     color: '#ffffff',
     fontWeight: '600',
-    boxShadow: '0 4px 12px rgba(35, 87, 60, 0.22)'
+    boxShadow: '0 4px 14px rgba(35, 87, 60, 0.28)'
   },
   navIcon: {
     display: 'flex',
     alignItems: 'center',
-    color: '#5b7566'
+    color: '#4a6555'
   },
   navIconActive: {
     display: 'flex',
@@ -234,25 +232,34 @@ const styles = {
     color: '#ffffff'
   },
   navLabel: {
-    fontSize: '13.5px'
+    fontSize: '14px',
+    fontWeight: 'inherit'
   },
   sidebarFooter: {
-    borderTop: '1px solid #dce4de',
-    padding: '14px 16px',
+    marginTop: 'auto',
+    height: '97px',
+    borderTop: '1px solid #edf2ef',
+    padding: '10px 18px 18px',
     display: 'flex',
     flexDirection: 'column',
-    gap: '6px'
+    justifyContent: 'center',
+    gap: '4px',
+    boxSizing: 'border-box'
   },
   footerItem: {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-    padding: '8px 10px',
+    padding: '6px 10px',
     borderRadius: '8px',
-    fontSize: '13px',
+    fontSize: '13.5px',
     fontWeight: '500',
     color: '#3d5246',
     cursor: 'pointer',
     transition: 'background 0.2s'
+  },
+  footerLabel: {
+    fontSize: '13.5px',
+    fontWeight: '500'
   }
 };

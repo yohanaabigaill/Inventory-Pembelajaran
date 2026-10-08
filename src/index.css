@@ -20,7 +20,7 @@ html, body, #root {
   font-family: 'Poppins', sans-serif;
 }
 
-/* Custom Scrollbar */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -39,7 +39,7 @@ html, body, #root {
   background: #23573c;
 }
 
-/* Select Focus & Green Highlight Option Styling */
+/* Button */
 select:focus {
   border-color: #23573c !important;
   outline: 2px solid rgba(35, 87, 60, 0.25) !important;
@@ -79,7 +79,7 @@ select option:active {
   height: 0 !important;
 }
 
-/* Hamburger & Mobile Sidebar Buttons */
+/* Mobile Sidebar Buttons */
 .hamburger-btn {
   display: none;
 }
@@ -150,7 +150,7 @@ select option:active {
     transform: translateX(0) !important;
   }
 
-  /* Responsive Main Layout Padding */
+  /* Responsive */
   .filter-card-responsive {
     flex-direction: column !important;
     align-items: stretch !important;
@@ -197,8 +197,12 @@ select option:active {
 
   .pagination-responsive {
     flex-direction: column !important;
-    gap: 10px !important;
+    gap: 12px !important;
+    height: auto !important;
+    min-height: 64px !important;
+    padding: 16px 20px !important;
     align-items: center !important;
     text-align: center !important;
+    box-sizing: border-box !important;
   }
 }
