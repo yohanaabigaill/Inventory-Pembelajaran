@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoRsq from '../assets/logo rsq.jpeg';
 
+import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
 import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 import UploadFileOutlinedIcon from '@mui/icons-material/UploadFileOutlined';
@@ -38,13 +39,18 @@ export default function Sidebar({
         {
           name: 'Dashboard',
           path: '/dashboard',
-          icon: <GridViewOutlinedIcon sx={{ fontSize: 20 }} />
+          icon: <HomeOutlinedIcon sx={{ fontSize: 23 }} />
         }
       ]
     },
     {
       title: 'MASTER & LOGISTIK',
       items: [
+        {
+          name: 'Jenis Modul',
+          path: '/jenis-modul',
+          icon: <GridViewOutlinedIcon sx={{ fontSize: 20 }} />
+        },
         {
           name: 'Data Modul',
           path: '/data-modul',
@@ -130,7 +136,7 @@ export default function Sidebar({
           ))}
         </div>
 
-        {/* Footer Profil & Logout */}
+        {/* Profil & Logout */}
         <div style={styles.sidebarFooter}>
           <div style={styles.footerItem} onClick={() => navigate('/profil')}>
             <PersonOutlineOutlinedIcon sx={{ fontSize: 20, color: '#3d5246' }} />
