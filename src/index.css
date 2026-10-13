@@ -189,10 +189,42 @@ select option:active {
     box-sizing: border-box !important;
   }
 
-  /* Modal Responsiveness on Mobile */
+  .content-body-responsive {
+    padding: 16px 14px 36px !important;
+  }
+
+  .tab-container-responsive {
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    padding-bottom: 4px !important;
+  }
+
+  .stats-grid-responsive {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .stat-card-responsive {
+    padding: 10px 12px !important;
+    gap: 8px !important;
+  }
+
+  .filter-right-responsive {
+    width: 100% !important;
+  }
+
+  .modal-detail-responsive {
+    padding: 16px !important;
+    max-height: 94vh !important;
+  }
+
   .modal-form-grid2 {
     grid-template-columns: 1fr !important;
     gap: 12px !important;
+  }
+
+  .modal-form-grid2 > * {
+    grid-column: span 1 !important;
   }
 
   .pagination-responsive {
