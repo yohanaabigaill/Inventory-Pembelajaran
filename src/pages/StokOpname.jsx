@@ -7,6 +7,26 @@ import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 
+// Bulan
+const MONTH_NAMES = [
+  'Januari',
+  'Februari',
+  'Maret',
+  'April',
+  'Mei',
+  'Juni',
+  'Juli',
+  'Agustus',
+  'September',
+  'Oktober',
+  'November',
+  'Desember'
+];
+
+const NOW = new Date();
+const CURRENT_YEAR = NOW.getFullYear();
+const CURRENT_MONTH_INDEX = NOW.getMonth();
+
 // Dropdown
 function CustomDropdown({
   value,
@@ -15,12 +35,15 @@ function CustomDropdown({
   style = {},
   selectStyle = {},
   arrowColor = '#1a3e2b',
-  className = ''
+  className = '',
+  icon = null,
+  labelPrefix = ''
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
 
   useEffect(() => {
+    if (!isOpen) return;
     const handleClickOutside = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
         setIsOpen(false);
@@ -28,14 +51,18 @@ function CustomDropdown({
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [isOpen]);
 
   const handleSelect = (val) => {
     onChange(val);
     setIsOpen(false);
   };
 
-  const displayLabel = typeof value === 'string' ? value : (value?.label || value);
+  const selectedOpt = options.find((o) => (typeof o === 'object' ? o.value === value : o === value));
+  const rawLabel = selectedOpt
+    ? (typeof selectedOpt === 'object' ? selectedOpt.label : selectedOpt)
+    : (typeof value === 'string' ? value : (value?.label || value));
+  const displayLabel = labelPrefix ? `${labelPrefix}${rawLabel}` : rawLabel;
 
   return (
     <div
@@ -44,7 +71,7 @@ function CustomDropdown({
       style={{ position: 'relative', userSelect: 'none', ...style }}
     >
       <div
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen((prev) => !prev)}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -56,9 +83,12 @@ function CustomDropdown({
           boxShadow: isOpen ? '0 0 0 3px rgba(35, 87, 60, 0.15)' : 'none'
         }}
       >
-        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {displayLabel}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+          {icon && <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>{icon}</span>}
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {displayLabel}
+          </span>
+        </div>
         <svg
           width="12"
           height="12"
@@ -90,7 +120,7 @@ function CustomDropdown({
             borderRadius: '10px',
             boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15)',
             zIndex: 9999,
-            maxHeight: '220px',
+            maxHeight: '260px',
             overflowY: 'auto',
             padding: 0
           }}
@@ -125,6 +155,220 @@ function CustomDropdown({
               </div>
             );
           })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Dropdown kalender
+function MonthYearCalendarPicker({
+  selectedMonth,
+  selectedYear,
+  onSelect,
+  style = {},
+  selectStyle = {},
+  className = ''
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [viewYear, setViewYear] = useState(() => Number(selectedYear) || CURRENT_YEAR);
+  const containerRef = useRef(null);
+
+  const handleToggle = () => {
+    if (!isOpen) {
+      setViewYear(Number(selectedYear) || CURRENT_YEAR);
+    }
+    setIsOpen((prev) => !prev);
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
+
+  const handleMonthClick = (m) => {
+    onSelect(m, String(viewYear));
+    setIsOpen(false);
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      className={`custom-dropdown-container ${className}`}
+      style={{ position: 'relative', userSelect: 'none', ...style }}
+    >
+      <div
+        onClick={handleToggle}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          cursor: 'pointer',
+          boxSizing: 'border-box',
+          ...selectStyle,
+          borderColor: isOpen ? '#23573c' : (selectStyle.borderColor || '#23573c'),
+          boxShadow: isOpen ? '0 0 0 3px rgba(35, 87, 60, 0.15)' : 'none'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+          <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#23573c" strokeWidth="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+          </span>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {selectedMonth} {selectedYear}
+          </span>
+        </div>
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#1a3e2b"
+          strokeWidth="2.5"
+          style={{
+            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 0.2s ease',
+            flexShrink: 0,
+            marginLeft: '8px'
+          }}
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </div>
+
+      {isOpen && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 6px)',
+            left: 0,
+            backgroundColor: '#ffffff',
+            border: '1px solid #c7d9cd',
+            borderRadius: '14px',
+            boxShadow: '0 12px 30px -4px rgba(0, 0, 0, 0.16)',
+            zIndex: 9999,
+            width: '270px',
+            padding: '16px',
+            boxSizing: 'border-box'
+          }}
+        >
+          {/* Header Kalender: Navigasi Tahun */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '14px',
+              paddingBottom: '10px',
+              borderBottom: '1px solid #f0f4f1'
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setViewYear((y) => Math.max(2024, y - 1))}
+              disabled={viewYear <= 2024}
+              style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: '8px',
+                border: '1px solid #dce4de',
+                backgroundColor: viewYear <= 2024 ? '#f8faf9' : '#ffffff',
+                color: viewYear <= 2024 ? '#94a3b8' : '#1a3e2b',
+                cursor: viewYear <= 2024 ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '14px',
+                fontWeight: '700',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              &lt;
+            </button>
+            <span style={{ fontSize: '15px', fontWeight: '700', color: '#1a3e2b', letterSpacing: '0.3px' }}>
+              {viewYear}
+            </span>
+            <button
+              type="button"
+              onClick={() => setViewYear((y) => y + 1)}
+              style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: '8px',
+                border: '1px solid #dce4de',
+                backgroundColor: '#ffffff',
+                color: '#1a3e2b',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '14px',
+                fontWeight: '700',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              &gt;
+            </button>
+          </div>
+
+          {/* Grid 12 Bulan */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '8px'
+            }}
+          >
+            {MONTH_NAMES.map((m) => {
+              const isSelected = selectedMonth === m && String(viewYear) === String(selectedYear);
+              const isCurrentCalendarMonth = m === 'Oktober' && viewYear === CURRENT_YEAR;
+
+              return (
+                <div
+                  key={m}
+                  onClick={() => handleMonthClick(m)}
+                  style={{
+                    padding: '8px 4px',
+                    textAlign: 'center',
+                    fontSize: '12.5px',
+                    fontWeight: isSelected ? '700' : '500',
+                    color: isSelected ? '#ffffff' : (isCurrentCalendarMonth ? '#23573c' : '#1e293b'),
+                    backgroundColor: isSelected ? '#23573c' : (isCurrentCalendarMonth ? '#ebf5ee' : '#f8faf9'),
+                    border: isSelected ? '1px solid #23573c' : (isCurrentCalendarMonth ? '1px solid #b7d6c2' : '1px solid #eef3f0'),
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    boxShadow: isSelected ? '0 2px 6px rgba(35, 87, 60, 0.25)' : 'none'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.backgroundColor = '#e2eee6';
+                      e.currentTarget.style.borderColor = '#23573c';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.backgroundColor = isCurrentCalendarMonth ? '#ebf5ee' : '#f8faf9';
+                      e.currentTarget.style.borderColor = isCurrentCalendarMonth ? '#b7d6c2' : '#eef3f0';
+                    }
+                  }}
+                >
+                  {m.slice(0, 3)}
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
@@ -193,192 +437,159 @@ const INITIAL_MODULS = [
   { id: 47, kategori: 'Al Quran', nama: 'Mushaf Al Kamil A6 tanpa Terjemah', stokSistem: 205 }
 ];
 
-// Data Riwayat
-const INITIAL_RIWAYAT = [
-  {
-    no: 1,
-    tanggal: '31 Mar 2025',
-    totalModul: '47 Judul',
-    netSelisih: '-11',
-    status: 'Menunggu Verifikasi',
-    catatan: 'Sedang dalam antrean review oleh Super Admin'
-  },
-  {
-    no: 2,
-    tanggal: '28 Feb 2025',
-    totalModul: '47 Judul',
-    netSelisih: '0',
-    status: 'Disetujui',
-    catatan: 'Sesuai catatan fisik, stok sistem telah disinkronisasi.'
-  },
-  {
-    no: 3,
-    tanggal: '31 Jan 2026',
-    totalModul: '47 Judul',
-    netSelisih: '-28',
-    status: 'Ditolak',
-    catatan: 'Harap hitung ulang dan lampirkan foto fisik bukti perhitungan.'
-  }
-];
+const createDefaultModulData = (defaultStatus = 'Belum Diinput') =>
+  INITIAL_MODULS.map((m) => ({
+    ...m,
+    inputFisik: '',
+    catatan: '',
+    status: defaultStatus
+  }));
 
-const STATUS_RIWAYAT_OPTIONS = [
-  'Semua Status',
-  'Menunggu Verifikasi',
-  'Disetujui',
-  'Ditolak'
-];
+const getInitialMonthlyData = () => {
+  const defaults = {};
 
-const BULAN_RIWAYAT_OPTIONS = [
-  'Semua Bulan',
-  'Januari',
-  'Februari',
-  'Maret',
-  'April',
-  'Mei',
-  'Juni',
-  'Juli',
-  'Agustus',
-  'September',
-  'Oktober',
-  'November',
-  'Desember'
-];
+  // September 2026 (Menunggu Verifikasi)
+  defaults['2026-09'] = INITIAL_MODULS.map((m) => {
+    if (m.id === 1) {
+      return { ...m, inputFisik: 445, catatan: '5 buku rusak di rak bawah', status: 'Menunggu Verifikasi' };
+    }
+    if (m.id === 3) {
+      return { ...m, inputFisik: 314, catatan: 'Kurang 6 eks saat pengiriman', status: 'Menunggu Verifikasi' };
+    }
+    return { ...m, inputFisik: m.stokSistem, catatan: '', status: 'Menunggu Verifikasi' };
+  });
 
-const MONTH_CODE_MAP = {
-  'jan': 'Januari',
-  'feb': 'Februari',
-  'mar': 'Maret',
-  'apr': 'April',
-  'mei': 'Mei',
-  'may': 'Mei',
-  'jun': 'Juni',
-  'jul': 'Juli',
-  'agu': 'Agustus',
-  'aug': 'Agustus',
-  'sep': 'September',
-  'okt': 'Oktober',
-  'oct': 'Oktober',
-  'nov': 'November',
-  'des': 'Desember',
-  'dec': 'Desember'
+  // Agustus 2026 (Disetujui)
+  defaults['2026-08'] = INITIAL_MODULS.map((m) => ({
+    ...m,
+    inputFisik: m.stokSistem,
+    catatan: '',
+    status: 'Disetujui'
+  }));
+
+  // Juli 2026 (Ditolak)
+  defaults['2026-07'] = INITIAL_MODULS.map((m) => {
+    if (m.id === 11) {
+      return { ...m, inputFisik: 412, catatan: 'Fisik belum ketemu di rak B', status: 'Ditolak' };
+    }
+    return { ...m, inputFisik: m.stokSistem, catatan: '', status: 'Ditolak' };
+  });
+
+  // Oktober 2026 (Bulan Berjalan - Belum Diinput)
+  defaults['2026-10'] = createDefaultModulData('Belum Diinput');
+
+  return defaults;
 };
 
 export default function StokOpname() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('input');
-  
-  // Form Input Fisik
-  const [opnameData, setOpnameData] = useState(() => {
-    return INITIAL_MODULS.map((m) => ({
-      ...m,
-      inputFisik: m.stokSistem,
-      catatan: ''
-    }));
-  });
+  const [selectedTahun, setSelectedTahun] = useState('2026');
+  const [selectedBulan, setSelectedBulan] = useState('Oktober');
+
+  const [monthlyData, setMonthlyData] = useState(getInitialMonthlyData);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua Jenis');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // State Riwayat
-  const [riwayatList, setRiwayatList] = useState(INITIAL_RIWAYAT);
-  const [selectedRiwayatTahun, setSelectedRiwayatTahun] = useState('Semua Tahun');
-  const [selectedRiwayatBulan, setSelectedRiwayatBulan] = useState('Semua Bulan');
-  const [selectedRiwayatStatus, setSelectedRiwayatStatus] = useState('Semua Status');
   const [notification, setNotification] = useState(null);
+  const toastTimeoutRef = useRef(null);
 
-  // Generate Tahun Dinamis dari data riwayat dan tahun sekarang
-  const tahunOptions = useMemo(() => {
-    const yearsSet = new Set();
-    const currentYear = new Date().getFullYear();
-    yearsSet.add(String(currentYear));
+  const showToast = (message, type = 'success') => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+    setNotification({ message, type });
+    toastTimeoutRef.current = setTimeout(() => {
+      setNotification(null);
+    }, 4000);
+  };
 
-    riwayatList.forEach((item) => {
-      if (item.tanggal) {
-        const match = item.tanggal.match(/\b(20\d{2})\b/);
-        if (match) {
-          yearsSet.add(match[1]);
-        }
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
       }
-    });
+    };
+  }, []);
 
-    const sortedYears = Array.from(yearsSet).sort((a, b) => Number(b) - Number(a));
-    return ['Semua Tahun', ...sortedYears];
-  }, [riwayatList]);
+  const effectiveBulan = selectedBulan === 'Bulan' ? 'Oktober' : selectedBulan;
+  const effectiveYear = selectedTahun === 'Tahun' ? '2026' : selectedTahun;
 
-  // Handler Perubahan Input Fisik
+  const selectedMonthIndex = useMemo(() => {
+    const idx = MONTH_NAMES.indexOf(effectiveBulan);
+    return idx >= 0 ? idx : 9;
+  }, [effectiveBulan]);
+
+  const selectedYearNum = Number(effectiveYear) || 2026;
+
+  const isPastMonth = useMemo(() => {
+    if (selectedYearNum < CURRENT_YEAR) return true;
+    if (selectedYearNum === CURRENT_YEAR && selectedMonthIndex < CURRENT_MONTH_INDEX) return true;
+    return false;
+  }, [selectedYearNum, selectedMonthIndex]);
+
+  const selectedMonthKey = useMemo(() => {
+    return `${effectiveYear}-${String(selectedMonthIndex + 1).padStart(2, '0')}`;
+  }, [effectiveYear, selectedMonthIndex]);
+
+  // Ambil data untuk bulan yang dipilih
+  const currentModulList = useMemo(() => {
+    return monthlyData[selectedMonthKey] || createDefaultModulData('Belum Diinput');
+  }, [monthlyData, selectedMonthKey]);
+
+  // Handler Perubahan Input Fisik (jika bukan bulan sebelumnya)
   const handleFisikChange = (id, val) => {
+    if (isPastMonth) return;
     const numericVal = val === '' ? '' : parseInt(val, 10);
-    setOpnameData((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, inputFisik: numericVal } : item))
-    );
-  };
-
-  // Catatan
-  const handleCatatanChange = (id, val) => {
-    setOpnameData((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, catatan: val } : item))
-    );
-  };
-
-  // Hitung Statistik Opname
-  const stats = useMemo(() => {
-    let totalSelisih = 0;
-    let totalBeda = 0;
-
-    opnameData.forEach((item) => {
-      const fisik = item.inputFisik === '' ? item.stokSistem : Number(item.inputFisik);
-      const selisih = fisik - item.stokSistem;
-      totalSelisih += selisih;
-      if (selisih !== 0) {
-        totalBeda += 1;
-      }
+    setMonthlyData((prev) => {
+      const currentList = prev[selectedMonthKey] || createDefaultModulData('Belum Diinput');
+      return {
+        ...prev,
+        [selectedMonthKey]: currentList.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                inputFisik: numericVal,
+                status: item.status === 'Belum Diinput' ? 'Draf' : item.status
+              }
+            : item
+        )
+      };
     });
+  };
 
-    return { totalSelisih, totalBeda, totalModul: opnameData.length };
-  }, [opnameData]);
+  // Handler Perubahan Catatan (jika bukan bulan sebelumnya)
+  const handleCatatanChange = (id, val) => {
+    if (isPastMonth) return;
+    setMonthlyData((prev) => {
+      const currentList = prev[selectedMonthKey] || createDefaultModulData('Belum Diinput');
+      return {
+        ...prev,
+        [selectedMonthKey]: currentList.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                catatan: val,
+                status: item.status === 'Belum Diinput' ? 'Draf' : item.status
+              }
+            : item
+        )
+      };
+    });
+  };
 
-  // Filter Data Modul
+  // Filter Jenis Modul
   const filteredData = useMemo(() => {
-    return opnameData.filter((item) => {
+    return currentModulList.filter((item) => {
       const matchCat = selectedCategory === 'Semua Jenis' || item.kategori === selectedCategory;
       const matchSearch =
         item.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.kategori.toLowerCase().includes(searchQuery.toLowerCase());
       return matchCat && matchSearch;
     });
-  }, [opnameData, selectedCategory, searchQuery]);
-
-  // Filter Data Riwayat (Tahun, Bulan, Status)
-  const filteredRiwayatList = useMemo(() => {
-    return riwayatList.filter((item) => {
-      // 1. Status
-      const matchStatus =
-        selectedRiwayatStatus === 'Semua Status' ||
-        item.status.toLowerCase() === selectedRiwayatStatus.toLowerCase();
-
-      // 2. Tahun
-      const matchTahun =
-        selectedRiwayatTahun === 'Semua Tahun' ||
-        (item.tanggal && item.tanggal.includes(selectedRiwayatTahun));
-
-      // 3. Bulan
-      let matchBulan = true;
-      if (selectedRiwayatBulan !== 'Semua Bulan') {
-        const parts = item.tanggal ? item.tanggal.trim().split(' ') : [];
-        if (parts.length >= 2) {
-          const blnKey = parts[1].toLowerCase().slice(0, 3);
-          const fullBln = MONTH_CODE_MAP[blnKey] || parts[1];
-          matchBulan = fullBln.toLowerCase() === selectedRiwayatBulan.toLowerCase();
-        } else {
-          matchBulan = item.tanggal.toLowerCase().includes(selectedRiwayatBulan.toLowerCase());
-        }
-      }
-
-      return matchStatus && matchTahun && matchBulan;
-    });
-  }, [riwayatList, selectedRiwayatStatus, selectedRiwayatBulan, selectedRiwayatTahun]);
+  }, [currentModulList, selectedCategory, searchQuery]);
 
   // Pagination
   const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
@@ -387,35 +598,54 @@ export default function StokOpname() {
     return filteredData.slice(start, start + itemsPerPage);
   }, [filteredData, currentPage]);
 
-  const showToast = (message, type = 'success') => {
-    setNotification({ message, type });
-    setTimeout(() => {
-      setNotification(null);
-    }, 4000);
-  };
-
   // Simpan Draf
   const handleSimpanDraf = () => {
-    showToast('Draf stok opname berhasil disimpan di lokal sistem.', 'success');
+    if (isPastMonth) return;
+    setMonthlyData((prev) => {
+      const currentList = prev[selectedMonthKey] || createDefaultModulData('Belum Diinput');
+      return {
+        ...prev,
+        [selectedMonthKey]: currentList.map((item) => ({
+          ...item,
+          status: item.status === 'Menunggu Verifikasi' ? item.status : 'Draf'
+        }))
+      };
+    });
+    showToast(`Draf stok opname periode ${effectiveBulan} ${effectiveYear} berhasil disimpan di lokal sistem.`, 'success');
   };
 
-  // Ajukan Verifikasi ke Super Admin
+  // Ajukan Verifikasi
   const handleAjukanVerifikasi = () => {
-    const newNo = riwayatList.length + 1;
-    const now = new Date();
-    const dateStr = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    if (isPastMonth) return;
+    setMonthlyData((prev) => {
+      const currentList = prev[selectedMonthKey] || createDefaultModulData('Belum Diinput');
+      return {
+        ...prev,
+        [selectedMonthKey]: currentList.map((item) => ({
+          ...item,
+          status: 'Menunggu Verifikasi'
+        }))
+      };
+    });
+    showToast(`Pengajuan verifikasi stok opname periode ${effectiveBulan} ${effectiveYear} berhasil diajukan! Status diubah menjadi Menunggu Verifikasi.`, 'success');
+  };
 
-    const newRiwayatItem = {
-      no: newNo,
-      tanggal: dateStr,
-      totalModul: `${opnameData.length} Judul`,
-      netSelisih: stats.totalSelisih > 0 ? `+${stats.totalSelisih}` : `${stats.totalSelisih}`,
-      status: 'Menunggu Verifikasi',
-      catatan: stats.totalBeda > 0 ? `${stats.totalBeda} modul terdapat selisih fisik` : 'Semua stok fisik cocok 100%'
-    };
-
-    setRiwayatList([newRiwayatItem, ...riwayatList]);
-    showToast('Pengajuan verifikasi stok opname berhasil diajukan ke Super Admin!', 'success');
+  // Render Status
+  const renderStatusBadge = (status) => {
+    switch (status) {
+      case 'Disetujui':
+        return <span style={styles.badgeDisetujui}>Disetujui</span>;
+      case 'Menunggu Verifikasi':
+      case 'Menunggu':
+        return <span style={styles.badgeMenunggu}>Menunggu Verifikasi</span>;
+      case 'Ditolak':
+        return <span style={styles.badgeDitolak}>Ditolak</span>;
+      case 'Draf':
+        return <span style={styles.badgeDraf}>Draf</span>;
+      case 'Belum Diinput':
+      default:
+        return <span style={styles.badgeBelumDiinput}>{status || 'Belum Diinput'}</span>;
+    }
   };
 
   return (
@@ -450,97 +680,110 @@ export default function StokOpname() {
             </div>
           )}
 
-          {/* TAB NAVIGATION MENU */}
-          <div style={styles.tabContainer}>
-            <button
-              type="button"
-              onClick={() => setActiveTab('input')}
-              style={{
-                ...styles.tabButton,
-                ...(activeTab === 'input' ? styles.tabButtonActive : {})
-              }}
-            >
-              Input Stok Opname
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab('riwayat')}
-              style={{
-                ...styles.tabButton,
-                ...(activeTab === 'riwayat' ? styles.tabButtonActive : {})
-              }}
-            >
-              Riwayat Stok Opname
-            </button>
-          </div>
-
-          {/* MENU FORM INPUT FISIK */}
-          {activeTab === 'input' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {/* Filter */}
-              <div className="filter-card-responsive" style={styles.filterCard}>
-                <div className="filter-left-responsive" style={styles.filterLeft}>
-                  {/* Search Bar */}
-                  <div className="search-wrapper-responsive" style={styles.searchWrapper}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5b7566" strokeWidth="2" style={styles.searchIcon}>
-                      <circle cx="11" cy="11" r="8" />
-                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                    </svg>
-                    <input
-                      type="text"
-                      placeholder="Cari judul modul..."
-                      value={searchQuery}
-                      onChange={(e) => {
-                        setSearchQuery(e.target.value);
-                        setCurrentPage(1);
-                      }}
-                      className="search-input-responsive"
-                      style={styles.searchInput}
-                    />
-                  </div>
-
-                  {/* Dropdown Jenis*/}
-                  <CustomDropdown
-                    value={selectedCategory}
-                    onChange={(val) => {
-                      setSelectedCategory(val);
-                      setCurrentPage(1);
-                    }}
-                    options={KATEGORI_OPTIONS}
-                    className="select-wrapper-responsive"
-                    style={{ width: '180px' }}
-                    selectStyle={styles.customSelect}
-                    arrowColor="#1a3e2b"
-                  />
-                </div>
-
-                {/* Tombol Simpan Draft dan Ajukan Verifikasi ke Super Admin */}
-                <div style={styles.bottomActions}>
-                  <button onClick={handleSimpanDraf} style={styles.btnDraf}>
-                    <SaveOutlinedIcon sx={{ fontSize: 18 }} />
-                    <span>Simpan Draf</span>
-                  </button>
-                  <button onClick={handleAjukanVerifikasi} style={styles.btnAjukan}>
-                    <SendOutlinedIcon sx={{ fontSize: 16 }} />
-                    <span>Ajukan Verifikasi ke Super Admin</span>
-                  </button>
-                </div>
+          {/* Filter Card */}
+          <div className="filter-card-responsive" style={styles.filterCard}>
+            <div className="filter-left-responsive" style={styles.filterLeft}>
+              {/* Search Bar */}
+              <div className="search-wrapper-responsive" style={styles.searchWrapper}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5b7566" strokeWidth="2" style={styles.searchIcon}>
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Cari judul modul..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="search-input-responsive"
+                  style={styles.searchInput}
+                />
               </div>
 
-              <div style={styles.card}>
-                {/* Tabel Input Fisik */}
-                <div style={styles.tableResponsive}>
+              {/* Dropdown Jenis */}
+              <CustomDropdown
+                value={selectedCategory}
+                onChange={(val) => {
+                  setSelectedCategory(val);
+                  setCurrentPage(1);
+                }}
+                options={KATEGORI_OPTIONS}
+                className="select-wrapper-responsive"
+                style={{ width: '135px', flexShrink: 0 }}
+                selectStyle={styles.customSelect}
+                arrowColor="#1a3e2b"
+              />
+
+              {/* Filter Kalender */}
+              <MonthYearCalendarPicker
+                selectedMonth={effectiveBulan}
+                selectedYear={effectiveYear}
+                onSelect={(m, y) => {
+                  setSelectedBulan(m);
+                  setSelectedTahun(y);
+                  setCurrentPage(1);
+                }}
+                className="select-wrapper-responsive"
+                style={{ width: '175px', flexShrink: 0 }}
+                selectStyle={styles.customSelect}
+              />
+            </div>
+
+            {/* Tombol Simpan Draf dan Ajukan Verifikasi */}
+            <div style={styles.bottomActions}>
+              <button
+                disabled={isPastMonth}
+                onClick={handleSimpanDraf}
+                style={{
+                  ...styles.btnDraf,
+                  ...(isPastMonth ? styles.btnActionDisabled : {})
+                }}
+                title={isPastMonth ? 'Data bulan sebelumnya tidak dapat diubah' : 'Simpan Draf'}
+              >
+                <SaveOutlinedIcon sx={{ fontSize: 18 }} />
+                <span>Simpan Draf</span>
+              </button>
+              <button
+                disabled={isPastMonth}
+                onClick={handleAjukanVerifikasi}
+                style={{
+                  ...styles.btnAjukan,
+                  ...(isPastMonth ? styles.btnActionDisabled : {})
+                }}
+                title={isPastMonth ? 'Data bulan sebelumnya tidak dapat diubah' : 'Ajukan Verifikasi'}
+              >
+                <SendOutlinedIcon sx={{ fontSize: 16 }} />
+                <span>Ajukan Verifikasi</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Table Card */}
+          <div style={styles.card}>
+            <div style={styles.tableResponsive}>
               <table style={styles.table}>
+                <colgroup>
+                  <col style={{ width: '48px' }} />
+                  <col style={{ width: '280px' }} />
+                  <col style={{ width: '85px' }} />
+                  <col style={{ width: '75px' }} />
+                  <col style={{ width: '80px' }} />
+                  <col style={{ width: '60px' }} />
+                  <col style={{ width: '135px' }} />
+                  <col style={{ width: '130px' }} />
+                </colgroup>
                 <thead>
                   <tr style={styles.thRow}>
-                    <th style={{ ...styles.th, width: '48px', textAlign: 'center' }}>NO</th>
+                    <th style={{ ...styles.th, textAlign: 'center' }}>NO</th>
                     <th style={styles.th}>JUDUL MODUL</th>
-                    <th style={{ ...styles.th, width: '140px' }}>JENIS</th>
-                    <th style={{ ...styles.th, width: '110px', textAlign: 'center' }}>STOK SISTEM</th>
-                    <th style={{ ...styles.th, width: '130px', textAlign: 'center' }}>INPUT FISIK</th>
-                    <th style={{ ...styles.th, width: '100px', textAlign: 'center' }}>SELISIH</th>
-                    <th style={{ ...styles.th, minWidth: '220px' }}>CATATAN</th>
+                    <th style={{ ...styles.th, paddingRight: '4px' }}>JENIS</th>
+                    <th style={{ ...styles.th, paddingLeft: '4px', textAlign: 'center' }}>STOK SISTEM</th>
+                    <th style={{ ...styles.th, textAlign: 'center' }}>INPUT FISIK</th>
+                    <th style={{ ...styles.th, textAlign: 'center' }}>SELISIH</th>
+                    <th style={styles.th}>CATATAN</th>
+                    <th style={{ ...styles.th, textAlign: 'center' }}>STATUS</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -571,12 +814,12 @@ export default function StokOpname() {
                           </td>
 
                           {/* JENIS */}
-                          <td style={styles.td}>
+                          <td style={{ ...styles.td, paddingRight: '4px' }}>
                             <span style={styles.jenisTextPlainBold}>{item.kategori}</span>
                           </td>
 
                           {/* STOK SISTEM */}
-                          <td style={{ ...styles.td, textAlign: 'center', fontWeight: '700', fontSize: '15px', color: '#1a3e2b' }}>
+                          <td style={{ ...styles.td, paddingLeft: '4px', textAlign: 'center', fontWeight: '700', fontSize: '14px', color: '#162a20' }}>
                             {item.stokSistem}
                           </td>
 
@@ -585,13 +828,16 @@ export default function StokOpname() {
                             <input
                               type="number"
                               min="0"
+                              disabled={isPastMonth}
                               value={inputVal}
                               onChange={(e) => handleFisikChange(item.id, e.target.value)}
                               placeholder={String(item.stokSistem)}
                               style={{
                                 ...styles.inputFisik,
-                                borderColor: !isMatch ? '#f59e0b' : '#c7d9cd',
-                                backgroundColor: !isMatch ? '#fffbeb' : '#ffffff'
+                                borderColor: isPastMonth ? '#dce4de' : (!isMatch ? '#f59e0b' : '#c7d9cd'),
+                                backgroundColor: isPastMonth ? '#f8fafc' : (!isMatch ? '#fffbeb' : '#ffffff'),
+                                color: isPastMonth ? '#64748b' : '#1a3e2b',
+                                cursor: isPastMonth ? 'not-allowed' : 'text'
                               }}
                             />
                           </td>
@@ -601,7 +847,13 @@ export default function StokOpname() {
                             {isMatch ? (
                               <span style={styles.badgeCocok}>0</span>
                             ) : (
-                              <span style={{ ...styles.badgeSelisih, backgroundColor: selisih < 0 ? '#fef2f2' : '#f0fdf4', color: selisih < 0 ? '#dc2626' : '#16a34a' }}>
+                              <span
+                                style={{
+                                  ...styles.badgeSelisih,
+                                  backgroundColor: selisih < 0 ? '#fef2f2' : '#f0fdf4',
+                                  color: selisih < 0 ? '#dc2626' : '#16a34a'
+                                }}
+                              >
                                 {selisih > 0 ? `+${selisih}` : selisih}
                               </span>
                             )}
@@ -611,21 +863,30 @@ export default function StokOpname() {
                           <td style={styles.td}>
                             <input
                               type="text"
+                              disabled={isPastMonth}
                               value={item.catatan}
                               onChange={(e) => handleCatatanChange(item.id, e.target.value)}
-                              placeholder="Catatan"
+                              placeholder={isPastMonth ? '-' : 'Catatan'}
                               style={{
                                 ...styles.inputCatatan,
-                                borderColor: !isMatch && !item.catatan ? '#fca5a5' : '#dce4de'
+                                borderColor: isPastMonth ? '#e2e8f0' : (!isMatch && !item.catatan ? '#fca5a5' : '#dce4de'),
+                                backgroundColor: isPastMonth ? '#f8fafc' : '#ffffff',
+                                color: isPastMonth ? '#64748b' : '#1e293b',
+                                cursor: isPastMonth ? 'not-allowed' : 'text'
                               }}
                             />
+                          </td>
+
+                          {/* STATUS */}
+                          <td style={{ ...styles.td, textAlign: 'center' }}>
+                            {renderStatusBadge(item.status)}
                           </td>
                         </tr>
                       );
                     })
                   ) : (
                     <tr>
-                      <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#64748b', fontSize: '14px' }}>
+                      <td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: '#64748b', fontSize: '14px' }}>
                         Tidak ada modul yang cocok dengan pencarian.
                       </td>
                     </tr>
@@ -637,7 +898,7 @@ export default function StokOpname() {
             {/* Pagination */}
             <div className="pagination-responsive" style={styles.cardFooter}>
               <div style={styles.pageInfo}>
-                {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredData.length)} dari {filteredData.length}
+                {filteredData.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} - {Math.min(currentPage * itemsPerPage, filteredData.length)} dari {filteredData.length}
               </div>
               <div style={styles.paginationButtons}>
                 <button
@@ -669,155 +930,6 @@ export default function StokOpname() {
               </div>
             </div>
           </div>
-        </div>
-        )}
-
-          {/* MENU RIWAYAT STOK OPNAME */}
-          {activeTab === 'riwayat' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {/* Filter Tahun, Bulan, Status */}
-              <div className="filter-card-responsive" style={styles.filterCard}>
-                <div className="filter-left-responsive" style={styles.filterLeft}>
-                  {/* Dropdown Tahun */}
-                  <CustomDropdown
-                    value={selectedRiwayatTahun}
-                    onChange={(val) => setSelectedRiwayatTahun(val)}
-                    options={tahunOptions}
-                    className="select-wrapper-responsive"
-                    style={{ width: '160px' }}
-                    selectStyle={styles.customSelect}
-                    arrowColor="#1a3e2b"
-                  />
-
-                  {/* Dropdown Bulan */}
-                  <CustomDropdown
-                    value={selectedRiwayatBulan}
-                    onChange={(val) => setSelectedRiwayatBulan(val)}
-                    options={BULAN_RIWAYAT_OPTIONS}
-                    className="select-wrapper-responsive"
-                    style={{ width: '160px' }}
-                    selectStyle={styles.customSelect}
-                    arrowColor="#1a3e2b"
-                  />
-
-                  {/* Dropdown Status */}
-                  <CustomDropdown
-                    value={selectedRiwayatStatus}
-                    onChange={(val) => setSelectedRiwayatStatus(val)}
-                    options={STATUS_RIWAYAT_OPTIONS}
-                    className="select-wrapper-responsive"
-                    style={{ width: '190px' }}
-                    selectStyle={styles.customSelect}
-                    arrowColor="#1a3e2b"
-                  />
-                </div>
-              </div>
-
-              {/* Table Card Riwayat */}
-              <div style={styles.card}>
-                <div style={styles.tableResponsive}>
-                  <table style={styles.table}>
-                    <thead>
-                      <tr style={styles.thRow}>
-                        <th style={{ ...styles.th, width: '50px', textAlign: 'center' }}>NO</th>
-                        <th style={{ ...styles.th, width: '150px', whiteSpace: 'nowrap' }}>TANGGAL</th>
-                        <th style={{ ...styles.th, width: '130px', textAlign: 'center', whiteSpace: 'nowrap' }}>TOTAL MODUL</th>
-                        <th style={{ ...styles.th, width: '110px', textAlign: 'center', whiteSpace: 'nowrap' }}>SELISIH</th>
-                        <th style={{ ...styles.th, width: '190px', textAlign: 'center', whiteSpace: 'nowrap' }}>STATUS</th>
-                        <th style={styles.th}>CATATAN</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredRiwayatList.map((item, idx) => (
-                        <tr key={idx} style={styles.tr}>
-                          {/* NO */}
-                          <td style={{ ...styles.td, textAlign: 'center', fontWeight: '600', color: '#64748b' }}>
-                            {idx + 1}
-                          </td>
-
-                          {/* TANGGAL */}
-                          <td style={{ ...styles.td, whiteSpace: 'nowrap', fontWeight: '700', color: '#1a3e2b' }}>
-                            {item.tanggal}
-                          </td>
-
-                          {/* TOTAL MODUL */}
-                          <td style={{ ...styles.td, textAlign: 'center', fontWeight: '700', color: '#1a3e2b', whiteSpace: 'nowrap' }}>
-                            {item.totalModul}
-                          </td>
-
-                          {/* SELISIH */}
-                          <td style={{ ...styles.td, textAlign: 'center', fontWeight: '700', whiteSpace: 'nowrap', color: item.netSelisih.startsWith('-') ? '#dc2626' : (item.netSelisih === '0' ? '#16a34a' : '#16a34a') }}>
-                            {item.netSelisih}
-                          </td>
-
-                          {/* STATUS */}
-                          <td style={{ ...styles.td, textAlign: 'center', whiteSpace: 'nowrap' }}>
-                            {(item.status === 'Menunggu Verifikasi' || item.status === 'MENUNGGU VERIFIKASI') && (
-                              <span style={styles.badgeMenunggu}>
-                                Menunggu Verifikasi
-                              </span>
-                            )}
-                            {(item.status === 'Disetujui' || item.status === 'DISETUJUI') && (
-                              <span style={styles.badgeDisetujui}>
-                                Disetujui
-                              </span>
-                            )}
-                            {(item.status === 'Ditolak' || item.status === 'DITOLAK') && (
-                              <span style={styles.badgeDitolak}>
-                                Ditolak
-                              </span>
-                            )}
-                          </td>
-
-                          {/* CATATAN */}
-                          <td style={{ ...styles.td, color: '#334155', fontWeight: '600', fontSize: '13.5px' }}>
-                            {item.catatan}
-                          </td>
-                        </tr>
-                      ))}
-
-                      {filteredRiwayatList.length === 0 && (
-                        <tr>
-                          <td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#64748b', fontSize: '14px' }}>
-                            Tidak ada riwayat stok opname.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Pagination */}
-                <div className="pagination-responsive" style={styles.cardFooter}>
-                  <div style={styles.pageInfo}>
-                    1 - {filteredRiwayatList.length} dari {riwayatList.length}
-                  </div>
-                  <div style={styles.paginationButtons}>
-                    <button
-                      disabled
-                      style={{ ...styles.btnPageArrow, opacity: 0.4 }}
-                    >
-                      &lt;
-                    </button>
-                    <button
-                      style={{
-                        ...styles.btnPageNum,
-                        ...styles.btnPageNumActive
-                      }}
-                    >
-                      1
-                    </button>
-                    <button
-                      disabled
-                      style={{ ...styles.btnPageArrow, opacity: 0.4 }}
-                    >
-                      &gt;
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </main>
       </div>
     </div>
@@ -873,18 +985,25 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+    boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
+    flexWrap: 'nowrap',
+    gap: '12px'
   },
   filterLeft: {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-    flexWrap: 'wrap'
+    flexWrap: 'nowrap',
+    flex: '1 1 auto',
+    minWidth: 0
   },
   searchWrapper: {
     position: 'relative',
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
+    flex: '1 1 200px',
+    minWidth: '140px',
+    maxWidth: '260px'
   },
   searchIcon: {
     position: 'absolute',
@@ -892,7 +1011,8 @@ const styles = {
     pointerEvents: 'none'
   },
   searchInput: {
-    width: '300px',
+    width: '100%',
+    boxSizing: 'border-box',
     padding: '10px 14px 10px 38px',
     fontSize: '13px',
     border: '1px solid #23573c',
@@ -912,12 +1032,57 @@ const styles = {
     fontWeight: '600',
     fontFamily: 'inherit'
   },
+  bottomActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    flexWrap: 'nowrap',
+    flexShrink: 0
+  },
+  btnDraf: {
+    backgroundColor: '#ffffff',
+    color: '#23573c',
+    border: '1px solid #23573c',
+    padding: '10px 18px',
+    borderRadius: '8px',
+    fontSize: '13.5px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap',
+    transition: 'background 0.15s'
+  },
+  btnAjukan: {
+    backgroundColor: '#23573c',
+    color: '#ffffff',
+    border: 'none',
+    padding: '10px 20px',
+    borderRadius: '8px',
+    fontSize: '13.5px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap',
+    boxShadow: '0 4px 12px rgba(35, 87, 60, 0.25)',
+    transition: 'transform 0.15s'
+  },
+  btnActionDisabled: {
+    opacity: 0.45,
+    cursor: 'not-allowed',
+    boxShadow: 'none',
+    pointerEvents: 'none'
+  },
   tableResponsive: {
     overflowX: 'auto',
     WebkitOverflowScrolling: 'touch'
   },
   table: {
     width: '100%',
+    tableLayout: 'fixed',
     borderCollapse: 'collapse',
     textAlign: 'left'
   },
@@ -926,11 +1091,11 @@ const styles = {
     borderBottom: '1px solid #dce4de'
   },
   th: {
-    padding: '14px 18px',
+    padding: '16px 12px',
     fontSize: '11.5px',
     fontWeight: '700',
     color: '#1d4632',
-    letterSpacing: '0.6px',
+    letterSpacing: '0.5px',
     textTransform: 'uppercase',
     whiteSpace: 'nowrap'
   },
@@ -939,30 +1104,34 @@ const styles = {
     transition: 'background 0.15s'
   },
   td: {
-    padding: '14px 18px',
+    padding: '14px 12px',
     fontSize: '13.5px',
     verticalAlign: 'middle'
   },
   moduleNameMain: {
     fontWeight: '700',
     color: '#1a3e2b',
-    fontSize: '14px'
+    fontSize: '13.5px',
+    lineHeight: '1.4',
+    whiteSpace: 'nowrap'
   },
   jenisTextPlainBold: {
-    fontSize: '13.5px',
+    fontSize: '14px',
     color: '#1a3e2b',
-    fontWeight: '700'
+    fontWeight: '700',
+    whiteSpace: 'nowrap'
   },
   inputFisik: {
-    width: '80px',
-    padding: '8px 10px',
+    width: '64px',
+    padding: '7px 4px',
     textAlign: 'center',
     borderRadius: '8px',
     border: '1px solid #c7d9cd',
-    fontSize: '14px',
+    fontSize: '13.5px',
     fontWeight: '700',
     color: '#1a3e2b',
-    outline: 'none'
+    outline: 'none',
+    boxSizing: 'border-box'
   },
   badgeCocok: {
     display: 'inline-block',
@@ -984,12 +1153,14 @@ const styles = {
   },
   inputCatatan: {
     width: '100%',
-    padding: '7px 12px',
+    padding: '7px 10px',
     borderRadius: '8px',
     border: '1px solid #dce4de',
-    fontSize: '12.5px',
+    fontSize: '13px',
     outline: 'none',
-    backgroundColor: '#ffffff'
+    backgroundColor: '#ffffff',
+    color: '#1a3e2b',
+    boxSizing: 'border-box'
   },
   cardFooter: {
     minHeight: '64px',
@@ -1049,112 +1220,69 @@ const styles = {
     fontWeight: '700',
     boxShadow: '0 2px 6px rgba(35, 87, 60, 0.3)'
   },
-  bottomActions: {
-    display: 'flex',
+  badgeDisetujui: {
+    display: 'inline-flex',
     alignItems: 'center',
-    gap: '10px'
-  },
-  btnDraf: {
-    backgroundColor: '#ffffff',
-    color: '#23573c',
-    border: '1px solid #23573c',
-    padding: '10px 18px',
-    borderRadius: '8px',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    transition: 'background 0.15s'
-  },
-  btnAjukan: {
-    backgroundColor: '#23573c',
-    color: '#ffffff',
-    border: 'none',
-    padding: '10px 20px',
-    borderRadius: '8px',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    boxShadow: '0 4px 12px rgba(35, 87, 60, 0.25)',
-    transition: 'transform 0.15s'
+    justifyContent: 'center',
+    padding: '4px 8px',
+    backgroundColor: '#dcfce7',
+    color: '#15803d',
+    borderRadius: '6px',
+    fontSize: '11.5px',
+    fontWeight: '700',
+    border: '1px solid #bbf7d0',
+    whiteSpace: 'nowrap'
   },
   badgeMenunggu: {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '165px',
-    height: '28px',
+    padding: '4px 8px',
     backgroundColor: '#fef9c3',
     color: '#854d0e',
     borderRadius: '6px',
     fontSize: '11px',
     fontWeight: '700',
-    letterSpacing: '0.4px',
     border: '1px solid #fef08a',
-    boxSizing: 'border-box'
-  },
-  badgeDisetujui: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '165px',
-    height: '28px',
-    backgroundColor: '#dcfce7',
-    color: '#15803d',
-    borderRadius: '6px',
-    fontSize: '11px',
-    fontWeight: '700',
-    letterSpacing: '0.4px',
-    border: '1px solid #bbf7d0',
-    boxSizing: 'border-box'
+    whiteSpace: 'nowrap'
   },
   badgeDitolak: {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '165px',
-    height: '28px',
+    padding: '4px 8px',
     backgroundColor: '#fee2e2',
     color: '#b91c1c',
     borderRadius: '6px',
-    fontSize: '11px',
+    fontSize: '11.5px',
     fontWeight: '700',
-    letterSpacing: '0.4px',
     border: '1px solid #fecaca',
-    boxSizing: 'border-box'
+    whiteSpace: 'nowrap'
   },
-  tabContainer: {
+  badgeDraf: {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '10px',
-    marginBottom: '0px',
-    backgroundColor: 'transparent',
-    padding: 0,
-    border: 'none'
+    justifyContent: 'center',
+    padding: '4px 8px',
+    backgroundColor: '#e0f2fe',
+    color: '#0369a1',
+    borderRadius: '6px',
+    fontSize: '11.5px',
+    fontWeight: '700',
+    border: '1px solid #bae6fd',
+    whiteSpace: 'nowrap'
   },
-  tabButton: {
-    display: 'flex',
+  badgeBelumDiinput: {
+    display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '8px 20px',
-    borderRadius: '10px',
-    fontSize: '13.5px',
+    padding: '4px 8px',
+    backgroundColor: '#f1f5f9',
+    color: '#64748b',
+    borderRadius: '6px',
+    fontSize: '11.5px',
     fontWeight: '600',
-    color: '#475569',
-    backgroundColor: '#ffffff',
-    border: '1px solid #dce4de',
-    cursor: 'pointer',
-    transition: 'all 0.18s ease'
-  },
-  tabButtonActive: {
-    backgroundColor: '#23573c',
-    color: '#ffffff',
-    borderColor: '#23573c',
-    boxShadow: '0 2px 8px rgba(35, 87, 60, 0.22)'
+    border: '1px solid #cbd5e1',
+    whiteSpace: 'nowrap'
   }
 };
