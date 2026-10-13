@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { authRoutes } from "./routes/authRoutes";
 import DataModul from "./pages/DataModul";
+import JenisModul from "./pages/JenisModul";
 import StokOpname from "./pages/StokOpname";
 import ModulMasuk from "./pages/ModulMasuk";
 import PesananKirim from "./pages/PesananKirim";
@@ -12,6 +13,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         {authRoutes}
+        <Route path="/jenis-modul" element={<JenisModul />} />
         <Route path="/data-modul" element={<DataModul />} />
         <Route path="/DataModul" element={<DataModul />} />
         <Route path="/dashboard" element={<DataModul />} />
