@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 import contohBuktiTf from '../assets/contoh bukti tf.jpeg';
@@ -150,6 +151,7 @@ const STATS_CONFIG = [
 ];
 
 export default function VerifikasiPembayaran() {
+  const navigate = useNavigate();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('verifikasi');
   
@@ -350,11 +352,8 @@ export default function VerifikasiPembayaran() {
 
             <button
               type="button"
-              onClick={() => setActiveTab('pengiriman')}
-              style={{
-                ...styles.tabButton,
-                ...(activeTab === 'pengiriman' ? styles.tabButtonActive : {})
-              }}
+              onClick={() => navigate('/status-pengiriman')}
+              style={styles.tabButton}
             >
               <LocalShippingOutlinedIcon sx={{ fontSize: 18 }} />
               <span>Status Pengiriman</span>

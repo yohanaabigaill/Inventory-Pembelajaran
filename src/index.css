@@ -233,6 +233,11 @@ select option:active {
     grid-column: span 1 !important;
   }
 
+  .modal-two-col-responsive {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
   .pagination-responsive {
     flex-direction: column !important;
     gap: 12px !important;
