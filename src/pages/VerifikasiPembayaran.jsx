@@ -8,6 +8,7 @@ import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
+import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
@@ -148,7 +149,7 @@ const STATS_CONFIG = [
   { key: 'totalKedaluwarsa', label: 'Kedaluwarsa', status: 'Kedaluwarsa', border: '#a8a29e', color: '#78716c', bg: '#f5f5f4', icon: TimerOffOutlinedIcon }
 ];
 
-export default function PesananKirim() {
+export default function VerifikasiPembayaran() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('verifikasi');
   
@@ -156,6 +157,8 @@ export default function PesananKirim() {
   const [pesananList, setPesananList] = useState(INITIAL_PESANAN);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('Semua Status');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [notification, setNotification] = useState(null);
@@ -210,9 +213,13 @@ export default function PesananKirim() {
         item.status.toLowerCase() === statusFilter.toLowerCase() ||
         (statusFilter === 'Ditolak' && (item.status === 'Pembayaran Ditolak' || item.status === 'Ditolak'));
 
-      return matchSearch && matchStatus;
+      const matchDateRange =
+        (!startDate || item.tanggal >= startDate) &&
+        (!endDate || item.tanggal <= endDate);
+
+      return matchSearch && matchStatus && matchDateRange;
     });
-  }, [pesananList, searchQuery, statusFilter]);
+  }, [pesananList, searchQuery, statusFilter, startDate, endDate]);
 
   // Pagination
   const totalPages = Math.ceil(filteredPesanan.length / itemsPerPage) || 1;
@@ -390,6 +397,7 @@ export default function PesananKirim() {
 
               {/* Pencarian & Filter */}
               <div style={styles.filterCard} className="filter-card-responsive">
+                {/* Pencarian Nama Pembeli */}
                 <div style={styles.searchWrapper} className="search-wrapper-responsive">
                   <SearchOutlinedIcon sx={{ color: '#5b7566', fontSize: 20 }} />
                   <input
@@ -403,6 +411,56 @@ export default function PesananKirim() {
                     style={styles.searchInput}
                     className="search-input-responsive"
                   />
+                </div>
+
+                {/* Filter Rentang Tanggal (dd/mm/yyyy) */}
+                <div style={styles.dateRangeWrapper} className="date-range-responsive">
+                  <CalendarTodayOutlinedIcon sx={{ color: '#5b7566', fontSize: 18, flexShrink: 0 }} />
+                  <input
+                    type="date"
+                    value={startDate}
+                    max={endDate || undefined}
+                    onChange={(e) => {
+                      setStartDate(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    onClick={(e) => {
+                      try { e.target.showPicker?.(); } catch {}
+                    }}
+                    style={styles.dateInput}
+                    className="date-input-clean"
+                    title="Tanggal Mulai (dd/mm/yyyy)"
+                  />
+                  <span style={styles.dateSeparator}>s/d</span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    min={startDate || undefined}
+                    onChange={(e) => {
+                      setEndDate(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    onClick={(e) => {
+                      try { e.target.showPicker?.(); } catch {}
+                    }}
+                    style={styles.dateInput}
+                    className="date-input-clean"
+                    title="Tanggal Akhir (dd/mm/yyyy)"
+                  />
+                  {(startDate || endDate) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStartDate('');
+                        setEndDate('');
+                        setCurrentPage(1);
+                      }}
+                      style={styles.dateClearBtn}
+                      title="Reset filter rentang tanggal"
+                    >
+                      <CloseOutlinedIcon sx={{ fontSize: 14 }} />
+                    </button>
+                  )}
                 </div>
 
                 <div style={styles.filterRight} className="filter-right-responsive">
@@ -1005,7 +1063,7 @@ const styles = {
     borderRadius: '10px',
     border: '1px solid #e2e8f0',
     flex: 1,
-    minWidth: '260px'
+    minWidth: '220px'
   },
   searchInput: {
     border: 'none',
@@ -1014,6 +1072,45 @@ const styles = {
     fontSize: '13.5px',
     width: '100%',
     color: '#1e293b'
+  },
+  dateRangeWrapper: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    backgroundColor: '#f8faf9',
+    padding: '8px 14px',
+    borderRadius: '10px',
+    border: '1px solid #e2e8f0',
+    boxSizing: 'border-box'
+  },
+  dateInput: {
+    border: 'none',
+    outline: 'none',
+    backgroundColor: 'transparent',
+    fontSize: '13px',
+    fontFamily: 'inherit',
+    color: '#1e293b',
+    cursor: 'pointer',
+    width: '110px',
+    padding: 0
+  },
+  dateSeparator: {
+    fontSize: '12px',
+    color: '#94a3b8',
+    fontWeight: '600',
+    userSelect: 'none'
+  },
+  dateClearBtn: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    color: '#94a3b8',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '2px',
+    borderRadius: '50%',
+    marginLeft: '2px'
   },
   filterRight: {
     display: 'flex',

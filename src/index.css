@@ -213,6 +213,12 @@ select option:active {
     width: 100% !important;
   }
 
+  .date-range-responsive {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    justify-content: space-between !important;
+  }
+
   .modal-detail-responsive {
     padding: 16px !important;
     max-height: 94vh !important;
@@ -238,3 +244,9 @@ select option:active {
     box-sizing: border-box !important;
   }
 }
+
+.date-input-clean::-webkit-calendar-picker-indicator {
+  display: none !important;
+  -webkit-appearance: none !important;
+}
+
