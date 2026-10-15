@@ -141,12 +141,12 @@ const INITIAL_PESANAN = [
 
 // Card Statistik
 const STATS_CONFIG = [
-  { key: 'totalMenunggu', label: 'Menunggu Verifikasi', status: 'Menunggu Verifikasi', border: '#f59e0b', color: '#b45309', bg: '#fef3c7', icon: PendingActionsOutlinedIcon },
-  { key: 'totalDisetujui', label: 'Disetujui', status: 'Disetujui', border: '#22c55e', color: '#15803d', bg: '#dcfce7', icon: TaskAltOutlinedIcon },
-  { key: 'totalDitolak', label: 'Ditolak', status: 'Ditolak', border: '#ef4444', color: '#b91c1c', bg: '#fee2e2', icon: CancelOutlinedIcon },
-  { key: 'totalBelumBayar', label: 'Belum Bayar', status: 'Belum Bayar', border: '#3b82f6', color: '#1d4ed8', bg: '#dbeafe', icon: AccessTimeOutlinedIcon },
-  { key: 'totalDibatalkan', label: 'Dibatalkan', status: 'Dibatalkan', border: '#64748b', color: '#475569', bg: '#f1f5f9', icon: RemoveCircleOutlineOutlinedIcon },
-  { key: 'totalKedaluwarsa', label: 'Kedaluwarsa', status: 'Kedaluwarsa', border: '#a8a29e', color: '#78716c', bg: '#f5f5f4', icon: TimerOffOutlinedIcon }
+  { key: 'totalMenunggu', label: 'Menunggu Verifikasi', status: 'Menunggu Verifikasi', border: '#d97706', color: '#d97706', bg: '#fef3c7', icon: PendingActionsOutlinedIcon },
+  { key: 'totalDisetujui', label: 'Disetujui', status: 'Disetujui', border: '#16a34a', color: '#16a34a', bg: '#dcfce7', icon: TaskAltOutlinedIcon },
+  { key: 'totalDitolak', label: 'Ditolak', status: 'Ditolak', border: '#dc2626', color: '#dc2626', bg: '#fee2e2', icon: CancelOutlinedIcon },
+  { key: 'totalBelumBayar', label: 'Belum Bayar', status: 'Belum Bayar', border: '#2563eb', color: '#2563eb', bg: '#dbeafe', icon: AccessTimeOutlinedIcon },
+  { key: 'totalDibatalkan', label: 'Dibatalkan', status: 'Dibatalkan', border: '#94a3b8', color: '#94a3b8', bg: '#f1f5f9', icon: RemoveCircleOutlineOutlinedIcon },
+  { key: 'totalKedaluwarsa', label: 'Kedaluwarsa', status: 'Kedaluwarsa', border: '#64748b', color: '#64748b', bg: '#e2e8f0', icon: TimerOffOutlinedIcon }
 ];
 
 export default function VerifikasiPembayaran() {
@@ -399,7 +399,7 @@ export default function VerifikasiPembayaran() {
               <div style={styles.filterCard} className="filter-card-responsive">
                 {/* Pencarian Nama Pembeli */}
                 <div style={styles.searchWrapper} className="search-wrapper-responsive">
-                  <SearchOutlinedIcon sx={{ color: '#5b7566', fontSize: 20 }} />
+                  <SearchOutlinedIcon sx={{ color: '#23573c', fontSize: 20 }} />
                   <input
                     type="text"
                     placeholder="Cari nama pembeli..."
@@ -415,7 +415,7 @@ export default function VerifikasiPembayaran() {
 
                 {/* Filter Rentang Tanggal (dd/mm/yyyy) */}
                 <div style={styles.dateRangeWrapper} className="date-range-responsive">
-                  <CalendarTodayOutlinedIcon sx={{ color: '#5b7566', fontSize: 18, flexShrink: 0 }} />
+                  <CalendarTodayOutlinedIcon sx={{ color: '#23573c', fontSize: 18, flexShrink: 0 }} />
                   <input
                     type="date"
                     value={startDate}
@@ -497,7 +497,7 @@ export default function VerifikasiPembayaran() {
                         <th style={{ ...styles.th, width: '15%' }}>TANGGAL</th>
                         <th style={{ ...styles.th, width: '26%' }}>PEMBELI</th>
                         <th style={{ ...styles.th, width: '23%' }}>STATUS</th>
-                        <th style={{ ...styles.th, width: '18%', textAlign: 'right' }}>TOTAL</th>
+                        <th style={{ ...styles.th, width: '18%' }}>TOTAL</th>
                         <th style={{ ...styles.th, width: '13%', textAlign: 'center' }}>AKSI</th>
                       </tr>
                     </thead>
@@ -516,12 +516,12 @@ export default function VerifikasiPembayaran() {
                             title="Klik baris untuk melihat detail lengkap pesanan"
                           >
                             {/* NO */}
-                            <td style={{ ...styles.td, textAlign: 'center', fontWeight: '600', color: '#475569' }}>
+                            <td style={{ ...styles.td, textAlign: 'center', fontWeight: '600', color: '#64748b' }}>
                               {rowNumber}
                             </td>
 
                             {/* TANGGAL */}
-                            <td style={{ ...styles.td, color: '#1e293b', fontWeight: '500', whiteSpace: 'nowrap' }}>
+                            <td style={{ ...styles.td, color: '#1a3e2b', fontWeight: '700', fontSize: '14px', whiteSpace: 'nowrap' }}>
                               {formatTanggal(item.tanggal)}
                             </td>
 
@@ -544,7 +544,7 @@ export default function VerifikasiPembayaran() {
                             </td>
 
                             {/* TOTAL */}
-                            <td style={{ ...styles.td, textAlign: 'right' }}>
+                            <td style={styles.td}>
                               <div style={styles.totalPriceText}>{formatRupiah(item.totalBayar)}</div>
                             </td>
 
@@ -559,11 +559,9 @@ export default function VerifikasiPembayaran() {
                                       setApprovingOrder(item);
                                     }}
                                     style={styles.btnApprove}
-                                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#dcfce7')}
-                                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#f0f5f2')}
                                     title="Setujui Pembayaran"
                                   >
-                                    <CheckCircleOutlinedIcon sx={{ fontSize: 18 }} />
+                                    <CheckCircleOutlinedIcon sx={{ fontSize: 21 }} />
                                   </button>
 
                                   <button
@@ -573,11 +571,9 @@ export default function VerifikasiPembayaran() {
                                       handleOpenTolakModal(item);
                                     }}
                                     style={styles.btnReject}
-                                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#fee2e2')}
-                                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#fef2f2')}
                                     title="Tolak Pembayaran"
                                   >
-                                    <CancelOutlinedIcon sx={{ fontSize: 18 }} />
+                                    <CancelOutlinedIcon sx={{ fontSize: 21 }} />
                                   </button>
                                 </div>
                               ) : (
@@ -993,7 +989,7 @@ const styles = {
     backgroundColor: 'rgba(35, 87, 60, 0.06)'
   },
   tabBadgeWarning: {
-    backgroundColor: '#f59e0b',
+    backgroundColor: '#d97706',
     color: '#ffffff',
     padding: '2px 8px',
     borderRadius: '12px',
@@ -1058,10 +1054,10 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
-    backgroundColor: '#f8faf9',
+    backgroundColor: '#f6faf7',
     padding: '8px 16px',
     borderRadius: '10px',
-    border: '1px solid #e2e8f0',
+    border: '1px solid #23573c',
     flex: 1,
     minWidth: '220px'
   },
@@ -1071,16 +1067,16 @@ const styles = {
     backgroundColor: 'transparent',
     fontSize: '13.5px',
     width: '100%',
-    color: '#1e293b'
+    color: '#1a3e2b'
   },
   dateRangeWrapper: {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
-    backgroundColor: '#f8faf9',
+    backgroundColor: '#f6faf7',
     padding: '8px 14px',
     borderRadius: '10px',
-    border: '1px solid #e2e8f0',
+    border: '1px solid #23573c',
     boxSizing: 'border-box'
   },
   dateInput: {
@@ -1089,14 +1085,14 @@ const styles = {
     backgroundColor: 'transparent',
     fontSize: '13px',
     fontFamily: 'inherit',
-    color: '#1e293b',
+    color: '#1a3e2b',
     cursor: 'pointer',
     width: '110px',
     padding: 0
   },
   dateSeparator: {
     fontSize: '12px',
-    color: '#94a3b8',
+    color: '#23573c',
     fontWeight: '600',
     userSelect: 'none'
   },
@@ -1104,7 +1100,7 @@ const styles = {
     background: 'none',
     border: 'none',
     cursor: 'pointer',
-    color: '#94a3b8',
+    color: '#23573c',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1122,8 +1118,8 @@ const styles = {
   selectFilterPill: {
     padding: '8px 36px 8px 16px',
     borderRadius: '10px',
-    border: '1.5px solid #23573c',
-    backgroundColor: '#ffffff',
+    border: '1px solid #23573c',
+    backgroundColor: '#f6faf7',
     fontSize: '13.5px',
     fontWeight: '600',
     color: '#1a3e2b',
@@ -1139,9 +1135,9 @@ const styles = {
   },
   tableCard: {
     backgroundColor: '#ffffff',
-    borderRadius: '14px',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
-    border: '1px solid #eef2ef',
+    borderRadius: '16px',
+    boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
+    border: '1px solid #dce4de',
     overflow: 'hidden'
   },
   tableResponsive: {
@@ -1154,33 +1150,36 @@ const styles = {
     textAlign: 'left'
   },
   thRow: {
-    backgroundColor: '#f1f5f3',
-    borderBottom: '1px solid #e2e8f0'
+    backgroundColor: '#ebf2ed',
+    borderBottom: '1px solid #dce4de'
   },
   th: {
-    padding: '14px 16px',
+    padding: '16px 20px',
     fontSize: '12px',
     fontWeight: '700',
-    color: '#1a3e2b',
-    letterSpacing: '0.4px',
+    color: '#1d4632',
+    letterSpacing: '0.5px',
+    textTransform: 'uppercase',
     whiteSpace: 'nowrap'
   },
   tr: {
-    borderBottom: '1px solid #f1f5f9'
+    borderBottom: '1px solid #f0f5f2',
+    transition: 'background 0.15s'
   },
   td: {
-    padding: '14px 16px',
-    fontSize: '13px',
-    color: '#334155',
+    padding: '14px 20px',
+    fontSize: '14px',
+    color: '#1a3e2b',
     verticalAlign: 'middle'
   },
   buyerNameText: {
-    fontWeight: '600',
-    color: '#1e293b'
+    fontWeight: '700',
+    color: '#1a3e2b',
+    fontSize: '14px'
   },
   totalPriceText: {
     fontWeight: '700',
-    color: '#166534',
+    color: '#1a3e2b',
     fontSize: '14px'
   },
   statusIndicatorWrapper: {
@@ -1196,9 +1195,9 @@ const styles = {
     flexShrink: 0
   },
   statusText: {
-    fontSize: '13px',
-    fontWeight: '600',
-    color: '#334155'
+    fontSize: '14px',
+    fontWeight: '700',
+    color: '#1a3e2b'
   },
   actionButtonsWrapper: {
     display: 'flex',
@@ -1210,85 +1209,87 @@ const styles = {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '32px',
-    height: '32px',
-    padding: '6px',
+    width: '28px',
+    height: '28px',
     borderRadius: '6px',
     border: 'none',
     backgroundColor: '#f0f5f2',
     color: '#23573c',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease'
+    cursor: 'pointer'
   },
   btnReject: {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '32px',
-    height: '32px',
-    padding: '6px',
+    width: '28px',
+    height: '28px',
     borderRadius: '6px',
     border: 'none',
     backgroundColor: '#fef2f2',
     color: '#ef4444',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease'
+    cursor: 'pointer'
   },
   emptyTable: {
     textAlign: 'center',
     padding: '40px',
-    color: '#94a3b8',
+    color: '#64748b',
     fontSize: '14px'
   },
   cardFooter: {
-    padding: '14px 20px',
-    borderTop: '1px solid #e2e8f0',
+    padding: '16px 24px',
+    minHeight: '64px',
+    boxSizing: 'border-box',
+    borderTop: '1px solid #edf2ef',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#fcfdfd'
+    backgroundColor: '#ffffff'
   },
   pageInfo: {
-    fontSize: '13px',
+    fontSize: '14px',
     color: '#64748b',
-    fontWeight: '500'
+    fontWeight: '400'
   },
   paginationButtons: {
     display: 'flex',
-    gap: '6px'
+    alignItems: 'center',
+    gap: '8px'
   },
   btnPageArrow: {
     width: '32px',
     height: '32px',
-    borderRadius: '6px',
-    border: '1px solid #e2e8f0',
+    borderRadius: '8px',
+    border: '1px solid #dce4de',
     backgroundColor: '#ffffff',
-    color: '#475569',
+    color: '#3d5246',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: '600'
+    fontSize: '14px',
+    transition: 'all 0.15s'
   },
   btnPageNum: {
     width: '32px',
     height: '32px',
-    borderRadius: '6px',
-    border: '1px solid #e2e8f0',
+    borderRadius: '8px',
+    border: '1px solid #dce4de',
     backgroundColor: '#ffffff',
-    color: '#475569',
+    color: '#3d5246',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: '600'
+    fontSize: '14px',
+    fontWeight: '500',
+    transition: 'all 0.15s'
   },
   btnPageNumActive: {
     backgroundColor: '#23573c',
+    border: 'none',
     color: '#ffffff',
-    borderColor: '#23573c'
+    fontWeight: '700',
+    boxShadow: '0 2px 6px rgba(35, 87, 60, 0.3)'
   },
   modalOverlay: {
     position: 'fixed',
