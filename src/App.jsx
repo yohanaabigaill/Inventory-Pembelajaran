@@ -5,6 +5,7 @@ import DataModul from "./pages/DataModul";
 import JenisModul from "./pages/JenisModul";
 import StokOpname from "./pages/StokOpname";
 import ModulMasuk from "./pages/ModulMasuk";
+import PesananKirim from "./pages/PesananKirim";
 import './index.css';
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
         <Route path="/modul-masuk" element={<ModulMasuk />} />
         <Route path="/stok-opname" element={<StokOpname />} />
         <Route path="/verifikasi-stok-opname" element={<StokOpname />} />
+        <Route path="/pesanan-kirim" element={<PesananKirim />} />
         <Route path="/" element={<DataModul />} />
       </Routes>
     </BrowserRouter>
