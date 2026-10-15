@@ -75,7 +75,7 @@ export default function Sidebar({
             },
         {
           name: 'Pesanan & Kirim',
-          path: '/pesanan-kirim',
+          path: '/verifikasi-pembayaran',
           icon: <LocalShippingOutlinedIcon sx={{ fontSize: 20 }} />
         }
       ]
