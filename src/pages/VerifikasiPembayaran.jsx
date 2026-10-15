@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 import contohBuktiTf from '../assets/contoh bukti tf.jpeg';
@@ -150,6 +151,7 @@ const STATS_CONFIG = [
 ];
 
 export default function VerifikasiPembayaran() {
+  const navigate = useNavigate();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('verifikasi');
   
@@ -350,11 +352,8 @@ export default function VerifikasiPembayaran() {
 
             <button
               type="button"
-              onClick={() => setActiveTab('pengiriman')}
-              style={{
-                ...styles.tabButton,
-                ...(activeTab === 'pengiriman' ? styles.tabButtonActive : {})
-              }}
+              onClick={() => navigate('/status-pengiriman')}
+              style={styles.tabButton}
             >
               <LocalShippingOutlinedIcon sx={{ fontSize: 18 }} />
               <span>Status Pengiriman</span>
@@ -820,7 +819,7 @@ export default function VerifikasiPembayaran() {
                     <div style={styles.detailFieldValue}>{selectedDetail.namaPembeli}</div>
                   </div>
                   <div>
-                    <span style={styles.detailFieldLabel}>Kontak / No. HP</span>
+                    <span style={styles.detailFieldLabel}>No.Hp</span>
                     <div style={styles.detailFieldValue}>{selectedDetail.noHp}</div>
                   </div>
                   <div style={{ gridColumn: 'span 2' }}>
@@ -892,7 +891,7 @@ export default function VerifikasiPembayaran() {
                 onClick={() => setSelectedDetail(null)}
                 style={styles.btnModalClose}
               >
-                Tutup
+                Batal
               </button>
 
               {/* Tombol Aksi Verifikasi Langsung dari Modal Detail */}
@@ -1338,11 +1337,11 @@ const styles = {
     flexWrap: 'wrap'
   },
   btnModalClose: {
-    padding: '8px 16px',
+    padding: '8px 18px',
     borderRadius: '6px',
-    border: '1px solid #cbd5e1',
+    border: '1.5px solid #23573c',
     backgroundColor: '#ffffff',
-    color: '#475569',
+    color: '#23573c',
     fontSize: '13px',
     fontWeight: '600',
     cursor: 'pointer'
@@ -1445,9 +1444,9 @@ const styles = {
   btnSimpleCancel: {
     padding: '8px 16px',
     borderRadius: '6px',
-    border: '1px solid #cbd5e1',
+    border: '1.5px solid #23573c',
     backgroundColor: '#ffffff',
-    color: '#475569',
+    color: '#23573c',
     fontSize: '13px',
     fontWeight: '600',
     cursor: 'pointer'
