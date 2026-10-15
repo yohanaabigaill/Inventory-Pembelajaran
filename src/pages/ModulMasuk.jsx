@@ -213,13 +213,13 @@ function CustomDropdown({
                       color: isSelected
                         ? '#ffffff'
                         : isDisabled
-                        ? '#94a3b8'
-                        : '#1e293b',
+                          ? '#94a3b8'
+                          : '#1e293b',
                       backgroundColor: isSelected
                         ? '#23573c'
                         : isDisabled
-                        ? '#f8fafc'
-                        : 'transparent',
+                          ? '#f8fafc'
+                          : 'transparent',
                       cursor: isDisabled ? 'not-allowed' : 'pointer',
                       display: 'flex',
                       alignItems: 'center',
@@ -266,7 +266,7 @@ export default function ModulMasuk() {
 
   // Form State
   const [tanggalMasuk, setTanggalMasuk] = useState('');
-  
+
   // Items
   const [modulItems, setModulItems] = useState([
     { id: 1, judulModul: '', jumlahDiterima: '' }
@@ -466,10 +466,11 @@ export default function ModulMasuk() {
             {/* Form */}
             <form onSubmit={handleSimpan} noValidate style={styles.formContainer}>
               {/* Tanggal Masuk */}
-              <div style={styles.formGroup}>
+              <div style={styles.tanggalMasukWrapper}>
                 <label style={styles.label}>Tanggal Masuk</label>
                 <input
                   type="date"
+                  className="input-focus-green"
                   value={tanggalMasuk}
                   onChange={(e) => {
                     setTanggalMasuk(e.target.value);
@@ -477,9 +478,12 @@ export default function ModulMasuk() {
                       setErrors({ ...errors, tanggalMasuk: null });
                     }
                   }}
+                  onClick={(e) => {
+                    try { e.target.showPicker?.(); } catch {}
+                  }}
                   style={{
-                    ...styles.inputField,
-                    borderColor: errors.tanggalMasuk ? '#dc2626' : '#dce4de'
+                    ...styles.inputTanggal,
+                    borderColor: errors.tanggalMasuk ? '#dc2626' : '#23573c'
                   }}
                 />
                 {errors.tanggalMasuk && (
@@ -487,86 +491,106 @@ export default function ModulMasuk() {
                 )}
               </div>
 
-              {/* Modul Items */}
-              <div style={styles.itemsSection}>
-                <div style={styles.itemsHeaderRow}>
-                  <label style={{ ...styles.label, flex: 2.5 }}>Pilih Judul Modul</label>
-                  <label style={{ ...styles.label, flex: 1, minWidth: '180px' }}>Jumlah Diterima</label>
-                  <div style={{ width: '44px' }} />
-                </div>
+              {/* Tabel Input Modul Items */}
+              <div style={styles.tableResponsive}>
+                <table style={styles.table}>
+                  <colgroup>
+                    <col style={{ width: '60px' }} />
+                    <col style={{ width: 'auto' }} />
+                    <col style={{ width: '220px' }} />
+                    <col style={{ width: '80px' }} />
+                  </colgroup>
+                  <thead>
+                    <tr style={styles.thRow}>
+                      <th style={{ ...styles.th, textAlign: 'center' }}>NO</th>
+                      <th style={styles.th}>PILIH JUDUL MODUL</th>
+                      <th style={styles.th}>JUMLAH DITERIMA</th>
+                      <th style={{ ...styles.th, textAlign: 'center' }}>AKSI</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {modulItems.map((item, index) => {
+                      const rowErr = itemErrors[item.id] || {};
+                      const otherSelectedTitles = modulItems
+                        .filter((it) => it.id !== item.id && it.judulModul)
+                        .map((it) => it.judulModul);
 
-                {modulItems.map((item) => {
-                  const rowErr = itemErrors[item.id] || {};
-                  const otherSelectedTitles = modulItems
-                    .filter((it) => it.id !== item.id && it.judulModul)
-                    .map((it) => it.judulModul);
+                      return (
+                        <tr key={item.id} style={styles.tr}>
+                          {/* NO */}
+                          <td style={{ ...styles.td, textAlign: 'center', fontWeight: '600', color: '#64748b' }}>
+                            {index + 1}
+                          </td>
 
-                  return (
-                    <div key={item.id} style={styles.itemRow}>
-                      {/* Dropdown */}
-                      <div style={{ flex: 2.5, position: 'relative' }}>
-                        <CustomDropdown
-                          value={item.judulModul}
-                          onChange={(val) => handleItemChange(item.id, 'judulModul', val)}
-                          placeholder="Pilih Judul Modul"
-                          options={MODUL_OPTIONS}
-                          disabledOptions={otherSelectedTitles}
-                          selectStyle={{
-                            height: '44px',
-                            padding: '0 14px',
-                            borderRadius: '8px',
-                            backgroundColor: '#ffffff',
-                            border: `1px solid ${rowErr.judulModul ? '#dc2626' : '#dce4de'}`,
-                            fontSize: '13.5px',
-                            color: item.judulModul ? '#1e293b' : '#94a3b8'
-                          }}
-                        />
-                        {rowErr.judulModul && (
-                          <span style={styles.errorText}>{rowErr.judulModul}</span>
-                        )}
-                      </div>
+                          {/* Judul Modul */}
+                          <td style={styles.td}>
+                            <CustomDropdown
+                              value={item.judulModul}
+                              onChange={(val) => handleItemChange(item.id, 'judulModul', val)}
+                              placeholder="Pilih Judul Modul"
+                              options={MODUL_OPTIONS}
+                              disabledOptions={otherSelectedTitles}
+                              selectStyle={{
+                                height: '42px',
+                                padding: '0 14px',
+                                borderRadius: '8px',
+                                backgroundColor: '#ffffff',
+                                border: `1px solid ${rowErr.judulModul ? '#dc2626' : '#dce4de'}`,
+                                fontSize: '13.5px',
+                                color: item.judulModul ? '#1e293b' : '#94a3b8'
+                              }}
+                            />
+                            {rowErr.judulModul && (
+                              <span style={styles.errorText}>{rowErr.judulModul}</span>
+                            )}
+                          </td>
 
-                      {/* Jumlah Diterima */}
-                      <div style={{ flex: 1, minWidth: '180px' }}>
-                        <input
-                          type="number"
-                          placeholder="Contoh: 100"
-                          value={item.jumlahDiterima}
-                          onChange={(e) => handleItemChange(item.id, 'jumlahDiterima', e.target.value)}
-                          style={{
-                            ...styles.inputField,
-                            borderColor: rowErr.jumlahDiterima ? '#dc2626' : '#dce4de'
-                          }}
-                        />
-                        {rowErr.jumlahDiterima && (
-                          <span style={styles.errorText}>{rowErr.jumlahDiterima}</span>
-                        )}
-                      </div>
+                          {/* Jumlah Diterima */}
+                          <td style={styles.td}>
+                            <input
+                              type="number"
+                              className="input-focus-green"
+                              placeholder="Contoh: 100"
+                              value={item.jumlahDiterima}
+                              onChange={(e) => handleItemChange(item.id, 'jumlahDiterima', e.target.value)}
+                              style={{
+                                ...styles.inputJumlah,
+                                borderColor: rowErr.jumlahDiterima ? '#dc2626' : '#dce4de'
+                              }}
+                            />
+                            {rowErr.jumlahDiterima && (
+                              <span style={styles.errorText}>{rowErr.jumlahDiterima}</span>
+                            )}
+                          </td>
 
-                      {/* Hapus */}
-                      <button
-                        type="button"
-                        onClick={() => handleHapusBaris(item.id)}
-                        style={styles.btnHapusBaris}
-                        title="Hapus baris modul ini"
-                      >
-                        <DeleteOutlineOutlinedIcon sx={{ fontSize: 20 }} />
-                      </button>
-                    </div>
-                  );
-                })}
+                          {/* AKSI (HAPUS) */}
+                          <td style={{ ...styles.td, textAlign: 'center' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleHapusBaris(item.id)}
+                              style={styles.btnActionDelete}
+                              title="Hapus baris ini"
+                            >
+                              <DeleteOutlineOutlinedIcon sx={{ fontSize: 18 }} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
 
-                {/* Tambah Baris */}
-                <div>
-                  <button
-                    type="button"
-                    onClick={handleTambahBaris}
-                    style={styles.btnTambahBaris}
-                  >
-                    <AddCircleOutlineOutlinedIcon sx={{ fontSize: 18 }} />
-                    <span>Tambah Modul Masuk</span>
-                  </button>
-                </div>
+              {/* Tambah Baris */}
+              <div>
+                <button
+                  type="button"
+                  onClick={handleTambahBaris}
+                  style={styles.btnTambahBaris}
+                >
+                  <AddCircleOutlineOutlinedIcon sx={{ fontSize: 18 }} />
+                  <span>Tambah Modul Masuk</span>
+                </button>
               </div>
 
               {/* Aksi */}
@@ -634,41 +658,41 @@ const styles = {
   // Card Total
   statCard: {
     backgroundColor: '#ffffff',
-    borderRadius: '14px',
-    border: '1px solid #e2e8f0',
-    padding: '20px 24px',
+    borderRadius: '12px',
+    border: '1px solid #eef2ef',
+    borderLeft: '4px solid #23573c',
+    padding: '16px 20px',
     width: 'fit-content',
     minWidth: '260px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: '28px',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)'
+    gap: '24px',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
   },
   statLeft: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '6px'
+    gap: '4px'
   },
   statLabel: {
     fontSize: '11px',
     fontWeight: '700',
     color: '#64748b',
-    letterSpacing: '0.6px',
+    letterSpacing: '0.5px',
     textTransform: 'uppercase'
   },
   statValue: {
-    fontSize: '28px',
+    fontSize: '26px',
     fontWeight: '800',
-    color: '#0f172a',
-    letterSpacing: '-0.5px',
+    color: '#1a3e2b',
     lineHeight: 1.1
   },
   statIconBox: {
-    width: '44px',
-    height: '44px',
+    width: '40px',
+    height: '40px',
     borderRadius: '10px',
-    backgroundColor: '#f1f5f3',
+    backgroundColor: '#dcfce7',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -678,39 +702,39 @@ const styles = {
   card: {
     backgroundColor: '#ffffff',
     borderRadius: '16px',
-    border: '1px solid #e2e8f0',
-    boxShadow: '0 1px 4px rgba(0, 0, 0, 0.04)',
+    border: '1px solid #dce4de',
+    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.02)',
     overflow: 'visible',
     position: 'relative'
   },
   cardHeader: {
-    padding: '18px 24px',
+    padding: '16px 24px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderBottom: '1px solid #f1f5f9',
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: '16px',
-    borderTopRightRadius: '16px'
+    backgroundColor: '#ebf2ed',
+    borderBottom: '1px solid #dce4de',
+    borderTopLeftRadius: '15px',
+    borderTopRightRadius: '15px'
   },
   cardHeaderLeft: {
     display: 'flex',
     alignItems: 'center',
-    gap: '14px'
+    gap: '12px'
   },
   headerIconBox: {
-    width: '32px',
-    height: '32px',
+    width: '30px',
+    height: '30px',
     borderRadius: '8px',
-    backgroundColor: '#1a3e2b',
+    backgroundColor: '#23573c',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center'
   },
   cardTitle: {
-    fontSize: '16px',
+    fontSize: '15px',
     fontWeight: '700',
-    color: '#0f172a',
+    color: '#1d4632',
     margin: 0
   },
   // Form
@@ -721,74 +745,104 @@ const styles = {
     gap: '20px',
     overflow: 'visible'
   },
-  formGroup: {
+  tanggalMasukWrapper: {
+    maxWidth: '340px',
     display: 'flex',
     flexDirection: 'column',
     gap: '8px'
   },
-  itemsSection: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '14px',
-    overflow: 'visible'
-  },
-  itemsHeaderRow: {
-    display: 'flex',
-    gap: '14px',
-    alignItems: 'center'
-  },
-  itemRow: {
-    display: 'flex',
-    gap: '14px',
-    alignItems: 'flex-start',
-    overflow: 'visible'
-  },
   label: {
     fontSize: '13px',
-    fontWeight: '600',
-    color: '#1e293b'
+    fontWeight: '700',
+    color: '#1a3e2b'
   },
-  inputField: {
+  inputTanggal: {
     width: '100%',
-    height: '44px',
+    height: '42px',
+    padding: '0 14px',
+    borderRadius: '10px',
+    border: '1px solid #23573c',
+    backgroundColor: '#f6faf7',
+    fontSize: '13.5px',
+    color: '#1a3e2b',
+    outline: 'none',
+    boxSizing: 'border-box',
+    fontFamily: 'inherit',
+    cursor: 'pointer',
+    transition: 'border-color 0.15s ease, box-shadow 0.15s ease'
+  },
+  tableResponsive: {
+    width: '100%',
+    overflow: 'visible',
+    border: '1px solid #dce4de',
+    borderRadius: '12px'
+  },
+  table: {
+    width: '100%',
+    borderCollapse: 'collapse',
+    textAlign: 'left'
+  },
+  thRow: {
+    backgroundColor: '#ebf2ed',
+    borderBottom: '1px solid #dce4de'
+  },
+  th: {
+    padding: '14px 18px',
+    fontSize: '12px',
+    fontWeight: '700',
+    color: '#1d4632',
+    letterSpacing: '0.5px',
+    textTransform: 'uppercase',
+    whiteSpace: 'nowrap'
+  },
+  tr: {
+    borderBottom: '1px solid #f0f5f2'
+  },
+  td: {
+    padding: '12px 18px',
+    fontSize: '14px',
+    color: '#1a3e2b',
+    verticalAlign: 'middle'
+  },
+  inputJumlah: {
+    width: '100%',
+    height: '42px',
     padding: '0 14px',
     borderRadius: '8px',
     border: '1px solid #dce4de',
     fontSize: '13.5px',
-    color: '#1e293b',
+    color: '#1a3e2b',
     outline: 'none',
     backgroundColor: '#ffffff',
     boxSizing: 'border-box',
     fontFamily: 'inherit',
     transition: 'border-color 0.15s ease, box-shadow 0.15s ease'
   },
-  btnHapusBaris: {
-    width: '44px',
-    height: '44px',
-    borderRadius: '8px',
-    border: '1px solid #fecaca',
-    backgroundColor: '#fee2e2',
-    color: '#ef4444',
-    cursor: 'pointer',
-    display: 'flex',
+  btnActionDelete: {
+    display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    flexShrink: 0,
-    transition: 'background-color 0.15s ease'
+    width: '28px',
+    height: '28px',
+    padding: 0,
+    borderRadius: '6px',
+    border: 'none',
+    backgroundColor: '#fef2f2',
+    color: '#ef4444',
+    cursor: 'pointer'
   },
   btnTambahBaris: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f6faf7',
     color: '#23573c',
     border: '1.5px dashed #23573c',
-    padding: '9px 18px',
+    padding: '10px 18px',
     borderRadius: '8px',
     fontSize: '13px',
     fontWeight: '600',
     cursor: 'pointer',
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '8px',
-    transition: 'all 0.15s ease'
+    gap: '8px'
   },
   errorText: {
     fontSize: '12px',
@@ -803,24 +857,24 @@ const styles = {
     justifyContent: 'flex-end',
     gap: '12px',
     marginTop: '10px',
-    paddingTop: '16px',
-    borderTop: '1px solid #f1f5f9'
+    paddingTop: '18px',
+    borderTop: '1px solid #edf2ef'
   },
   itemsSummary: {
     marginRight: 'auto',
-    fontSize: '13px',
-    color: '#475569'
+    fontSize: '13.5px',
+    color: '#64748b',
+    fontWeight: '500'
   },
   btnBatal: {
     backgroundColor: '#ffffff',
-    color: '#475569',
-    border: '1px solid #cbd5e1',
+    color: '#3d5246',
+    border: '1px solid #dce4de',
     padding: '10px 20px',
     borderRadius: '8px',
     fontSize: '13.5px',
     fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease'
+    cursor: 'pointer'
   },
   btnSimpan: {
     backgroundColor: '#23573c',
@@ -834,7 +888,6 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
-    boxShadow: '0 2px 8px rgba(35, 87, 60, 0.25)',
-    transition: 'transform 0.15s ease, background-color 0.15s ease'
+    boxShadow: '0 2px 6px rgba(35, 87, 60, 0.25)'
   }
 };

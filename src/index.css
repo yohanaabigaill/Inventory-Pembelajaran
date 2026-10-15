@@ -45,6 +45,12 @@ select:focus {
   outline: 2px solid rgba(35, 87, 60, 0.25) !important;
 }
 
+.input-focus-green:focus {
+  border-color: #23573c !important;
+  box-shadow: 0 0 0 3px rgba(35, 87, 60, 0.12) !important;
+  outline: none !important;
+}
+
 select option {
   background-color: #ffffff;
   color: #1a3e2b;
