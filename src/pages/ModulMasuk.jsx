@@ -10,49 +10,67 @@ import PostAddOutlinedIcon from '@mui/icons-material/PostAddOutlined';
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 
-// Opsi Modul
-const MODUL_OPTIONS = [
-  'Asasi',
-  'Asasi 2',
-  'Tahmidi',
-  'Tawasuthi',
-  'Idadi',
-  'Tahsini',
-  'Tajwidi',
-  'Makhorijul Huruf',
-  'Tilawah Asasi',
-  'Buku Prestasi Dewasa',
-  'Buku Prestasi Anak',
-  'Anak 1',
-  'Anak 2',
-  'Anak 3',
-  'Syarh Tuhfatul Athfal A4',
-  'Syarh Tuhfatul Athfal A5',
-  'Panduan Guru',
-  'Al Hisan 1',
-  'Al Hisan 2',
-  'Al Hisan 3',
-  'Al Hisan 4',
-  'Kamus Juz 1',
-  'Kamus 30 juz',
-  'Khat',
-  'Utsmani 1',
-  'Utsmani 2',
-  'Ustmani 3',
-  'Buku Doa',
-  'Buku Hadist',
-  'Buku Prestasi',
-  'Matan Jazariyah',
-  'Mushaf Ash Shahib A5 Terjemah',
-  'Mushaf Ash Shahib A5 tanpa Terjemah',
-  'Mushaf Al Kamil A5 Terjemah',
-  'Mushaf Al Kamil A5 tanpa Terjemah',
-  'Mushaf Ash Shahib A4 Terjemah',
-  'Mushaf Ash Shahib A4 tanpa Terjemah',
-  'Mushaf Ash Shahib A6 Terjemah',
-  'Mushaf Ash Shahib A6 tanpa Terjemah',
-  'Mushaf Al Mujib A6 Terjemah',
-  'Mushaf Al Kamil A6 tanpa Terjemah'
+// Opsi Kategori / Jenis Modul
+const KATEGORI_OPTIONS = [
+  'Semua Jenis',
+  'Al Haqq',
+  'Al Hisan',
+  'Tahsin Usmani',
+  'RSQ Kids',
+  'Umum',
+  'Al Quran Wakaf',
+  'Al Quran'
+];
+
+// Daftar 47 Modul dengan Kategori
+const MASTER_MODULS = [
+  { id: 1, kategori: 'Al Haqq', nama: 'Asasi' },
+  { id: 2, kategori: 'Al Haqq', nama: 'Asasi 2' },
+  { id: 3, kategori: 'Al Haqq', nama: 'Tahmidi' },
+  { id: 4, kategori: 'Al Haqq', nama: 'Tawasuthi' },
+  { id: 5, kategori: 'Al Haqq', nama: 'Idadi' },
+  { id: 6, kategori: 'Al Haqq', nama: 'Tahsini' },
+  { id: 7, kategori: 'Al Haqq', nama: 'Tajwidi' },
+  { id: 8, kategori: 'Al Haqq', nama: 'Makhorijul Huruf' },
+  { id: 9, kategori: 'Al Haqq', nama: 'Tilawah Asasi' },
+  { id: 10, kategori: 'Al Haqq', nama: 'Buku Prestasi Dewasa' },
+  { id: 11, kategori: 'Al Haqq', nama: 'Buku Prestasi Anak' },
+  { id: 12, kategori: 'Al Haqq', nama: 'Anak 1' },
+  { id: 13, kategori: 'Al Haqq', nama: 'Anak 2' },
+  { id: 14, kategori: 'Al Haqq', nama: 'Anak 3' },
+  { id: 15, kategori: 'Al Haqq', nama: 'Syarh Tuhfatul Athfal A4' },
+  { id: 16, kategori: 'Al Haqq', nama: 'Syarh Tuhfatul Athfal A5' },
+  { id: 17, kategori: 'Al Hisan', nama: 'Panduan Guru' },
+  { id: 18, kategori: 'Al Hisan', nama: 'Al Hisan 1' },
+  { id: 19, kategori: 'Al Hisan', nama: 'Al Hisan 2' },
+  { id: 20, kategori: 'Al Hisan', nama: 'Al Hisan 3' },
+  { id: 21, kategori: 'Al Hisan', nama: 'Al Hisan 4' },
+  { id: 22, kategori: 'Al Hisan', nama: 'Kamus Juz 1' },
+  { id: 23, kategori: 'Al Hisan', nama: 'Kamus 30 juz' },
+  { id: 24, kategori: 'Umum', nama: 'Khat' },
+  { id: 25, kategori: 'Tahsin Usmani', nama: 'Utsmani 1' },
+  { id: 26, kategori: 'Tahsin Usmani', nama: 'Utsmani 2' },
+  { id: 27, kategori: 'Tahsin Usmani', nama: 'Ustmani 3' },
+  { id: 28, kategori: 'RSQ Kids', nama: 'Buku Doa' },
+  { id: 29, kategori: 'RSQ Kids', nama: 'Buku Hadist' },
+  { id: 30, kategori: 'RSQ Kids', nama: 'Buku Prestasi' },
+  { id: 31, kategori: 'Umum', nama: 'Matan Jazariyah' },
+  { id: 32, kategori: 'Al Quran Wakaf', nama: 'Mushaf Ash Shahib A5 Terjemah' },
+  { id: 33, kategori: 'Al Quran Wakaf', nama: 'Mushaf Ash Shahib A5 tanpa Terjemah' },
+  { id: 34, kategori: 'Al Quran Wakaf', nama: 'Mushaf Al Kamil A5 Terjemah' },
+  { id: 35, kategori: 'Al Quran Wakaf', nama: 'Mushaf Al Kamil A5 tanpa Terjemah' },
+  { id: 36, kategori: 'Al Quran Wakaf', nama: 'Mushaf Ash Shahib A4 Terjemah' },
+  { id: 37, kategori: 'Al Quran Wakaf', nama: 'Mushaf Ash Shahib A4 tanpa Terjemah' },
+  { id: 38, kategori: 'Al Quran Wakaf', nama: 'Mushaf Ash Shahib A6 Terjemah' },
+  { id: 39, kategori: 'Al Quran Wakaf', nama: 'Mushaf Ash Shahib A6 tanpa Terjemah' },
+  { id: 40, kategori: 'Al Quran', nama: 'Mushaf Ash Shahib A5 Terjemah' },
+  { id: 41, kategori: 'Al Quran', nama: 'Mushaf Ash Shahib A5 tanpa Terjemah' },
+  { id: 42, kategori: 'Al Quran', nama: 'Mushaf Al Kamil A5 Terjemah' },
+  { id: 43, kategori: 'Al Quran', nama: 'Mushaf Al Kamil A5 tanpa Terjemah' },
+  { id: 44, kategori: 'Al Quran', nama: 'Mushaf Ash Shahib A4 Terjemah' },
+  { id: 45, kategori: 'Al Quran', nama: 'Mushaf Ash Shahib A4 tanpa Terjemah' },
+  { id: 46, kategori: 'Al Quran', nama: 'Mushaf Al Mujib A6 Terjemah' },
+  { id: 47, kategori: 'Al Quran', nama: 'Mushaf Al Kamil A6 tanpa Terjemah' }
 ];
 
 // Custom Dropdown
@@ -61,11 +79,13 @@ function CustomDropdown({
   onChange,
   options = [],
   disabledOptions = [],
-  placeholder = 'Pilih Judul Modul',
+  placeholder = 'Pilih...',
+  searchPlaceholder = 'Cari...',
   style = {},
   selectStyle = {},
   arrowColor = '#1a3e2b',
-  className = ''
+  className = '',
+  withSearch = true
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -170,28 +190,30 @@ function CustomDropdown({
           }}
         >
           {/* Search */}
-          <div style={{ padding: '6px 8px', borderBottom: '1px solid #eef2ef', backgroundColor: '#f8faf9' }}>
-            <input
-              ref={searchInputRef}
-              type="text"
-              placeholder="Cari judul modul..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                width: '100%',
-                padding: '6px 10px',
-                fontSize: '12px',
-                border: '1px solid #dce4de',
-                borderRadius: '6px',
-                outline: 'none',
-                boxSizing: 'border-box'
-              }}
-            />
-          </div>
+          {withSearch && (
+            <div style={{ padding: '6px 8px', borderBottom: '1px solid #eef2ef', backgroundColor: '#f8faf9' }}>
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder={searchPlaceholder}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  width: '100%',
+                  padding: '6px 10px',
+                  fontSize: '12px',
+                  border: '1px solid #dce4de',
+                  borderRadius: '6px',
+                  outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+          )}
 
           {/* Opsi */}
-          <div style={{ maxHeight: '130px', overflowY: 'auto' }}>
+          <div style={{ maxHeight: withSearch ? '140px' : '180px', overflowY: 'auto' }}>
             {filteredOptions.length > 0 ? (
               filteredOptions.map((opt, idx) => {
                 const optVal = typeof opt === 'object' ? opt.value : opt;
@@ -213,13 +235,13 @@ function CustomDropdown({
                       color: isSelected
                         ? '#ffffff'
                         : isDisabled
-                        ? '#94a3b8'
-                        : '#1e293b',
+                          ? '#94a3b8'
+                          : '#1e293b',
                       backgroundColor: isSelected
                         ? '#23573c'
                         : isDisabled
-                        ? '#f8fafc'
-                        : 'transparent',
+                          ? '#f8fafc'
+                          : 'transparent',
                       cursor: isDisabled ? 'not-allowed' : 'pointer',
                       display: 'flex',
                       alignItems: 'center',
@@ -266,10 +288,10 @@ export default function ModulMasuk() {
 
   // Form State
   const [tanggalMasuk, setTanggalMasuk] = useState('');
-  
+
   // Items
   const [modulItems, setModulItems] = useState([
-    { id: 1, judulModul: '', jumlahDiterima: '' }
+    { id: 1, jenisModul: 'Semua Jenis', judulModul: '', jumlahDiterima: '' }
   ]);
 
   // Errors
@@ -295,14 +317,14 @@ export default function ModulMasuk() {
   const handleTambahBaris = () => {
     setModulItems((prev) => [
       ...prev,
-      { id: Date.now(), judulModul: '', jumlahDiterima: '' }
+      { id: Date.now(), jenisModul: 'Semua Jenis', judulModul: '', jumlahDiterima: '' }
     ]);
   };
 
   // Hapus Baris
   const handleHapusBaris = (id) => {
     if (modulItems.length === 1) {
-      setModulItems([{ id: Date.now(), judulModul: '', jumlahDiterima: '' }]);
+      setModulItems([{ id: Date.now(), jenisModul: 'Semua Jenis', judulModul: '', jumlahDiterima: '' }]);
       setItemErrors({});
     } else {
       setModulItems((prev) => prev.filter((item) => item.id !== id));
@@ -317,7 +339,38 @@ export default function ModulMasuk() {
   // Change Item
   const handleItemChange = (id, field, val) => {
     setModulItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, [field]: val } : item))
+      prev.map((item) => {
+        if (item.id !== id) return item;
+
+        if (field === 'jenisModul') {
+          // Jika jenis modul diubah dan judulModul saat ini tidak ada di kategori baru (dan bukan 'Semua Jenis'), reset judul
+          let nextJudul = item.judulModul;
+          if (val !== 'Semua Jenis' && nextJudul) {
+            const isValid = MASTER_MODULS.some(
+              (m) => m.nama === nextJudul && m.kategori === val
+            );
+            if (!isValid) {
+              nextJudul = '';
+            }
+          }
+          return { ...item, jenisModul: val, judulModul: nextJudul };
+        }
+
+        if (field === 'judulModul') {
+          // Jika user memilih judul modul saat jenisModul adalah 'Semua Jenis',
+          // sinkronkan jenisModul otomatis ke kategori aslinya jika ada
+          let nextJenis = item.jenisModul || 'Semua Jenis';
+          if (nextJenis === 'Semua Jenis' && val) {
+            const foundModul = MASTER_MODULS.find((m) => m.nama === val);
+            if (foundModul) {
+              nextJenis = foundModul.kategori;
+            }
+          }
+          return { ...item, judulModul: val, jenisModul: nextJenis };
+        }
+
+        return { ...item, [field]: val };
+      })
     );
 
     // Cek Duplikat
@@ -345,7 +398,7 @@ export default function ModulMasuk() {
   // Batal
   const handleBatal = () => {
     setTanggalMasuk('');
-    setModulItems([{ id: Date.now(), judulModul: '', jumlahDiterima: '' }]);
+    setModulItems([{ id: Date.now(), jenisModul: 'Semua Jenis', judulModul: '', jumlahDiterima: '' }]);
     setErrors({});
     setItemErrors({});
   };
@@ -396,7 +449,7 @@ export default function ModulMasuk() {
 
     // Reset
     setTanggalMasuk('');
-    setModulItems([{ id: Date.now(), judulModul: '', jumlahDiterima: '' }]);
+    setModulItems([{ id: Date.now(), jenisModul: 'Semua Jenis', judulModul: '', jumlahDiterima: '' }]);
     setErrors({});
     setItemErrors({});
 
@@ -466,10 +519,11 @@ export default function ModulMasuk() {
             {/* Form */}
             <form onSubmit={handleSimpan} noValidate style={styles.formContainer}>
               {/* Tanggal Masuk */}
-              <div style={styles.formGroup}>
+              <div style={styles.tanggalMasukWrapper}>
                 <label style={styles.label}>Tanggal Masuk</label>
                 <input
                   type="date"
+                  className="input-focus-green"
                   value={tanggalMasuk}
                   onChange={(e) => {
                     setTanggalMasuk(e.target.value);
@@ -477,9 +531,12 @@ export default function ModulMasuk() {
                       setErrors({ ...errors, tanggalMasuk: null });
                     }
                   }}
+                  onClick={(e) => {
+                    try { e.target.showPicker?.(); } catch {}
+                  }}
                   style={{
-                    ...styles.inputField,
-                    borderColor: errors.tanggalMasuk ? '#dc2626' : '#dce4de'
+                    ...styles.inputTanggal,
+                    borderColor: errors.tanggalMasuk ? '#dc2626' : '#23573c'
                   }}
                 />
                 {errors.tanggalMasuk && (
@@ -487,86 +544,138 @@ export default function ModulMasuk() {
                 )}
               </div>
 
-              {/* Modul Items */}
-              <div style={styles.itemsSection}>
-                <div style={styles.itemsHeaderRow}>
-                  <label style={{ ...styles.label, flex: 2.5 }}>Pilih Judul Modul</label>
-                  <label style={{ ...styles.label, flex: 1, minWidth: '180px' }}>Jumlah Diterima</label>
-                  <div style={{ width: '44px' }} />
-                </div>
+              {/* Tabel Input Modul Items */}
+              <div style={styles.tableResponsive}>
+                <table style={styles.table}>
+                  <colgroup>
+                    <col style={{ width: '50px' }} />
+                    <col style={{ width: '190px' }} />
+                    <col style={{ width: 'auto' }} />
+                    <col style={{ width: '180px' }} />
+                    <col style={{ width: '65px' }} />
+                  </colgroup>
+                  <thead>
+                    <tr style={styles.thRow}>
+                      <th style={{ ...styles.th, textAlign: 'center' }}>NO</th>
+                      <th style={styles.th}>JENIS MODUL</th>
+                      <th style={styles.th}>PILIH JUDUL MODUL</th>
+                      <th style={styles.th}>JUMLAH DITERIMA</th>
+                      <th style={{ ...styles.th, textAlign: 'center' }}>AKSI</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {modulItems.map((item, index) => {
+                      const rowErr = itemErrors[item.id] || {};
+                      const otherSelectedTitles = modulItems
+                        .filter((it) => it.id !== item.id && it.judulModul)
+                        .map((it) => it.judulModul);
 
-                {modulItems.map((item) => {
-                  const rowErr = itemErrors[item.id] || {};
-                  const otherSelectedTitles = modulItems
-                    .filter((it) => it.id !== item.id && it.judulModul)
-                    .map((it) => it.judulModul);
+                      // Opsi judul modul disaring berdasarkan jenisModul
+                      const availableModuls = (!item.jenisModul || item.jenisModul === 'Semua Jenis')
+                        ? MASTER_MODULS
+                        : MASTER_MODULS.filter((m) => m.kategori === item.jenisModul);
 
-                  return (
-                    <div key={item.id} style={styles.itemRow}>
-                      {/* Dropdown */}
-                      <div style={{ flex: 2.5, position: 'relative' }}>
-                        <CustomDropdown
-                          value={item.judulModul}
-                          onChange={(val) => handleItemChange(item.id, 'judulModul', val)}
-                          placeholder="Pilih Judul Modul"
-                          options={MODUL_OPTIONS}
-                          disabledOptions={otherSelectedTitles}
-                          selectStyle={{
-                            height: '44px',
-                            padding: '0 14px',
-                            borderRadius: '8px',
-                            backgroundColor: '#ffffff',
-                            border: `1px solid ${rowErr.judulModul ? '#dc2626' : '#dce4de'}`,
-                            fontSize: '13.5px',
-                            color: item.judulModul ? '#1e293b' : '#94a3b8'
-                          }}
-                        />
-                        {rowErr.judulModul && (
-                          <span style={styles.errorText}>{rowErr.judulModul}</span>
-                        )}
-                      </div>
+                      // Judul unik
+                      const modulTitleOptions = Array.from(new Set(availableModuls.map((m) => m.nama)));
 
-                      {/* Jumlah Diterima */}
-                      <div style={{ flex: 1, minWidth: '180px' }}>
-                        <input
-                          type="number"
-                          placeholder="Contoh: 100"
-                          value={item.jumlahDiterima}
-                          onChange={(e) => handleItemChange(item.id, 'jumlahDiterima', e.target.value)}
-                          style={{
-                            ...styles.inputField,
-                            borderColor: rowErr.jumlahDiterima ? '#dc2626' : '#dce4de'
-                          }}
-                        />
-                        {rowErr.jumlahDiterima && (
-                          <span style={styles.errorText}>{rowErr.jumlahDiterima}</span>
-                        )}
-                      </div>
+                      return (
+                        <tr key={item.id} style={styles.tr}>
+                          {/* NO */}
+                          <td style={{ ...styles.td, textAlign: 'center', fontWeight: '600', color: '#64748b' }}>
+                            {index + 1}
+                          </td>
 
-                      {/* Hapus */}
-                      <button
-                        type="button"
-                        onClick={() => handleHapusBaris(item.id)}
-                        style={styles.btnHapusBaris}
-                        title="Hapus baris modul ini"
-                      >
-                        <DeleteOutlineOutlinedIcon sx={{ fontSize: 20 }} />
-                      </button>
-                    </div>
-                  );
-                })}
+                          {/* JENIS MODUL */}
+                          <td style={styles.td}>
+                            <CustomDropdown
+                              value={item.jenisModul || 'Semua Jenis'}
+                              onChange={(val) => handleItemChange(item.id, 'jenisModul', val)}
+                              placeholder="Pilih Jenis"
+                              options={KATEGORI_OPTIONS}
+                              withSearch={false}
+                              selectStyle={{
+                                height: '42px',
+                                padding: '0 14px',
+                                borderRadius: '8px',
+                                backgroundColor: '#ffffff',
+                                border: '1px solid #dce4de',
+                                fontSize: '13.5px',
+                                color: '#1e293b'
+                              }}
+                            />
+                          </td>
 
-                {/* Tambah Baris */}
-                <div>
-                  <button
-                    type="button"
-                    onClick={handleTambahBaris}
-                    style={styles.btnTambahBaris}
-                  >
-                    <AddCircleOutlineOutlinedIcon sx={{ fontSize: 18 }} />
-                    <span>Tambah Modul Masuk</span>
-                  </button>
-                </div>
+                          {/* Judul Modul */}
+                          <td style={styles.td}>
+                            <CustomDropdown
+                              value={item.judulModul}
+                              onChange={(val) => handleItemChange(item.id, 'judulModul', val)}
+                              placeholder="Pilih Judul Modul"
+                              searchPlaceholder="Cari judul modul..."
+                              options={modulTitleOptions}
+                              disabledOptions={otherSelectedTitles}
+                              withSearch={true}
+                              selectStyle={{
+                                height: '42px',
+                                padding: '0 14px',
+                                borderRadius: '8px',
+                                backgroundColor: '#ffffff',
+                                border: `1px solid ${rowErr.judulModul ? '#dc2626' : '#dce4de'}`,
+                                fontSize: '13.5px',
+                                color: item.judulModul ? '#1e293b' : '#94a3b8'
+                              }}
+                            />
+                            {rowErr.judulModul && (
+                              <span style={styles.errorText}>{rowErr.judulModul}</span>
+                            )}
+                          </td>
+
+                          {/* Jumlah Diterima */}
+                          <td style={styles.td}>
+                            <input
+                              type="number"
+                              className="input-focus-green"
+                              placeholder="Contoh: 100"
+                              value={item.jumlahDiterima}
+                              onChange={(e) => handleItemChange(item.id, 'jumlahDiterima', e.target.value)}
+                              style={{
+                                ...styles.inputJumlah,
+                                borderColor: rowErr.jumlahDiterima ? '#dc2626' : '#dce4de'
+                              }}
+                            />
+                            {rowErr.jumlahDiterima && (
+                              <span style={styles.errorText}>{rowErr.jumlahDiterima}</span>
+                            )}
+                          </td>
+
+                          {/* AKSI (HAPUS) */}
+                          <td style={{ ...styles.td, textAlign: 'center' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleHapusBaris(item.id)}
+                              style={styles.btnActionDelete}
+                              title="Hapus baris ini"
+                            >
+                              <DeleteOutlineOutlinedIcon sx={{ fontSize: 18 }} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Tambah Baris */}
+              <div>
+                <button
+                  type="button"
+                  onClick={handleTambahBaris}
+                  style={styles.btnTambahBaris}
+                >
+                  <AddCircleOutlineOutlinedIcon sx={{ fontSize: 18 }} />
+                  <span>Tambah Modul Masuk</span>
+                </button>
               </div>
 
               {/* Aksi */}
@@ -634,41 +743,41 @@ const styles = {
   // Card Total
   statCard: {
     backgroundColor: '#ffffff',
-    borderRadius: '14px',
-    border: '1px solid #e2e8f0',
-    padding: '20px 24px',
+    borderRadius: '12px',
+    border: '1px solid #eef2ef',
+    borderLeft: '4px solid #23573c',
+    padding: '16px 20px',
     width: 'fit-content',
     minWidth: '260px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: '28px',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)'
+    gap: '24px',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
   },
   statLeft: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '6px'
+    gap: '4px'
   },
   statLabel: {
     fontSize: '11px',
     fontWeight: '700',
     color: '#64748b',
-    letterSpacing: '0.6px',
+    letterSpacing: '0.5px',
     textTransform: 'uppercase'
   },
   statValue: {
-    fontSize: '28px',
+    fontSize: '26px',
     fontWeight: '800',
-    color: '#0f172a',
-    letterSpacing: '-0.5px',
+    color: '#1a3e2b',
     lineHeight: 1.1
   },
   statIconBox: {
-    width: '44px',
-    height: '44px',
+    width: '40px',
+    height: '40px',
     borderRadius: '10px',
-    backgroundColor: '#f1f5f3',
+    backgroundColor: '#dcfce7',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -678,39 +787,39 @@ const styles = {
   card: {
     backgroundColor: '#ffffff',
     borderRadius: '16px',
-    border: '1px solid #e2e8f0',
-    boxShadow: '0 1px 4px rgba(0, 0, 0, 0.04)',
+    border: '1px solid #dce4de',
+    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.02)',
     overflow: 'visible',
     position: 'relative'
   },
   cardHeader: {
-    padding: '18px 24px',
+    padding: '16px 24px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderBottom: '1px solid #f1f5f9',
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: '16px',
-    borderTopRightRadius: '16px'
+    backgroundColor: '#ebf2ed',
+    borderBottom: '1px solid #dce4de',
+    borderTopLeftRadius: '15px',
+    borderTopRightRadius: '15px'
   },
   cardHeaderLeft: {
     display: 'flex',
     alignItems: 'center',
-    gap: '14px'
+    gap: '12px'
   },
   headerIconBox: {
-    width: '32px',
-    height: '32px',
+    width: '30px',
+    height: '30px',
     borderRadius: '8px',
-    backgroundColor: '#1a3e2b',
+    backgroundColor: '#23573c',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center'
   },
   cardTitle: {
-    fontSize: '16px',
+    fontSize: '15px',
     fontWeight: '700',
-    color: '#0f172a',
+    color: '#1d4632',
     margin: 0
   },
   // Form
@@ -721,74 +830,104 @@ const styles = {
     gap: '20px',
     overflow: 'visible'
   },
-  formGroup: {
+  tanggalMasukWrapper: {
+    maxWidth: '340px',
     display: 'flex',
     flexDirection: 'column',
     gap: '8px'
   },
-  itemsSection: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '14px',
-    overflow: 'visible'
-  },
-  itemsHeaderRow: {
-    display: 'flex',
-    gap: '14px',
-    alignItems: 'center'
-  },
-  itemRow: {
-    display: 'flex',
-    gap: '14px',
-    alignItems: 'flex-start',
-    overflow: 'visible'
-  },
   label: {
     fontSize: '13px',
-    fontWeight: '600',
-    color: '#1e293b'
+    fontWeight: '700',
+    color: '#1a3e2b'
   },
-  inputField: {
+  inputTanggal: {
     width: '100%',
-    height: '44px',
+    height: '42px',
+    padding: '0 14px',
+    borderRadius: '10px',
+    border: '1px solid #23573c',
+    backgroundColor: '#f6faf7',
+    fontSize: '13.5px',
+    color: '#1a3e2b',
+    outline: 'none',
+    boxSizing: 'border-box',
+    fontFamily: 'inherit',
+    cursor: 'pointer',
+    transition: 'border-color 0.15s ease, box-shadow 0.15s ease'
+  },
+  tableResponsive: {
+    width: '100%',
+    overflow: 'visible',
+    border: '1px solid #dce4de',
+    borderRadius: '12px'
+  },
+  table: {
+    width: '100%',
+    borderCollapse: 'collapse',
+    textAlign: 'left'
+  },
+  thRow: {
+    backgroundColor: '#ebf2ed',
+    borderBottom: '1px solid #dce4de'
+  },
+  th: {
+    padding: '14px 18px',
+    fontSize: '12px',
+    fontWeight: '700',
+    color: '#1d4632',
+    letterSpacing: '0.5px',
+    textTransform: 'uppercase',
+    whiteSpace: 'nowrap'
+  },
+  tr: {
+    borderBottom: '1px solid #f0f5f2'
+  },
+  td: {
+    padding: '12px 18px',
+    fontSize: '14px',
+    color: '#1a3e2b',
+    verticalAlign: 'middle'
+  },
+  inputJumlah: {
+    width: '100%',
+    height: '42px',
     padding: '0 14px',
     borderRadius: '8px',
     border: '1px solid #dce4de',
     fontSize: '13.5px',
-    color: '#1e293b',
+    color: '#1a3e2b',
     outline: 'none',
     backgroundColor: '#ffffff',
     boxSizing: 'border-box',
     fontFamily: 'inherit',
     transition: 'border-color 0.15s ease, box-shadow 0.15s ease'
   },
-  btnHapusBaris: {
-    width: '44px',
-    height: '44px',
-    borderRadius: '8px',
-    border: '1px solid #fecaca',
-    backgroundColor: '#fee2e2',
-    color: '#ef4444',
-    cursor: 'pointer',
-    display: 'flex',
+  btnActionDelete: {
+    display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    flexShrink: 0,
-    transition: 'background-color 0.15s ease'
+    width: '28px',
+    height: '28px',
+    padding: 0,
+    borderRadius: '6px',
+    border: 'none',
+    backgroundColor: '#fef2f2',
+    color: '#ef4444',
+    cursor: 'pointer'
   },
   btnTambahBaris: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f6faf7',
     color: '#23573c',
     border: '1.5px dashed #23573c',
-    padding: '9px 18px',
+    padding: '10px 18px',
     borderRadius: '8px',
     fontSize: '13px',
     fontWeight: '600',
     cursor: 'pointer',
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '8px',
-    transition: 'all 0.15s ease'
+    gap: '8px'
   },
   errorText: {
     fontSize: '12px',
@@ -803,24 +942,24 @@ const styles = {
     justifyContent: 'flex-end',
     gap: '12px',
     marginTop: '10px',
-    paddingTop: '16px',
-    borderTop: '1px solid #f1f5f9'
+    paddingTop: '18px',
+    borderTop: '1px solid #edf2ef'
   },
   itemsSummary: {
     marginRight: 'auto',
-    fontSize: '13px',
-    color: '#475569'
+    fontSize: '13.5px',
+    color: '#64748b',
+    fontWeight: '500'
   },
   btnBatal: {
     backgroundColor: '#ffffff',
-    color: '#475569',
-    border: '1px solid #cbd5e1',
+    color: '#3d5246',
+    border: '1px solid #dce4de',
     padding: '10px 20px',
     borderRadius: '8px',
     fontSize: '13.5px',
     fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease'
+    cursor: 'pointer'
   },
   btnSimpan: {
     backgroundColor: '#23573c',
@@ -834,7 +973,6 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
-    boxShadow: '0 2px 8px rgba(35, 87, 60, 0.25)',
-    transition: 'transform 0.15s ease, background-color 0.15s ease'
+    boxShadow: '0 2px 6px rgba(35, 87, 60, 0.25)'
   }
 };
