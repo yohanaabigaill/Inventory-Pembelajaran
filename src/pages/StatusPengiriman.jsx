@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
-import buktiSampaiImg from '../assets/bukti_sampai.jpg';
+import buktiSampaiImg from '../assets/bukti_pengiriman.jpg';
 
 // Dropdown
 function CustomDropdown({
@@ -180,7 +180,7 @@ const INITIAL_PENGIRIMAN = [
     noHp: '0812-3456-7890',
     metode: 'Via Kurir',
     ongkirFlat: 10000,
-    alamat: 'Jl. Pesantren No. 14, RT 02/05, Bandung',
+    alamat: 'Jl. Hang Kesturi, Nongsa',
     noKwitansi: 'KWT-2026-001',
     ustazahNama: '',
     lokasiAmbil: '',
@@ -198,7 +198,7 @@ const INITIAL_PENGIRIMAN = [
     noHp: '0857-9876-5432',
     metode: 'Ambil di RSQ Pusat',
     ongkirFlat: 0,
-    alamat: 'Komplek Griya Indah Blok C3, Cimahi',
+    alamat: 'Komplek Griya Indah Blok C3',
     noKwitansi: 'KWT-2026-002',
     ustazahNama: '',
     lokasiAmbil: 'Kantor RSQ Pusat',
@@ -216,7 +216,7 @@ const INITIAL_PENGIRIMAN = [
     noHp: '0821-5566-7788',
     metode: 'Titip ke Ustazah',
     ongkirFlat: 0,
-    alamat: 'Jl. Cihampelas No. 45, Kota Bandung',
+    alamat: 'Kavling Baru, Batu Aji ',
     noKwitansi: 'KWT-2026-003',
     ustazahNama: 'Ustazah Fatimah Azzahra',
     lokasiAmbil: '',
@@ -233,7 +233,7 @@ const INITIAL_PENGIRIMAN = [
     noHp: '0813-1122-3344',
     metode: 'Via Kurir',
     ongkirFlat: 10000,
-    alamat: 'Pondok Pesantren Al-Hidayah, Kab. Sumedang',
+    alamat: 'Perumhan Taman Raya Blok B',
     noKwitansi: 'KWT-2026-004',
     ustazahNama: '',
     lokasiAmbil: '',
@@ -251,7 +251,7 @@ const INITIAL_PENGIRIMAN = [
     noHp: '0878-4455-6677',
     metode: 'Ambil di RSQ Pusat',
     ongkirFlat: 0,
-    alamat: 'Jl. Riau No. 88, Kota Bandung',
+    alamat: 'Perumahan Green Vienna Blok D',
     noKwitansi: 'KWT-2026-005',
     ustazahNama: '',
     lokasiAmbil: 'Kantor RSQ Pusat',
@@ -268,7 +268,7 @@ const INITIAL_PENGIRIMAN = [
     noHp: '0812-7788-9900',
     metode: 'Titip ke Ustazah',
     ongkirFlat: 0,
-    alamat: 'Jl. Sukajadi No. 102, Sukasari, Bandung',
+    alamat: 'Jl. Sukajadi No. 102, Sukasari',
     noKwitansi: 'KWT-2026-006',
     ustazahNama: 'Ustazah Maryam S.Pd.I',
     lokasiAmbil: '',
@@ -286,7 +286,7 @@ const INITIAL_PENGIRIMAN = [
     noHp: '0852-3344-5566',
     metode: 'Via Kurir',
     ongkirFlat: 10000,
-    alamat: 'Jl. Antapani Raya No. 15, Bandung',
+    alamat: 'Jl. Antapani Raya No. 15',
     noKwitansi: 'KWT-2026-007',
     ustazahNama: '',
     lokasiAmbil: '',
@@ -306,7 +306,7 @@ const INITIAL_PENGIRIMAN = [
     noHp: '0877-6655-4433',
     metode: 'Ambil di RSQ Pusat',
     ongkirFlat: 0,
-    alamat: 'Komp. Margahayu Kencana Blok B2, Kab. Bandung',
+    alamat: 'Komp. Margahayu Kencana Blok B2',
     noKwitansi: 'KWT-2026-008',
     ustazahNama: '',
     lokasiAmbil: 'Kantor RSQ Pusat',
@@ -840,7 +840,7 @@ export default function StatusPengiriman() {
                       <div style={styles.detailFieldValue}>{selectedDetail.namaPembeli}</div>
                     </div>
                     <div>
-                      <span style={styles.detailFieldLabel}>Kontak / No. HP</span>
+                      <span style={styles.detailFieldLabel}>No.Hp</span>
                       <div style={styles.detailFieldValue}>{selectedDetail.noHp}</div>
                     </div>
 
@@ -959,14 +959,14 @@ export default function StatusPengiriman() {
                 )}
               </div>
 
-              {/* Tombol Tutup & Simpan */}
+              {/* Tombol Batal & Simpan */}
               <div style={styles.modalActions}>
                 <button
                   type="button"
                   onClick={() => setSelectedDetail(null)}
                   style={styles.btnModalClose}
                 >
-                  Tutup
+                  Batal
                 </button>
 
                 <button
@@ -974,8 +974,7 @@ export default function StatusPengiriman() {
                   onClick={handleSaveDetail}
                   style={styles.btnModalSave}
                 >
-                  <CheckCircleOutlinedIcon sx={{ fontSize: 16 }} />
-                  <span>Simpan</span>
+                  Simpan
                 </button>
               </div>
             </div>
@@ -1838,18 +1837,18 @@ const styles = {
     flexWrap: 'wrap'
   },
   btnModalClose: {
-    padding: '8px 18px',
+    padding: '8px 20px',
     borderRadius: '8px',
-    border: '1px solid #cbd5e1',
+    border: '1.5px solid #23573c',
     backgroundColor: '#ffffff',
-    color: '#475569',
+    color: '#23573c',
     fontSize: '13px',
     fontWeight: '600',
     cursor: 'pointer',
     transition: 'all 0.15s ease'
   },
   btnModalSave: {
-    padding: '8px 20px',
+    padding: '8px 22px',
     borderRadius: '8px',
     border: 'none',
     backgroundColor: '#166534',
@@ -1857,9 +1856,6 @@ const styles = {
     fontSize: '13px',
     fontWeight: '700',
     cursor: 'pointer',
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
     boxShadow: '0 2px 6px rgba(22, 101, 52, 0.25)',
     transition: 'all 0.2s ease'
   },

@@ -819,7 +819,7 @@ export default function VerifikasiPembayaran() {
                     <div style={styles.detailFieldValue}>{selectedDetail.namaPembeli}</div>
                   </div>
                   <div>
-                    <span style={styles.detailFieldLabel}>Kontak / No. HP</span>
+                    <span style={styles.detailFieldLabel}>No.Hp</span>
                     <div style={styles.detailFieldValue}>{selectedDetail.noHp}</div>
                   </div>
                   <div style={{ gridColumn: 'span 2' }}>
@@ -891,7 +891,7 @@ export default function VerifikasiPembayaran() {
                 onClick={() => setSelectedDetail(null)}
                 style={styles.btnModalClose}
               >
-                Tutup
+                Batal
               </button>
 
               {/* Tombol Aksi Verifikasi Langsung dari Modal Detail */}
@@ -1337,11 +1337,11 @@ const styles = {
     flexWrap: 'wrap'
   },
   btnModalClose: {
-    padding: '8px 16px',
+    padding: '8px 18px',
     borderRadius: '6px',
-    border: '1px solid #cbd5e1',
+    border: '1.5px solid #23573c',
     backgroundColor: '#ffffff',
-    color: '#475569',
+    color: '#23573c',
     fontSize: '13px',
     fontWeight: '600',
     cursor: 'pointer'
@@ -1444,9 +1444,9 @@ const styles = {
   btnSimpleCancel: {
     padding: '8px 16px',
     borderRadius: '6px',
-    border: '1px solid #cbd5e1',
+    border: '1.5px solid #23573c',
     backgroundColor: '#ffffff',
-    color: '#475569',
+    color: '#23573c',
     fontSize: '13px',
     fontWeight: '600',
     cursor: 'pointer'
