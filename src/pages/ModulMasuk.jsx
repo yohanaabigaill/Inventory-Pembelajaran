@@ -10,49 +10,67 @@ import PostAddOutlinedIcon from '@mui/icons-material/PostAddOutlined';
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 
-// Opsi Modul
-const MODUL_OPTIONS = [
-  'Asasi',
-  'Asasi 2',
-  'Tahmidi',
-  'Tawasuthi',
-  'Idadi',
-  'Tahsini',
-  'Tajwidi',
-  'Makhorijul Huruf',
-  'Tilawah Asasi',
-  'Buku Prestasi Dewasa',
-  'Buku Prestasi Anak',
-  'Anak 1',
-  'Anak 2',
-  'Anak 3',
-  'Syarh Tuhfatul Athfal A4',
-  'Syarh Tuhfatul Athfal A5',
-  'Panduan Guru',
-  'Al Hisan 1',
-  'Al Hisan 2',
-  'Al Hisan 3',
-  'Al Hisan 4',
-  'Kamus Juz 1',
-  'Kamus 30 juz',
-  'Khat',
-  'Utsmani 1',
-  'Utsmani 2',
-  'Ustmani 3',
-  'Buku Doa',
-  'Buku Hadist',
-  'Buku Prestasi',
-  'Matan Jazariyah',
-  'Mushaf Ash Shahib A5 Terjemah',
-  'Mushaf Ash Shahib A5 tanpa Terjemah',
-  'Mushaf Al Kamil A5 Terjemah',
-  'Mushaf Al Kamil A5 tanpa Terjemah',
-  'Mushaf Ash Shahib A4 Terjemah',
-  'Mushaf Ash Shahib A4 tanpa Terjemah',
-  'Mushaf Ash Shahib A6 Terjemah',
-  'Mushaf Ash Shahib A6 tanpa Terjemah',
-  'Mushaf Al Mujib A6 Terjemah',
-  'Mushaf Al Kamil A6 tanpa Terjemah'
+// Opsi Kategori / Jenis Modul
+const KATEGORI_OPTIONS = [
+  'Semua Jenis',
+  'Al Haqq',
+  'Al Hisan',
+  'Tahsin Usmani',
+  'RSQ Kids',
+  'Umum',
+  'Al Quran Wakaf',
+  'Al Quran'
+];
+
+// Daftar 47 Modul dengan Kategori
+const MASTER_MODULS = [
+  { id: 1, kategori: 'Al Haqq', nama: 'Asasi' },
+  { id: 2, kategori: 'Al Haqq', nama: 'Asasi 2' },
+  { id: 3, kategori: 'Al Haqq', nama: 'Tahmidi' },
+  { id: 4, kategori: 'Al Haqq', nama: 'Tawasuthi' },
+  { id: 5, kategori: 'Al Haqq', nama: 'Idadi' },
+  { id: 6, kategori: 'Al Haqq', nama: 'Tahsini' },
+  { id: 7, kategori: 'Al Haqq', nama: 'Tajwidi' },
+  { id: 8, kategori: 'Al Haqq', nama: 'Makhorijul Huruf' },
+  { id: 9, kategori: 'Al Haqq', nama: 'Tilawah Asasi' },
+  { id: 10, kategori: 'Al Haqq', nama: 'Buku Prestasi Dewasa' },
+  { id: 11, kategori: 'Al Haqq', nama: 'Buku Prestasi Anak' },
+  { id: 12, kategori: 'Al Haqq', nama: 'Anak 1' },
+  { id: 13, kategori: 'Al Haqq', nama: 'Anak 2' },
+  { id: 14, kategori: 'Al Haqq', nama: 'Anak 3' },
+  { id: 15, kategori: 'Al Haqq', nama: 'Syarh Tuhfatul Athfal A4' },
+  { id: 16, kategori: 'Al Haqq', nama: 'Syarh Tuhfatul Athfal A5' },
+  { id: 17, kategori: 'Al Hisan', nama: 'Panduan Guru' },
+  { id: 18, kategori: 'Al Hisan', nama: 'Al Hisan 1' },
+  { id: 19, kategori: 'Al Hisan', nama: 'Al Hisan 2' },
+  { id: 20, kategori: 'Al Hisan', nama: 'Al Hisan 3' },
+  { id: 21, kategori: 'Al Hisan', nama: 'Al Hisan 4' },
+  { id: 22, kategori: 'Al Hisan', nama: 'Kamus Juz 1' },
+  { id: 23, kategori: 'Al Hisan', nama: 'Kamus 30 juz' },
+  { id: 24, kategori: 'Umum', nama: 'Khat' },
+  { id: 25, kategori: 'Tahsin Usmani', nama: 'Utsmani 1' },
+  { id: 26, kategori: 'Tahsin Usmani', nama: 'Utsmani 2' },
+  { id: 27, kategori: 'Tahsin Usmani', nama: 'Ustmani 3' },
+  { id: 28, kategori: 'RSQ Kids', nama: 'Buku Doa' },
+  { id: 29, kategori: 'RSQ Kids', nama: 'Buku Hadist' },
+  { id: 30, kategori: 'RSQ Kids', nama: 'Buku Prestasi' },
+  { id: 31, kategori: 'Umum', nama: 'Matan Jazariyah' },
+  { id: 32, kategori: 'Al Quran Wakaf', nama: 'Mushaf Ash Shahib A5 Terjemah' },
+  { id: 33, kategori: 'Al Quran Wakaf', nama: 'Mushaf Ash Shahib A5 tanpa Terjemah' },
+  { id: 34, kategori: 'Al Quran Wakaf', nama: 'Mushaf Al Kamil A5 Terjemah' },
+  { id: 35, kategori: 'Al Quran Wakaf', nama: 'Mushaf Al Kamil A5 tanpa Terjemah' },
+  { id: 36, kategori: 'Al Quran Wakaf', nama: 'Mushaf Ash Shahib A4 Terjemah' },
+  { id: 37, kategori: 'Al Quran Wakaf', nama: 'Mushaf Ash Shahib A4 tanpa Terjemah' },
+  { id: 38, kategori: 'Al Quran Wakaf', nama: 'Mushaf Ash Shahib A6 Terjemah' },
+  { id: 39, kategori: 'Al Quran Wakaf', nama: 'Mushaf Ash Shahib A6 tanpa Terjemah' },
+  { id: 40, kategori: 'Al Quran', nama: 'Mushaf Ash Shahib A5 Terjemah' },
+  { id: 41, kategori: 'Al Quran', nama: 'Mushaf Ash Shahib A5 tanpa Terjemah' },
+  { id: 42, kategori: 'Al Quran', nama: 'Mushaf Al Kamil A5 Terjemah' },
+  { id: 43, kategori: 'Al Quran', nama: 'Mushaf Al Kamil A5 tanpa Terjemah' },
+  { id: 44, kategori: 'Al Quran', nama: 'Mushaf Ash Shahib A4 Terjemah' },
+  { id: 45, kategori: 'Al Quran', nama: 'Mushaf Ash Shahib A4 tanpa Terjemah' },
+  { id: 46, kategori: 'Al Quran', nama: 'Mushaf Al Mujib A6 Terjemah' },
+  { id: 47, kategori: 'Al Quran', nama: 'Mushaf Al Kamil A6 tanpa Terjemah' }
 ];
 
 // Custom Dropdown
@@ -61,11 +79,13 @@ function CustomDropdown({
   onChange,
   options = [],
   disabledOptions = [],
-  placeholder = 'Pilih Judul Modul',
+  placeholder = 'Pilih...',
+  searchPlaceholder = 'Cari...',
   style = {},
   selectStyle = {},
   arrowColor = '#1a3e2b',
-  className = ''
+  className = '',
+  withSearch = true
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -170,28 +190,30 @@ function CustomDropdown({
           }}
         >
           {/* Search */}
-          <div style={{ padding: '6px 8px', borderBottom: '1px solid #eef2ef', backgroundColor: '#f8faf9' }}>
-            <input
-              ref={searchInputRef}
-              type="text"
-              placeholder="Cari judul modul..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                width: '100%',
-                padding: '6px 10px',
-                fontSize: '12px',
-                border: '1px solid #dce4de',
-                borderRadius: '6px',
-                outline: 'none',
-                boxSizing: 'border-box'
-              }}
-            />
-          </div>
+          {withSearch && (
+            <div style={{ padding: '6px 8px', borderBottom: '1px solid #eef2ef', backgroundColor: '#f8faf9' }}>
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder={searchPlaceholder}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  width: '100%',
+                  padding: '6px 10px',
+                  fontSize: '12px',
+                  border: '1px solid #dce4de',
+                  borderRadius: '6px',
+                  outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+          )}
 
           {/* Opsi */}
-          <div style={{ maxHeight: '130px', overflowY: 'auto' }}>
+          <div style={{ maxHeight: withSearch ? '140px' : '180px', overflowY: 'auto' }}>
             {filteredOptions.length > 0 ? (
               filteredOptions.map((opt, idx) => {
                 const optVal = typeof opt === 'object' ? opt.value : opt;
@@ -269,7 +291,7 @@ export default function ModulMasuk() {
 
   // Items
   const [modulItems, setModulItems] = useState([
-    { id: 1, judulModul: '', jumlahDiterima: '' }
+    { id: 1, jenisModul: 'Semua Jenis', judulModul: '', jumlahDiterima: '' }
   ]);
 
   // Errors
@@ -295,14 +317,14 @@ export default function ModulMasuk() {
   const handleTambahBaris = () => {
     setModulItems((prev) => [
       ...prev,
-      { id: Date.now(), judulModul: '', jumlahDiterima: '' }
+      { id: Date.now(), jenisModul: 'Semua Jenis', judulModul: '', jumlahDiterima: '' }
     ]);
   };
 
   // Hapus Baris
   const handleHapusBaris = (id) => {
     if (modulItems.length === 1) {
-      setModulItems([{ id: Date.now(), judulModul: '', jumlahDiterima: '' }]);
+      setModulItems([{ id: Date.now(), jenisModul: 'Semua Jenis', judulModul: '', jumlahDiterima: '' }]);
       setItemErrors({});
     } else {
       setModulItems((prev) => prev.filter((item) => item.id !== id));
@@ -317,7 +339,38 @@ export default function ModulMasuk() {
   // Change Item
   const handleItemChange = (id, field, val) => {
     setModulItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, [field]: val } : item))
+      prev.map((item) => {
+        if (item.id !== id) return item;
+
+        if (field === 'jenisModul') {
+          // Jika jenis modul diubah dan judulModul saat ini tidak ada di kategori baru (dan bukan 'Semua Jenis'), reset judul
+          let nextJudul = item.judulModul;
+          if (val !== 'Semua Jenis' && nextJudul) {
+            const isValid = MASTER_MODULS.some(
+              (m) => m.nama === nextJudul && m.kategori === val
+            );
+            if (!isValid) {
+              nextJudul = '';
+            }
+          }
+          return { ...item, jenisModul: val, judulModul: nextJudul };
+        }
+
+        if (field === 'judulModul') {
+          // Jika user memilih judul modul saat jenisModul adalah 'Semua Jenis',
+          // sinkronkan jenisModul otomatis ke kategori aslinya jika ada
+          let nextJenis = item.jenisModul || 'Semua Jenis';
+          if (nextJenis === 'Semua Jenis' && val) {
+            const foundModul = MASTER_MODULS.find((m) => m.nama === val);
+            if (foundModul) {
+              nextJenis = foundModul.kategori;
+            }
+          }
+          return { ...item, judulModul: val, jenisModul: nextJenis };
+        }
+
+        return { ...item, [field]: val };
+      })
     );
 
     // Cek Duplikat
@@ -345,7 +398,7 @@ export default function ModulMasuk() {
   // Batal
   const handleBatal = () => {
     setTanggalMasuk('');
-    setModulItems([{ id: Date.now(), judulModul: '', jumlahDiterima: '' }]);
+    setModulItems([{ id: Date.now(), jenisModul: 'Semua Jenis', judulModul: '', jumlahDiterima: '' }]);
     setErrors({});
     setItemErrors({});
   };
@@ -396,7 +449,7 @@ export default function ModulMasuk() {
 
     // Reset
     setTanggalMasuk('');
-    setModulItems([{ id: Date.now(), judulModul: '', jumlahDiterima: '' }]);
+    setModulItems([{ id: Date.now(), jenisModul: 'Semua Jenis', judulModul: '', jumlahDiterima: '' }]);
     setErrors({});
     setItemErrors({});
 
@@ -495,14 +548,16 @@ export default function ModulMasuk() {
               <div style={styles.tableResponsive}>
                 <table style={styles.table}>
                   <colgroup>
-                    <col style={{ width: '60px' }} />
+                    <col style={{ width: '50px' }} />
+                    <col style={{ width: '190px' }} />
                     <col style={{ width: 'auto' }} />
-                    <col style={{ width: '220px' }} />
-                    <col style={{ width: '80px' }} />
+                    <col style={{ width: '180px' }} />
+                    <col style={{ width: '65px' }} />
                   </colgroup>
                   <thead>
                     <tr style={styles.thRow}>
                       <th style={{ ...styles.th, textAlign: 'center' }}>NO</th>
+                      <th style={styles.th}>JENIS MODUL</th>
                       <th style={styles.th}>PILIH JUDUL MODUL</th>
                       <th style={styles.th}>JUMLAH DITERIMA</th>
                       <th style={{ ...styles.th, textAlign: 'center' }}>AKSI</th>
@@ -515,11 +570,39 @@ export default function ModulMasuk() {
                         .filter((it) => it.id !== item.id && it.judulModul)
                         .map((it) => it.judulModul);
 
+                      // Opsi judul modul disaring berdasarkan jenisModul
+                      const availableModuls = (!item.jenisModul || item.jenisModul === 'Semua Jenis')
+                        ? MASTER_MODULS
+                        : MASTER_MODULS.filter((m) => m.kategori === item.jenisModul);
+
+                      // Judul unik
+                      const modulTitleOptions = Array.from(new Set(availableModuls.map((m) => m.nama)));
+
                       return (
                         <tr key={item.id} style={styles.tr}>
                           {/* NO */}
                           <td style={{ ...styles.td, textAlign: 'center', fontWeight: '600', color: '#64748b' }}>
                             {index + 1}
+                          </td>
+
+                          {/* JENIS MODUL */}
+                          <td style={styles.td}>
+                            <CustomDropdown
+                              value={item.jenisModul || 'Semua Jenis'}
+                              onChange={(val) => handleItemChange(item.id, 'jenisModul', val)}
+                              placeholder="Pilih Jenis"
+                              options={KATEGORI_OPTIONS}
+                              withSearch={false}
+                              selectStyle={{
+                                height: '42px',
+                                padding: '0 14px',
+                                borderRadius: '8px',
+                                backgroundColor: '#ffffff',
+                                border: '1px solid #dce4de',
+                                fontSize: '13.5px',
+                                color: '#1e293b'
+                              }}
+                            />
                           </td>
 
                           {/* Judul Modul */}
@@ -528,8 +611,10 @@ export default function ModulMasuk() {
                               value={item.judulModul}
                               onChange={(val) => handleItemChange(item.id, 'judulModul', val)}
                               placeholder="Pilih Judul Modul"
-                              options={MODUL_OPTIONS}
+                              searchPlaceholder="Cari judul modul..."
+                              options={modulTitleOptions}
                               disabledOptions={otherSelectedTitles}
+                              withSearch={true}
                               selectStyle={{
                                 height: '42px',
                                 padding: '0 14px',
