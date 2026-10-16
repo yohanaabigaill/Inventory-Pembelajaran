@@ -56,15 +56,16 @@ function CustomDropdown({
           justifyContent: 'space-between',
           cursor: disabled ? 'not-allowed' : 'pointer',
           boxSizing: 'border-box',
-          padding: '8px 16px',
+          padding: '10px 14px',
           minHeight: '38px',
-          fontSize: '13.5px',
-          fontWeight: '600',
-          border: '1px solid #23573c',
+          fontSize: '13px',
+          fontWeight: '500',
+          border: '1px solid #c7d9cd',
           borderRadius: '10px',
           backgroundColor: '#f6faf7',
           color: '#1a3e2b',
           transition: 'all 0.2s ease',
+          borderColor: isOpen && !disabled ? '#23573c' : (selectStyle.borderColor || '#c7d9cd'),
           boxShadow: isOpen && !disabled ? '0 0 0 3px rgba(35, 87, 60, 0.15)' : 'none',
           ...selectStyle,
           ...(disabled
@@ -110,9 +111,9 @@ function CustomDropdown({
             backgroundColor: '#ffffff',
             border: '1px solid #23573c',
             borderRadius: '10px',
-            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.16)',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15)',
             zIndex: 10005,
-            maxHeight: '260px',
+            maxHeight: '220px',
             overflowY: 'auto',
             padding: 0
           }}
@@ -128,24 +129,19 @@ function CustomDropdown({
               <div
                 key={idx}
                 onClick={() => handleSelect(optVal)}
-                onMouseEnter={(e) => {
-                  if (!isSelected) e.currentTarget.style.backgroundColor = '#f1f5f3';
-                }}
-                onMouseLeave={(e) => {
-                  if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent';
-                }}
+                className="custom-dropdown-item"
                 style={{
-                  padding: '11px 14px',
+                  padding: '10px 14px',
                   fontSize: '13px',
                   fontWeight: isSelected ? '700' : '500',
                   color: isSelected ? '#ffffff' : '#1e293b',
                   backgroundColor: isSelected ? '#23573c' : 'transparent',
                   cursor: 'pointer',
                   transition: 'background-color 0.15s ease, color 0.15s ease',
-                  borderTopLeftRadius: isFirst ? '8px' : '0',
-                  borderTopRightRadius: isFirst ? '8px' : '0',
-                  borderBottomLeftRadius: isLast ? '8px' : '0',
-                  borderBottomRightRadius: isLast ? '8px' : '0'
+                  borderTopLeftRadius: isFirst ? '9px' : '0',
+                  borderTopRightRadius: isFirst ? '9px' : '0',
+                  borderBottomLeftRadius: isLast ? '9px' : '0',
+                  borderBottomRightRadius: isLast ? '9px' : '0'
                 }}
               >
                 {optLabel}
@@ -158,7 +154,7 @@ function CustomDropdown({
   );
 }
 
-// DatePicker Responsif Mobile & Desktop
+// Responsif Mobile & Desktop
 function CustomDatePicker({
   value,
   onChange,
@@ -366,7 +362,7 @@ function CustomDatePicker({
         </button>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          {/* Custom Dropdown Bulan */}
+          {/* Dropdown Bulan */}
           <div style={{ position: 'relative' }}>
             <button
               type="button"
@@ -463,7 +459,7 @@ function CustomDatePicker({
             )}
           </div>
 
-          {/* Custom Dropdown Tahun */}
+          {/* Dropdown Tahun */}
           <div style={{ position: 'relative' }}>
             <button
               type="button"
@@ -1084,24 +1080,24 @@ export default function StatusPengiriman() {
     setPengirimanList((prevList) =>
       prevList.map((item) => (item.id === selectedDetail.id ? { ...selectedDetail } : item))
     );
-    showToast(`Perubahan data pengiriman ${selectedDetail.id} berhasil disimpan!`, 'success');
+    showToast('Perubahan data pengiriman berhasil disimpan!', 'success');
     setSelectedDetail(null);
     setIsCopied(false);
   };
 
-  // Warna
-  const getStatusDotColor = (status) => {
+  // Badge Status Kotak (seperti Data Modul)
+  const renderStatusBadge = (status) => {
     switch (status) {
       case 'Perlu Dikirim':
-        return '#d97706';
+        return <span style={styles.statusPerluDikirim}>Perlu Dikirim</span>;
       case 'Dikirim':
       case 'Sedang Dikirim':
-        return '#0284c7';
+        return <span style={styles.statusDikirim}>Dikirim</span>;
       case 'Selesai':
       case 'Terkirim':
-        return '#16a34a';
+        return <span style={styles.statusSelesai}>Selesai</span>;
       default:
-        return '#94a3b8';
+        return <span style={styles.statusDefault}>{status}</span>;
     }
   };
 
@@ -1168,10 +1164,7 @@ export default function StatusPengiriman() {
               }}
             >
               <LocalShippingOutlinedIcon sx={{ fontSize: 18 }} />
-              <span>Status Pengiriman</span>
-              {stats.totalPerluDikirim > 0 && (
-                <span style={styles.tabBadgeWarning}>{stats.totalPerluDikirim}</span>
-              )}
+              <span>Pengiriman</span>
             </button>
           </div>
 
@@ -1308,15 +1301,7 @@ export default function StatusPengiriman() {
 
                             {/* STATUS */}
                             <td style={{ ...styles.td, paddingLeft: '20px' }}>
-                              <div style={styles.statusIndicatorWrapper}>
-                                <span
-                                  style={{
-                                    ...styles.statusDot,
-                                    backgroundColor: getStatusDotColor(item.status)
-                                  }}
-                                />
-                                <span style={styles.statusText}>{item.status}</span>
-                              </div>
+                              {renderStatusBadge(item.status)}
                             </td>
 
                             {/* AKSI */}
@@ -1498,9 +1483,9 @@ export default function StatusPengiriman() {
                   </div>
                 </div>
 
-                {/* Data Pemesan & Pengiriman */}
+                {/* Data Pembeli & Pengiriman */}
                 <div style={styles.detailSection}>
-                  <div style={styles.detailSectionTitle}>Data Pemesan & Pengiriman</div>
+                  <div style={styles.detailSectionTitle}>Data Pembeli & Pengiriman</div>
                   <div style={styles.detailRecipientGrid} className="modal-form-grid2">
                     <div>
                       <span style={styles.detailFieldLabel}>Nama Pembeli</span>
@@ -1622,14 +1607,14 @@ export default function StatusPengiriman() {
                   </div>
                 </div>
 
-                {/* Foto Bukti Pengiriman */}
+                {/* Foto Bukti Diterima */}
                 {(selectedDetail.status === 'Selesai' || selectedDetail.status === 'Terkirim') && (
                   <div style={styles.detailSection}>
-                    <div style={styles.detailSectionTitle}>Foto Bukti Pengiriman</div>
+                    <div style={styles.detailSectionTitle}>Foto Bukti Diterima</div>
                     <div style={styles.detailReceiptWrapper}>
                       <img
                         src={selectedDetail.buktiSampai?.fotoUrl || buktiSampaiImg}
-                        alt="Bukti Pengiriman"
+                        alt="Foto Bukti Diterima"
                         style={{ ...styles.detailReceiptImg, cursor: 'pointer' }}
                         onClick={() => setPreviewProofImg(selectedDetail.buktiSampai?.fotoUrl || buktiSampaiImg)}
                         title="Klik untuk memperbesar foto bukti"
@@ -1895,22 +1880,69 @@ const styles = {
     color: '#1a3e2b',
     fontSize: '14px'
   },
-  statusIndicatorWrapper: {
+  statusPerluDikirim: {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '7px'
-  },
-  statusDot: {
-    width: '7px',
-    height: '7px',
-    borderRadius: '50%',
-    display: 'inline-block',
-    flexShrink: 0
-  },
-  statusText: {
-    fontSize: '14px',
+    justifyContent: 'center',
+    width: '105px',
+    height: '28px',
+    backgroundColor: '#fef3c7',
+    color: '#d97706',
+    borderRadius: '6px',
+    fontSize: '11.5px',
     fontWeight: '700',
-    color: '#1a3e2b'
+    letterSpacing: '0.4px',
+    border: '1px solid #d97706',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
+  },
+  statusDikirim: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '105px',
+    height: '28px',
+    backgroundColor: '#dbeafe',
+    color: '#2563eb',
+    borderRadius: '6px',
+    fontSize: '11.5px',
+    fontWeight: '700',
+    letterSpacing: '0.4px',
+    border: '1px solid #2563eb',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
+  },
+  statusSelesai: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '105px',
+    height: '28px',
+    backgroundColor: '#dcfce7',
+    color: '#16a34a',
+    borderRadius: '6px',
+    fontSize: '11.5px',
+    fontWeight: '700',
+    letterSpacing: '0.4px',
+    border: '1px solid #16a34a',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
+  },
+  statusDefault: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '105px',
+    height: '28px',
+    backgroundColor: '#f1f5f9',
+    color: '#64748b',
+    borderRadius: '6px',
+    fontSize: '11.5px',
+    fontWeight: '600',
+    letterSpacing: '0.4px',
+    border: '1px solid #94a3b8',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
   },
   badgeRsqPusat: {
     display: 'inline-block',
