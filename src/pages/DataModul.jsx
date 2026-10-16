@@ -154,7 +154,7 @@ const STATUS_OPTIONS = [
   'Habis'
 ];
 
-export default function DataModulPage() {
+export default function DataModul() {
   const fileInputRef = useRef(null);
   const [modulList, setModulList] = useState([
     {
@@ -944,34 +944,52 @@ const styles = {
   },
 
   statusTersediaNoDot: {
-    display: 'inline-block',
-    backgroundColor: '#e2f2e6',
-    color: '#1b692b',
-    padding: '5px 14px',
-    borderRadius: '20px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '105px',
+    height: '28px',
+    backgroundColor: '#dcfce7',
+    color: '#16a34a',
+    borderRadius: '6px',
     fontSize: '11.5px',
     fontWeight: '700',
-    whiteSpace: 'nowrap'
+    letterSpacing: '0.4px',
+    border: '1px solid #16a34a',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
   },
   statusMenipisNoDot: {
-    display: 'inline-block',
-    backgroundColor: '#fff4e5',
-    color: '#b76e00',
-    padding: '5px 14px',
-    borderRadius: '20px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '105px',
+    height: '28px',
+    backgroundColor: '#fef3c7',
+    color: '#d97706',
+    borderRadius: '6px',
     fontSize: '11.5px',
     fontWeight: '700',
-    whiteSpace: 'nowrap'
+    letterSpacing: '0.4px',
+    border: '1px solid #d97706',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
   },
   statusHabisNoDot: {
-    display: 'inline-block',
-    backgroundColor: '#fde8e8',
-    color: '#9b1c1c',
-    padding: '5px 14px',
-    borderRadius: '20px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '105px',
+    height: '28px',
+    backgroundColor: '#fee2e2',
+    color: '#dc2626',
+    borderRadius: '6px',
     fontSize: '11.5px',
     fontWeight: '700',
-    whiteSpace: 'nowrap'
+    letterSpacing: '0.4px',
+    border: '1px solid #dc2626',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
   },
 
   actionFlex: {

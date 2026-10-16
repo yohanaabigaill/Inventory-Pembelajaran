@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { authRoutes } from "./routes/authRoutes";
-import DataModulPage from "./pages/DataModulPage";
+import DataModul from "./pages/DataModul";
 import './index.css';
 
 function App() {
@@ -9,8 +9,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         {authRoutes}
-        <Route path="/data-modul" element={<DataModulPage />} />
-        <Route path="/" element={<DataModulPage />} />
+        <Route path="/data-modul" element={<DataModul />} />
+        <Route path="/" element={<DataModul />} />
       </Routes>
     </BrowserRouter>
   );
