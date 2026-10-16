@@ -254,6 +254,35 @@ select option:active {
     text-align: center !important;
     box-sizing: border-box !important;
   }
+
+  .table-jenis-modul {
+    table-layout: auto !important;
+  }
+
+  .table-jenis-modul col.col-no {
+    width: 50px !important;
+  }
+
+  .table-jenis-modul col.col-aksi {
+    width: 90px !important;
+  }
+
+  .table-jenis-modul th.th-no,
+  .table-jenis-modul td.td-no {
+    width: 50px !important;
+    padding: 12px 6px !important;
+  }
+
+  .table-jenis-modul th.th-aksi,
+  .table-jenis-modul td.td-aksi {
+    width: 90px !important;
+    padding: 12px 6px !important;
+  }
+
+  .table-jenis-modul th.th-jenis,
+  .table-jenis-modul td.td-jenis {
+    padding: 12px 10px !important;
+  }
 }
 
 .date-input-clean::-webkit-calendar-picker-indicator {
