@@ -133,7 +133,7 @@ export default function JenisModul() {
     setIsDeleteModalOpen(true);
   };
 
-  // Confirm Delete
+  // Konfirmasi Hapus
   const handleConfirmDelete = () => {
     if (!itemToDelete) return;
     setJenisList((prev) => prev.filter((item) => item.id !== itemToDelete.id));
@@ -198,28 +198,26 @@ export default function JenisModul() {
             </div>
 
             {/* Tombol Tambah Jenis Modul */}
-            <div>
-              <button onClick={handleOpenAdd} style={styles.btnAdd}>
-                <AddOutlinedIcon sx={{ fontSize: 18 }} />
-                <span>Tambah Jenis Modul</span>
-              </button>
-            </div>
+            <button onClick={handleOpenAdd} className="btn-add-responsive" style={styles.btnAdd}>
+              <AddOutlinedIcon sx={{ fontSize: 18 }} />
+              <span>Tambah Jenis Modul</span>
+            </button>
           </div>
 
           {/* Table Card */}
           <div style={styles.card}>
             <div style={styles.tableResponsive}>
-              <table style={styles.table}>
+              <table style={styles.table} className="table-jenis-modul">
                 <colgroup>
-                  <col style={{ width: '130px' }} />
-                  <col style={{ width: 'auto' }} />
-                  <col style={{ width: '260px' }} />
+                  <col className="col-no" style={{ width: '130px' }} />
+                  <col className="col-jenis" style={{ width: 'auto' }} />
+                  <col className="col-aksi" style={{ width: '260px' }} />
                 </colgroup>
                 <thead>
                   <tr style={styles.thRow}>
-                    <th style={{ ...styles.th, width: '130px', textAlign: 'center' }}>NO</th>
-                    <th style={styles.th}>JENIS</th>
-                    <th style={{ ...styles.th, width: '260px', textAlign: 'center' }}>AKSI</th>
+                    <th className="th-no" style={{ ...styles.th, width: '130px', textAlign: 'center' }}>NO</th>
+                    <th className="th-jenis" style={styles.th}>JENIS</th>
+                    <th className="th-aksi" style={{ ...styles.th, width: '260px', textAlign: 'center' }}>AKSI</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -229,17 +227,17 @@ export default function JenisModul() {
                       return (
                         <tr key={item.id} style={styles.tr}>
                           {/* NO */}
-                          <td style={{ ...styles.td, textAlign: 'center', fontWeight: '600', color: '#64748b' }}>
+                          <td className="td-no" style={{ ...styles.td, textAlign: 'center', fontWeight: '600', color: '#64748b' }}>
                             {rowNumber}
                           </td>
 
                           {/* NAMA JENIS */}
-                          <td style={styles.td}>
+                          <td className="td-jenis" style={styles.td}>
                             <div style={styles.namaJenisText}>{item.nama}</div>
                           </td>
 
                           {/* AKSI */}
-                          <td style={{ ...styles.td, textAlign: 'center' }}>
+                          <td className="td-aksi" style={{ ...styles.td, textAlign: 'center' }}>
                             <div style={styles.actionFlex}>
                               <button
                                 onClick={() => handleOpenEdit(item)}
@@ -540,7 +538,8 @@ const styles = {
     fontWeight: '700',
     color: '#1a3e2b',
     fontSize: '14px',
-    whiteSpace: 'nowrap'
+    wordBreak: 'break-word',
+    lineHeight: '1.4'
   },
   actionFlex: {
     display: 'flex',

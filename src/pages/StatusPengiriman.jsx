@@ -12,7 +12,8 @@ function CustomDropdown({
   style = {},
   selectStyle = {},
   arrowColor = '#23573c',
-  className = ''
+  className = '',
+  disabled = false
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
@@ -28,6 +29,7 @@ function CustomDropdown({
   }, []);
 
   const handleSelect = (val) => {
+    if (disabled) return;
     onChange(val);
     setIsOpen(false);
   };
@@ -44,12 +46,15 @@ function CustomDropdown({
       style={{ position: 'relative', userSelect: 'none', ...style }}
     >
       <div
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!disabled) setIsOpen(!isOpen);
+        }}
+        title={disabled ? 'Status sudah selesai (tidak dapat diubah lagi)' : undefined}
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          cursor: 'pointer',
+          cursor: disabled ? 'not-allowed' : 'pointer',
           boxSizing: 'border-box',
           padding: '8px 16px',
           minHeight: '38px',
@@ -60,8 +65,17 @@ function CustomDropdown({
           backgroundColor: '#f6faf7',
           color: '#1a3e2b',
           transition: 'all 0.2s ease',
-          boxShadow: isOpen ? '0 0 0 3px rgba(35, 87, 60, 0.15)' : 'none',
-          ...selectStyle
+          boxShadow: isOpen && !disabled ? '0 0 0 3px rgba(35, 87, 60, 0.15)' : 'none',
+          ...selectStyle,
+          ...(disabled
+            ? {
+                cursor: 'not-allowed',
+                backgroundColor: '#f1f5f9',
+                borderColor: '#cbd5e1',
+                color: '#64748b',
+                boxShadow: 'none'
+              }
+            : {})
         }}
       >
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -72,7 +86,7 @@ function CustomDropdown({
           height="12"
           viewBox="0 0 24 24"
           fill="none"
-          stroke={arrowColor}
+          stroke={disabled ? '#94a3b8' : arrowColor}
           strokeWidth="2.5"
           style={{
             transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
@@ -85,7 +99,7 @@ function CustomDropdown({
         </svg>
       </div>
 
-      {isOpen && (
+      {isOpen && !disabled && (
         <div
           className="custom-dropdown-menu"
           style={{
@@ -144,6 +158,615 @@ function CustomDropdown({
   );
 }
 
+// DatePicker Responsif Mobile & Desktop
+function CustomDatePicker({
+  value,
+  onChange,
+  disabled = false,
+  title = 'Pilih tanggal pengiriman',
+  style = {}
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  const [viewYear, setViewYear] = useState(() => {
+    if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return parseInt(value.slice(0, 4), 10);
+    }
+    return new Date().getFullYear();
+  });
+  const [viewMonth, setViewMonth] = useState(() => {
+    if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return parseInt(value.slice(5, 7), 10) - 1;
+    }
+    return new Date().getMonth();
+  });
+
+  const [isMonthOpen, setIsMonthOpen] = useState(false);
+  const [isYearOpen, setIsYearOpen] = useState(false);
+  const selectedYearRef = useRef(null);
+  const yearListRef = useRef(null);
+  const selectedMonthRef = useRef(null);
+  const monthListRef = useRef(null);
+
+  useEffect(() => {
+    if (isYearOpen && selectedYearRef.current && yearListRef.current) {
+      const container = yearListRef.current;
+      const target = selectedYearRef.current;
+      container.scrollTop = target.offsetTop - container.clientHeight / 2 + target.clientHeight / 2;
+    }
+  }, [isYearOpen]);
+
+  useEffect(() => {
+    if (isMonthOpen && selectedMonthRef.current && monthListRef.current) {
+      const container = monthListRef.current;
+      const target = selectedMonthRef.current;
+      container.scrollTop = target.offsetTop - container.clientHeight / 2 + target.clientHeight / 2;
+    }
+  }, [isMonthOpen]);
+
+  const [isMobile, setIsMobile] = useState(() => {
+    return typeof window !== 'undefined' ? window.innerWidth <= 640 : false;
+  });
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 640);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      setViewYear(parseInt(value.slice(0, 4), 10));
+      setViewMonth(parseInt(value.slice(5, 7), 10) - 1);
+    }
+  }, [value]);
+
+  useEffect(() => {
+    if (isMobile) return;
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+        setIsMonthOpen(false);
+        setIsYearOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isMobile]);
+
+  const MONTH_NAMES = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+  ];
+  const DAY_NAMES = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+
+  const prevMonth = (e) => {
+    e.stopPropagation();
+    setIsMonthOpen(false);
+    setIsYearOpen(false);
+    if (viewMonth === 0) {
+      setViewMonth(11);
+      setViewYear((y) => y - 1);
+    } else {
+      setViewMonth((m) => m - 1);
+    }
+  };
+
+  const nextMonth = (e) => {
+    e.stopPropagation();
+    setIsMonthOpen(false);
+    setIsYearOpen(false);
+    if (viewMonth === 11) {
+      setViewMonth(0);
+      setViewYear((y) => y + 1);
+    } else {
+      setViewMonth((m) => m + 1);
+    }
+  };
+
+  const handleSelectDay = (day) => {
+    if (disabled) return;
+    setIsMonthOpen(false);
+    setIsYearOpen(false);
+    const mStr = String(viewMonth + 1).padStart(2, '0');
+    const dStr = String(day).padStart(2, '0');
+    onChange(`${viewYear}-${mStr}-${dStr}`);
+    setIsOpen(false);
+  };
+
+  const handleSetToday = (e) => {
+    e.stopPropagation();
+    if (disabled) return;
+    setIsMonthOpen(false);
+    setIsYearOpen(false);
+    const now = new Date();
+    const yStr = now.getFullYear();
+    const mStr = String(now.getMonth() + 1).padStart(2, '0');
+    const dStr = String(now.getDate()).padStart(2, '0');
+    onChange(`${yStr}-${mStr}-${dStr}`);
+    setIsOpen(false);
+  };
+
+  const handleClear = (e) => {
+    e.stopPropagation();
+    if (disabled) return;
+    setIsMonthOpen(false);
+    setIsYearOpen(false);
+    onChange('');
+    setIsOpen(false);
+  };
+
+  const firstDayOfWeek = new Date(viewYear, viewMonth, 1).getDay();
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const daysInPrevMonth = new Date(viewYear, viewMonth, 0).getDate();
+
+  const today = new Date();
+  const isCurrentMonthToday =
+    today.getFullYear() === viewYear && today.getMonth() === viewMonth;
+  const todayDate = today.getDate();
+
+  let selY = null, selM = null, selD = null;
+  if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const parts = value.split('-').map(Number);
+    selY = parts[0];
+    selM = parts[1] - 1;
+    selD = parts[2];
+  }
+
+  const startYear = Math.min(2020, viewYear - 2);
+  const endYear = Math.max(2035, viewYear + 5);
+  const yearOptions = [];
+  for (let y = startYear; y <= endYear; y++) {
+    yearOptions.push(y);
+  }
+
+  const displayText = value && selY ? `${String(selD).padStart(2, '0')}/${String(selM + 1).padStart(2, '0')}/${selY}` : 'Pilih tanggal...';
+
+  const calendarContent = (
+    <div
+      onClick={(e) => {
+        e.stopPropagation();
+        setIsMonthOpen(false);
+        setIsYearOpen(false);
+      }}
+      style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '12px',
+        border: '1px solid #dce4de',
+        boxShadow: '0 12px 30px rgba(0, 0, 0, 0.18)',
+        padding: '14px',
+        boxSizing: 'border-box',
+        width: isMobile ? '290px' : '280px',
+        userSelect: 'none'
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', gap: '4px' }}>
+        <button
+          type="button"
+          onClick={prevMonth}
+          style={{
+            background: 'none',
+            border: '1px solid #e2e8f0',
+            borderRadius: '6px',
+            width: '28px',
+            height: '28px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            color: '#1a3e2b',
+            fontWeight: 'bold',
+            fontSize: '13px',
+            flexShrink: 0
+          }}
+          title="Bulan sebelumnya"
+        >
+          &lt;
+        </button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          {/* Custom Dropdown Bulan */}
+          <div style={{ position: 'relative' }}>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsMonthOpen((prev) => !prev);
+                setIsYearOpen(false);
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '4px 8px',
+                fontSize: '12px',
+                fontWeight: '700',
+                color: isMonthOpen ? '#ffffff' : '#1a3e2b',
+                backgroundColor: isMonthOpen ? '#23573c' : '#f6faf7',
+                border: '1px solid #23573c',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+              title="Pilih Bulan"
+            >
+              <span>{MONTH_NAMES[viewMonth]}</span>
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{
+                  transform: isMonthOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.15s ease'
+                }}
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+
+            {isMonthOpen && (
+              <div
+                ref={monthListRef}
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 4px)',
+                  left: 0,
+                  width: '120px',
+                  maxHeight: '160px',
+                  overflowY: 'auto',
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #23573c',
+                  borderRadius: '8px',
+                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.16)',
+                  zIndex: 10050,
+                  padding: '4px 0'
+                }}
+              >
+                {MONTH_NAMES.map((mName, idx) => {
+                  const isSel = idx === viewMonth;
+                  return (
+                    <div
+                      key={idx}
+                      ref={isSel ? selectedMonthRef : null}
+                      onClick={() => {
+                        setViewMonth(idx);
+                        setIsMonthOpen(false);
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isSel) e.currentTarget.style.backgroundColor = '#f1f5f3';
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isSel) e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                      style={{
+                        padding: '6px 10px',
+                        fontSize: '12px',
+                        fontWeight: isSel ? '700' : '500',
+                        backgroundColor: isSel ? '#23573c' : 'transparent',
+                        color: isSel ? '#ffffff' : '#1e293b',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.15s'
+                      }}
+                    >
+                      {mName}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Custom Dropdown Tahun */}
+          <div style={{ position: 'relative' }}>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsYearOpen((prev) => !prev);
+                setIsMonthOpen(false);
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '4px 8px',
+                fontSize: '12px',
+                fontWeight: '700',
+                color: isYearOpen ? '#ffffff' : '#1a3e2b',
+                backgroundColor: isYearOpen ? '#23573c' : '#f6faf7',
+                border: '1px solid #23573c',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+              title="Pilih Tahun"
+            >
+              <span>{viewYear}</span>
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{
+                  transform: isYearOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.15s ease'
+                }}
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+
+            {isYearOpen && (
+              <div
+                ref={yearListRef}
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 4px)',
+                  right: 0,
+                  width: '90px',
+                  maxHeight: '160px',
+                  overflowY: 'auto',
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #23573c',
+                  borderRadius: '8px',
+                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.16)',
+                  zIndex: 10050,
+                  padding: '4px 0'
+                }}
+              >
+                {yearOptions.map((y) => {
+                  const isSel = y === viewYear;
+                  return (
+                    <div
+                      key={y}
+                      ref={isSel ? selectedYearRef : null}
+                      onClick={() => {
+                        setViewYear(y);
+                        setIsYearOpen(false);
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isSel) e.currentTarget.style.backgroundColor = '#f1f5f3';
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isSel) e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                      style={{
+                        padding: '6px 10px',
+                        fontSize: '12px',
+                        textAlign: 'center',
+                        fontWeight: isSel ? '700' : '500',
+                        backgroundColor: isSel ? '#23573c' : 'transparent',
+                        color: isSel ? '#ffffff' : '#1e293b',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.15s'
+                      }}
+                    >
+                      {y}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={nextMonth}
+          style={{
+            background: 'none',
+            border: '1px solid #e2e8f0',
+            borderRadius: '6px',
+            width: '28px',
+            height: '28px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            color: '#1a3e2b',
+            fontWeight: 'bold',
+            fontSize: '13px',
+            flexShrink: 0
+          }}
+          title="Bulan berikutnya"
+        >
+          &gt;
+        </button>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', textAlign: 'center', marginBottom: '6px' }}>
+        {DAY_NAMES.map((d, i) => (
+          <div key={i} style={{ fontSize: '11px', fontWeight: '700', color: i === 0 ? '#ef4444' : '#64748b', padding: '4px 0' }}>
+            {d}
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px' }}>
+        {Array.from({ length: firstDayOfWeek }).map((_, i) => {
+          const prevDate = daysInPrevMonth - firstDayOfWeek + i + 1;
+          return (
+            <div
+              key={`prev-${i}`}
+              style={{
+                height: '30px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '11.5px',
+                color: '#cbd5e1'
+              }}
+            >
+              {prevDate}
+            </div>
+          );
+        })}
+
+        {Array.from({ length: daysInMonth }).map((_, i) => {
+          const day = i + 1;
+          const isSelected = selY === viewYear && selM === viewMonth && selD === day;
+          const isToday = isCurrentMonthToday && todayDate === day;
+
+          return (
+            <button
+              key={`day-${day}`}
+              type="button"
+              onClick={() => handleSelectDay(day)}
+              style={{
+                height: '30px',
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '12px',
+                fontWeight: isSelected ? '700' : isToday ? '700' : '500',
+                borderRadius: '6px',
+                border: isSelected ? 'none' : isToday ? '1px solid #23573c' : 'none',
+                backgroundColor: isSelected ? '#23573c' : 'transparent',
+                color: isSelected ? '#ffffff' : isToday ? '#23573c' : '#1e293b',
+                cursor: 'pointer',
+                transition: 'background-color 0.15s ease'
+              }}
+              onMouseEnter={(e) => {
+                if (!isSelected) e.currentTarget.style.backgroundColor = '#f1f5f3';
+              }}
+              onMouseLeave={(e) => {
+                if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+            >
+              {day}
+            </button>
+          );
+        })}
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #f1f5f9', marginTop: '10px', paddingTop: '8px' }}>
+        <button
+          type="button"
+          onClick={handleClear}
+          style={{ background: 'none', border: 'none', fontSize: '11.5px', color: '#64748b', cursor: 'pointer', fontWeight: '600' }}
+        >
+          Hapus
+        </button>
+        <button
+          type="button"
+          onClick={handleSetToday}
+          style={{ background: 'none', border: 'none', fontSize: '11.5px', color: '#23573c', cursor: 'pointer', fontWeight: '700' }}
+        >
+          Hari Ini
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div
+      ref={containerRef}
+      className="custom-datepicker-container"
+      style={{ position: 'relative', width: '100%', userSelect: 'none', ...style }}
+    >
+      <div
+        onClick={() => {
+          if (!disabled) {
+            setIsOpen(!isOpen);
+            setIsMonthOpen(false);
+            setIsYearOpen(false);
+          }
+        }}
+        title={title}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          boxSizing: 'border-box',
+          padding: '6px 12px',
+          minHeight: '34px',
+          fontSize: '12.5px',
+          fontWeight: '600',
+          border: '1px solid #cbd5e1',
+          borderRadius: '10px',
+          backgroundColor: disabled ? '#f1f5f9' : '#ffffff',
+          color: disabled ? '#64748b' : value ? '#1e293b' : '#94a3b8',
+          transition: 'all 0.2s ease',
+          boxShadow: isOpen && !disabled ? '0 0 0 3px rgba(35, 87, 60, 0.15)' : 'none'
+        }}
+      >
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {displayText}
+        </span>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke={disabled ? '#94a3b8' : '#23573c'}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{ flexShrink: 0, marginLeft: '6px' }}
+        >
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+          <line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+      </div>
+
+      {isOpen && !disabled && (
+        isMobile ? (
+          <>
+            <div
+              onClick={() => {
+                setIsOpen(false);
+                setIsMonthOpen(false);
+                setIsYearOpen(false);
+              }}
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                zIndex: 10025,
+                animation: 'fadeIn 0.2s ease'
+              }}
+            />
+            <div
+              style={{
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                zIndex: 10030
+              }}
+            >
+              {calendarContent}
+            </div>
+          </>
+        ) : (
+          <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 10020 }}>
+            {calendarContent}
+          </div>
+        )
+      )}
+    </div>
+  );
+}
+
 const METODE_OPTIONS = [
   'Semua Metode',
   'Ambil di RSQ Pusat',
@@ -181,7 +804,7 @@ const INITIAL_PENGIRIMAN = [
     metode: 'Via Kurir',
     ongkirFlat: 10000,
     alamat: 'Jl. Hang Kesturi, Nongsa',
-    noKwitansi: 'KWT-2026-001',
+    noKwitansi: '',
     ustazahNama: '',
     lokasiAmbil: '',
     tanggalKirim: '',
@@ -199,7 +822,7 @@ const INITIAL_PENGIRIMAN = [
     metode: 'Ambil di RSQ Pusat',
     ongkirFlat: 0,
     alamat: 'Komplek Griya Indah Blok C3',
-    noKwitansi: 'KWT-2026-002',
+    noKwitansi: '',
     ustazahNama: '',
     lokasiAmbil: 'Kantor RSQ Pusat',
     tanggalKirim: '',
@@ -217,7 +840,7 @@ const INITIAL_PENGIRIMAN = [
     metode: 'Titip ke Ustazah',
     ongkirFlat: 0,
     alamat: 'Kavling Baru, Batu Aji ',
-    noKwitansi: 'KWT-2026-003',
+    noKwitansi: '',
     ustazahNama: 'Ustazah Fatimah Azzahra',
     lokasiAmbil: '',
     tanggalKirim: '',
@@ -234,7 +857,7 @@ const INITIAL_PENGIRIMAN = [
     metode: 'Via Kurir',
     ongkirFlat: 10000,
     alamat: 'Perumhan Taman Raya Blok B',
-    noKwitansi: 'KWT-2026-004',
+    noKwitansi: '',
     ustazahNama: '',
     lokasiAmbil: '',
     tanggalKirim: '2026-10-11',
@@ -252,7 +875,7 @@ const INITIAL_PENGIRIMAN = [
     metode: 'Ambil di RSQ Pusat',
     ongkirFlat: 0,
     alamat: 'Perumahan Green Vienna Blok D',
-    noKwitansi: 'KWT-2026-005',
+    noKwitansi: '',
     ustazahNama: '',
     lokasiAmbil: 'Kantor RSQ Pusat',
     tanggalKirim: '2026-10-12',
@@ -269,7 +892,7 @@ const INITIAL_PENGIRIMAN = [
     metode: 'Titip ke Ustazah',
     ongkirFlat: 0,
     alamat: 'Jl. Sukajadi No. 102, Sukasari',
-    noKwitansi: 'KWT-2026-006',
+    noKwitansi: '',
     ustazahNama: 'Ustazah Maryam S.Pd.I',
     lokasiAmbil: '',
     tanggalKirim: '2026-10-13',
@@ -324,9 +947,9 @@ const INITIAL_PENGIRIMAN = [
 
 // Card Statistik
 const STATS_CONFIG = [
-  { key: 'totalPerluDikirim', label: 'Perlu Dikirim', status: 'Perlu Dikirim', border: '#f59e0b', color: '#b45309', bg: '#fef3c7', icon: Inventory2OutlinedIcon },
-  { key: 'totalDikirim', label: 'Dikirim', status: 'Dikirim', border: '#0284c7', color: '#0369a1', bg: '#e0f2fe', icon: LocalShippingOutlinedIcon },
-  { key: 'totalSelesai', label: 'Selesai', status: 'Selesai', border: '#22c55e', color: '#15803d', bg: '#dcfce7', icon: TaskAltOutlinedIcon }
+  { key: 'totalPerluDikirim', label: 'Perlu Dikirim', status: 'Perlu Dikirim', border: '#d97706', color: '#d97706', bg: '#fef3c7', icon: Inventory2OutlinedIcon },
+  { key: 'totalDikirim', label: 'Dikirim', status: 'Dikirim', border: '#2563eb', color: '#2563eb', bg: '#dbeafe', icon: LocalShippingOutlinedIcon },
+  { key: 'totalSelesai', label: 'Selesai', status: 'Selesai', border: '#16a34a', color: '#16a34a', bg: '#dcfce7', icon: TaskAltOutlinedIcon }
 ];
 
 export default function StatusPengiriman() {
@@ -345,6 +968,7 @@ export default function StatusPengiriman() {
   // Modal State
   const [selectedDetail, setSelectedDetail] = useState(null);
   const [previewProofImg, setPreviewProofImg] = useState(null);
+  const [isCopied, setIsCopied] = useState(false);
 
   // Toast Notifikasi
   const showToast = (message, type = 'success') => {
@@ -427,8 +1051,31 @@ export default function StatusPengiriman() {
   // Salin No. Kwitansi
   const handleCopyKwitansi = (kwitansi) => {
     if (!kwitansi) return;
-    navigator.clipboard.writeText(kwitansi);
-    showToast(`Nomor kwitansi ${kwitansi} berhasil disalin!`, 'success');
+    try {
+      if (navigator?.clipboard?.writeText) {
+        navigator.clipboard.writeText(kwitansi).catch(() => {});
+      } else {
+        const tempInput = document.createElement('textarea');
+        tempInput.value = kwitansi;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+      }
+    } catch {
+      try {
+        const tempInput = document.createElement('textarea');
+        tempInput.value = kwitansi;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+      } catch {}
+    }
+    setIsCopied(true);
+    setTimeout(() => {
+      setIsCopied(false);
+    }, 2000);
   };
 
   // Simpan Perubahan dari Pop-up Detail
@@ -439,6 +1086,7 @@ export default function StatusPengiriman() {
     );
     showToast(`Perubahan data pengiriman ${selectedDetail.id} berhasil disimpan!`, 'success');
     setSelectedDetail(null);
+    setIsCopied(false);
   };
 
   // Warna
@@ -457,7 +1105,7 @@ export default function StatusPengiriman() {
     }
   };
 
-  // Render Badge Metode Pengiriman
+  // Badge Metode Pengiriman
   const renderMetodeBadge = (metode) => {
     switch (metode) {
       case 'Ambil di RSQ Pusat':
@@ -642,9 +1290,11 @@ export default function StatusPengiriman() {
                         return (
                           <tr
                             key={item.id}
+                            onClick={() => setSelectedDetail(item)}
                             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f8faf9')}
                             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                            style={styles.tr}
+                            style={{ ...styles.tr, cursor: 'pointer' }}
+                            title="Klik baris untuk melihat detail lengkap pengiriman"
                           >
                             {/* NO */}
                             <td style={{ ...styles.td, textAlign: 'center', color: '#64748b', fontWeight: '600' }}>
@@ -758,6 +1408,10 @@ export default function StatusPengiriman() {
         );
         const ongkirKurir = selectedDetail.metode === 'Via Kurir' ? 10000 : 0;
         const totalHarga = subtotalModul + ongkirKurir;
+        const originalStatus = pengirimanList.find((p) => p.id === selectedDetail.id)?.status || selectedDetail.status;
+        const statusOptions = originalStatus === 'Perlu Dikirim'
+          ? ['Perlu Dikirim', 'Dikirim']
+          : ['Dikirim', 'Selesai'];
 
         return (
           <div style={styles.modalOverlay} onClick={() => setSelectedDetail(null)}>
@@ -788,42 +1442,55 @@ export default function StatusPengiriman() {
                   </div>
                   <div style={styles.detailMetaItem}>
                     <span style={styles.detailMetaLabel}>Tanggal Pengiriman</span>
-                    <input
-                      type="date"
-                      value={selectedDetail.tanggalKirim || ''}
-                      onChange={(e) =>
-                        setSelectedDetail((prev) => ({ ...prev, tanggalKirim: e.target.value }))
-                      }
-                      style={styles.metaDateInput}
-                      title="Pilih atau ubah tanggal pengiriman"
-                    />
+                    <div style={{ marginTop: '2px' }}>
+                      <CustomDatePicker
+                        value={selectedDetail.tanggalKirim || ''}
+                        onChange={(newDate) =>
+                          setSelectedDetail((prev) => ({ ...prev, tanggalKirim: newDate }))
+                        }
+                        disabled={selectedDetail.status === 'Selesai'}
+                        title={
+                          selectedDetail.status === 'Selesai'
+                            ? 'Status sudah selesai (tanggal tidak dapat diubah)'
+                            : 'Pilih atau ubah tanggal pengiriman'
+                        }
+                      />
+                    </div>
                   </div>
                   <div style={styles.detailMetaItem}>
-                    <span style={styles.detailMetaLabel}>Ubah Status</span>
+                    <span style={styles.detailMetaLabel}>
+                      {selectedDetail.status === 'Selesai' ? 'Status' : 'Ubah Status'}
+                    </span>
                     <div style={{ marginTop: '2px' }}>
                       <CustomDropdown
+                        disabled={selectedDetail.status === 'Selesai'}
                         value={selectedDetail.status}
                         onChange={(newStatus) =>
                           setSelectedDetail((prev) => {
                             const today = new Date().toISOString().split('T')[0];
+                            const autoKwitansi =
+                              prev.noKwitansi || (prev.id ? prev.id.replace('ORD', 'KWT') : 'KWT-2026-001');
+                            const autoBuktiSampai =
+                              prev.buktiSampai || { fotoUrl: buktiSampaiImg };
                             return {
                               ...prev,
                               status: newStatus,
                               tanggalKirim:
-                                newStatus === 'Dikirim' && !prev.tanggalKirim ? today : prev.tanggalKirim
+                                newStatus === 'Dikirim' && !prev.tanggalKirim ? today : prev.tanggalKirim,
+                              noKwitansi:
+                                newStatus === 'Selesai' ? autoKwitansi : prev.noKwitansi,
+                              buktiSampai:
+                                newStatus === 'Selesai' ? autoBuktiSampai : prev.buktiSampai
                             };
                           })
                         }
-                        options={['Perlu Dikirim', 'Dikirim', 'Selesai']}
+                        options={statusOptions}
                         style={{ width: '100%' }}
                         selectStyle={{
                           padding: '6px 12px',
                           minHeight: '34px',
                           fontSize: '12.5px',
                           fontWeight: '700',
-                          backgroundColor: '#f6faf7',
-                          border: '1px solid #23573c',
-                          color: '#1a3e2b',
                           borderRadius: '10px'
                         }}
                       />
@@ -859,38 +1526,51 @@ export default function StatusPengiriman() {
                     )}
 
                     {selectedDetail.metode === 'Via Kurir' && (
-                      <>
-                        <div>
-                          <span style={styles.detailFieldLabel}>No. Kwitansi</span>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
-                            <input
-                              type="text"
-                              placeholder="Masukkan no. kwitansi..."
-                              value={selectedDetail.noKwitansi || ''}
-                              onChange={(e) =>
-                                setSelectedDetail((prev) => ({ ...prev, noKwitansi: e.target.value }))
-                              }
-                              style={styles.metaTextInput}
-                            />
-                            {selectedDetail.noKwitansi && (
-                              <button
-                                type="button"
-                                onClick={() => handleCopyKwitansi(selectedDetail.noKwitansi)}
-                                style={styles.btnCopyResiSimple}
-                                title="Salin No. Kwitansi"
-                              >
-                                <ContentCopyOutlinedIcon sx={{ fontSize: 13 }} />
-                                <span>Salin</span>
-                              </button>
-                            )}
-                          </div>
-                        </div>
+                      <div style={{ gridColumn: selectedDetail.status === 'Selesai' ? 'span 1' : 'span 2' }}>
+                        <span style={styles.detailFieldLabel}>Alamat Pengiriman</span>
+                        <div style={styles.detailFieldValue}>{selectedDetail.alamat}</div>
+                      </div>
+                    )}
 
-                        <div style={{ gridColumn: 'span 2' }}>
-                          <span style={styles.detailFieldLabel}>Alamat Pengiriman</span>
-                          <div style={styles.detailFieldValue}>{selectedDetail.alamat}</div>
+                    {selectedDetail.status === 'Selesai' && (
+                      <div>
+                        <span style={styles.detailFieldLabel}>No. Kwitansi</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                          <input
+                            type="text"
+                            placeholder="Masukkan no. kwitansi..."
+                            value={selectedDetail.noKwitansi || ''}
+                            onChange={(e) =>
+                              setSelectedDetail((prev) => ({ ...prev, noKwitansi: e.target.value }))
+                            }
+                            style={styles.metaTextInput}
+                          />
+                          {selectedDetail.noKwitansi && (
+                            <button
+                              id="btn-copy-kwitansi"
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCopyKwitansi(selectedDetail.noKwitansi);
+                              }}
+                              style={isCopied ? styles.btnCopySuccess : styles.btnCopyResiSimple}
+                              title={isCopied ? 'Nomor kwitansi tersalin!' : 'Salin No. Kwitansi'}
+                            >
+                              {isCopied ? (
+                                <>
+                                  <CheckCircleOutlinedIcon sx={{ fontSize: 13, color: '#16a34a' }} />
+                                  <span style={{ color: '#16a34a', fontWeight: '700' }}>Tersalin!</span>
+                                </>
+                              ) : (
+                                <>
+                                  <ContentCopyOutlinedIcon sx={{ fontSize: 13 }} />
+                                  <span>Salin</span>
+                                </>
+                              )}
+                            </button>
+                          )}
                         </div>
-                      </>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -942,16 +1622,16 @@ export default function StatusPengiriman() {
                   </div>
                 </div>
 
-                {/* Bukti Paket Diterima */}
-                {(selectedDetail.status === 'Selesai' || selectedDetail.status === 'Terkirim') && selectedDetail.buktiSampai && (
+                {/* Foto Bukti Pengiriman */}
+                {(selectedDetail.status === 'Selesai' || selectedDetail.status === 'Terkirim') && (
                   <div style={styles.detailSection}>
-                    <div style={styles.detailSectionTitle}>Bukti Paket Diterima</div>
+                    <div style={styles.detailSectionTitle}>Foto Bukti Pengiriman</div>
                     <div style={styles.detailReceiptWrapper}>
                       <img
-                        src={selectedDetail.buktiSampai.fotoUrl}
-                        alt="Bukti Paket Diterima"
+                        src={selectedDetail.buktiSampai?.fotoUrl || buktiSampaiImg}
+                        alt="Bukti Pengiriman"
                         style={{ ...styles.detailReceiptImg, cursor: 'pointer' }}
-                        onClick={() => setPreviewProofImg(selectedDetail.buktiSampai.fotoUrl)}
+                        onClick={() => setPreviewProofImg(selectedDetail.buktiSampai?.fotoUrl || buktiSampaiImg)}
                         title="Klik untuk memperbesar foto bukti"
                       />
                     </div>
@@ -981,8 +1661,6 @@ export default function StatusPengiriman() {
           </div>
         );
       })()}
-
-
 
       {/* Preview Foto Bukti Penerimaan */}
       {previewProofImg && (
@@ -1066,7 +1744,7 @@ const styles = {
     backgroundColor: 'rgba(35, 87, 60, 0.06)'
   },
   tabBadgeWarning: {
-    backgroundColor: '#f59e0b',
+    backgroundColor: '#d97706',
     color: '#ffffff',
     padding: '2px 8px',
     borderRadius: '12px',
@@ -1076,7 +1754,7 @@ const styles = {
   statsGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '14px'
+    gap: '12px'
   },
   statCard: {
     backgroundColor: '#ffffff',
@@ -1737,7 +2415,22 @@ const styles = {
     padding: '2px 8px',
     fontSize: '11px',
     fontWeight: '600',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    transition: 'all 0.2s ease'
+  },
+  btnCopySuccess: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    backgroundColor: '#ecfdf5',
+    color: '#16a34a',
+    border: '1px solid #a7f3d0',
+    borderRadius: '4px',
+    padding: '2px 8px',
+    fontSize: '11px',
+    fontWeight: '700',
+    cursor: 'default',
+    transition: 'all 0.2s ease'
   },
   metaDateInput: {
     marginTop: '2px',
