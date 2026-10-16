@@ -6,6 +6,7 @@ import Navbar from '../components/Navbar';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
+import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 
 // Bulan
 const MONTH_NAMES = [
@@ -543,6 +544,8 @@ export default function StokOpname() {
   const handleFisikChange = (id, val) => {
     if (isPastMonth) return;
     const numericVal = val === '' ? '' : parseInt(val, 10);
+    if (numericVal !== '' && isNaN(numericVal)) return;
+
     setMonthlyData((prev) => {
       const currentList = prev[selectedMonthKey] || createDefaultModulData('Belum Diinput');
       return {
@@ -552,7 +555,7 @@ export default function StokOpname() {
             ? {
                 ...item,
                 inputFisik: numericVal,
-                status: item.status === 'Belum Diinput' ? 'Draf' : item.status
+                status: numericVal === '' && item.status === 'Draf' ? 'Belum Diinput' : item.status
               }
             : item
         )
@@ -561,7 +564,7 @@ export default function StokOpname() {
   };
 
   // Handler Perubahan Catatan (jika bukan bulan sebelumnya)
-  const handleCatatanChange = (id, val) => {
+  const _handleCatatanChange = (id, val) => {
     if (isPastMonth) return;
     setMonthlyData((prev) => {
       const currentList = prev[selectedMonthKey] || createDefaultModulData('Belum Diinput');
@@ -598,30 +601,49 @@ export default function StokOpname() {
     return filteredData.slice(start, start + itemsPerPage);
   }, [filteredData, currentPage]);
 
-  // Simpan Draf
+  // Simpan Draf (bisa untuk 1 modul atau beberapa modul)
   const handleSimpanDraf = () => {
     if (isPastMonth) return;
+    const currentList = monthlyData[selectedMonthKey] || createDefaultModulData('Belum Diinput');
+    const filledCount = currentList.filter((item) => item.inputFisik !== '').length;
+
+    if (filledCount === 0) {
+      showToast('Belum ada stok fisik modul yang diisi untuk disimpan sebagai draf.', 'error');
+      return;
+    }
+
     setMonthlyData((prev) => {
-      const currentList = prev[selectedMonthKey] || createDefaultModulData('Belum Diinput');
+      const list = prev[selectedMonthKey] || createDefaultModulData('Belum Diinput');
       return {
         ...prev,
-        [selectedMonthKey]: currentList.map((item) => ({
+        [selectedMonthKey]: list.map((item) => ({
           ...item,
-          status: item.status === 'Menunggu Verifikasi' ? item.status : 'Draf'
+          status: item.inputFisik !== ''
+            ? (item.status === 'Menunggu Verifikasi' || item.status === 'Disetujui' ? item.status : 'Draf')
+            : 'Belum Diinput'
         }))
       };
     });
-    showToast(`Draf stok opname periode ${effectiveBulan} ${effectiveYear} berhasil disimpan di lokal sistem.`, 'success');
+    showToast('Draf berhasil disimpan', 'success');
   };
 
   // Ajukan Verifikasi
   const handleAjukanVerifikasi = () => {
     if (isPastMonth) return;
+    const currentList = monthlyData[selectedMonthKey] || createDefaultModulData('Belum Diinput');
+    const uncompletedItems = currentList.filter((item) => item.inputFisik === '');
+
+    if (uncompletedItems.length > 0) {
+      showToast('Semua modul wajib diisi sebelum mengajukan verifikasi.', 'error');
+      return;
+    }
+
+    // Jika seluruh modul lengkap terisi
     setMonthlyData((prev) => {
-      const currentList = prev[selectedMonthKey] || createDefaultModulData('Belum Diinput');
+      const list = prev[selectedMonthKey] || createDefaultModulData('Belum Diinput');
       return {
         ...prev,
-        [selectedMonthKey]: currentList.map((item) => ({
+        [selectedMonthKey]: list.map((item) => ({
           ...item,
           status: 'Menunggu Verifikasi'
         }))
@@ -666,7 +688,7 @@ export default function StokOpname() {
         />
 
         {/* Content Body */}
-        <main style={styles.contentBody}>
+        <main className="content-body-responsive" style={styles.contentBody}>
           {/* Toast Notification */}
           {notification && (
             <div
@@ -675,7 +697,11 @@ export default function StokOpname() {
                 backgroundColor: notification.type === 'success' ? '#23573c' : '#dc2626'
               }}
             >
-              <CheckCircleOutlinedIcon sx={{ fontSize: 20 }} />
+              {notification.type === 'success' ? (
+                <CheckCircleOutlinedIcon sx={{ fontSize: 20 }} />
+              ) : (
+                <ErrorOutlineOutlinedIcon sx={{ fontSize: 20 }} />
+              )}
               <span>{notification.message}</span>
             </div>
           )}
@@ -732,7 +758,7 @@ export default function StokOpname() {
             </div>
 
             {/* Tombol Simpan Draf dan Ajukan Verifikasi */}
-            <div style={styles.bottomActions}>
+            <div className="bottom-actions-responsive" style={styles.bottomActions}>
               <button
                 disabled={isPastMonth}
                 onClick={handleSimpanDraf}
@@ -765,24 +791,22 @@ export default function StokOpname() {
             <div style={styles.tableResponsive}>
               <table style={styles.table}>
                 <colgroup>
-                  <col style={{ width: '48px' }} />
-                  <col style={{ width: '280px' }} />
-                  <col style={{ width: '85px' }} />
-                  <col style={{ width: '75px' }} />
-                  <col style={{ width: '80px' }} />
-                  <col style={{ width: '60px' }} />
-                  <col style={{ width: '135px' }} />
-                  <col style={{ width: '130px' }} />
+                  <col style={{ width: '55px' }} />
+                  <col style={{ width: '32%' }} />
+                  <col style={{ width: '16%' }} />
+                  <col style={{ width: '12%' }} />
+                  <col style={{ width: '12%' }} />
+                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '18%' }} />
                 </colgroup>
                 <thead>
                   <tr style={styles.thRow}>
                     <th style={{ ...styles.th, textAlign: 'center' }}>NO</th>
-                    <th style={styles.th}>JUDUL MODUL</th>
-                    <th style={{ ...styles.th, paddingRight: '4px' }}>JENIS</th>
-                    <th style={{ ...styles.th, paddingLeft: '4px', textAlign: 'center' }}>STOK SISTEM</th>
+                    <th style={{ ...styles.th, paddingLeft: '16px' }}>JUDUL MODUL</th>
+                    <th style={styles.th}>JENIS</th>
+                    <th style={{ ...styles.th, textAlign: 'center' }}>STOK SISTEM</th>
                     <th style={{ ...styles.th, textAlign: 'center' }}>INPUT FISIK</th>
                     <th style={{ ...styles.th, textAlign: 'center' }}>SELISIH</th>
-                    <th style={styles.th}>CATATAN</th>
                     <th style={{ ...styles.th, textAlign: 'center' }}>STATUS</th>
                   </tr>
                 </thead>
@@ -790,17 +814,18 @@ export default function StokOpname() {
                   {paginatedData.length > 0 ? (
                     paginatedData.map((item, index) => {
                       const rowNumber = (currentPage - 1) * itemsPerPage + index + 1;
-                      const inputVal = item.inputFisik === '' ? '' : item.inputFisik;
-                      const numericFisik = item.inputFisik === '' ? item.stokSistem : Number(item.inputFisik);
-                      const selisih = numericFisik - item.stokSistem;
-                      const isMatch = selisih === 0;
+                      const isInputted = item.inputFisik !== '' && item.inputFisik !== null && item.inputFisik !== undefined;
+                      const inputVal = isInputted ? item.inputFisik : '';
+                      const numericFisik = isInputted ? Number(item.inputFisik) : null;
+                      const selisih = isInputted ? numericFisik - item.stokSistem : null;
+                      const isMatch = isInputted && selisih === 0;
 
                       return (
                         <tr
                           key={item.id}
                           style={{
                             ...styles.tr,
-                            backgroundColor: !isMatch ? '#fffdf7' : 'transparent'
+                            backgroundColor: isInputted && !isMatch ? '#fffdf7' : 'transparent'
                           }}
                         >
                           {/* NO */}
@@ -809,17 +834,17 @@ export default function StokOpname() {
                           </td>
 
                           {/* JUDUL MODUL */}
-                          <td style={styles.td}>
+                          <td style={{ ...styles.td, paddingLeft: '16px' }}>
                             <div style={styles.moduleNameMain}>{item.nama}</div>
                           </td>
 
                           {/* JENIS */}
-                          <td style={{ ...styles.td, paddingRight: '4px' }}>
+                          <td style={styles.td}>
                             <span style={styles.jenisTextPlainBold}>{item.kategori}</span>
                           </td>
 
                           {/* STOK SISTEM */}
-                          <td style={{ ...styles.td, paddingLeft: '4px', textAlign: 'center', fontWeight: '700', fontSize: '14px', color: '#162a20' }}>
+                          <td style={{ ...styles.td, textAlign: 'center', fontWeight: '700', fontSize: '14px', color: '#162a20' }}>
                             {item.stokSistem}
                           </td>
 
@@ -831,11 +856,15 @@ export default function StokOpname() {
                               disabled={isPastMonth}
                               value={inputVal}
                               onChange={(e) => handleFisikChange(item.id, e.target.value)}
-                              placeholder={String(item.stokSistem)}
+                              placeholder="0"
                               style={{
                                 ...styles.inputFisik,
-                                borderColor: isPastMonth ? '#dce4de' : (!isMatch ? '#f59e0b' : '#c7d9cd'),
-                                backgroundColor: isPastMonth ? '#f8fafc' : (!isMatch ? '#fffbeb' : '#ffffff'),
+                                borderColor: isPastMonth
+                                  ? '#dce4de'
+                                  : (isInputted && !isMatch ? '#f59e0b' : '#c7d9cd'),
+                                backgroundColor: isPastMonth
+                                  ? '#f8fafc'
+                                  : (isInputted && !isMatch ? '#fffbeb' : '#ffffff'),
                                 color: isPastMonth ? '#64748b' : '#1a3e2b',
                                 cursor: isPastMonth ? 'not-allowed' : 'text'
                               }}
@@ -844,7 +873,9 @@ export default function StokOpname() {
 
                           {/* SELISIH */}
                           <td style={{ ...styles.td, textAlign: 'center' }}>
-                            {isMatch ? (
+                            {!isInputted ? (
+                              <span style={{ color: '#94a3b8', fontWeight: '500', fontSize: '13px' }}>-</span>
+                            ) : isMatch ? (
                               <span style={styles.badgeCocok}>0</span>
                             ) : (
                               <span
@@ -859,24 +890,6 @@ export default function StokOpname() {
                             )}
                           </td>
 
-                          {/* CATATAN */}
-                          <td style={styles.td}>
-                            <input
-                              type="text"
-                              disabled={isPastMonth}
-                              value={item.catatan}
-                              onChange={(e) => handleCatatanChange(item.id, e.target.value)}
-                              placeholder={isPastMonth ? '-' : 'Catatan'}
-                              style={{
-                                ...styles.inputCatatan,
-                                borderColor: isPastMonth ? '#e2e8f0' : (!isMatch && !item.catatan ? '#fca5a5' : '#dce4de'),
-                                backgroundColor: isPastMonth ? '#f8fafc' : '#ffffff',
-                                color: isPastMonth ? '#64748b' : '#1e293b',
-                                cursor: isPastMonth ? 'not-allowed' : 'text'
-                              }}
-                            />
-                          </td>
-
                           {/* STATUS */}
                           <td style={{ ...styles.td, textAlign: 'center' }}>
                             {renderStatusBadge(item.status)}
@@ -886,7 +899,7 @@ export default function StokOpname() {
                     })
                   ) : (
                     <tr>
-                      <td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: '#64748b', fontSize: '14px' }}>
+                      <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#64748b', fontSize: '14px' }}>
                         Tidak ada modul yang cocok dengan pencarian.
                       </td>
                     </tr>
@@ -1082,6 +1095,7 @@ const styles = {
   },
   table: {
     width: '100%',
+    minWidth: '820px',
     tableLayout: 'fixed',
     borderCollapse: 'collapse',
     textAlign: 'left'
@@ -1224,65 +1238,85 @@ const styles = {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '4px 8px',
+    minWidth: '105px',
+    height: '28px',
+    padding: '0 12px',
     backgroundColor: '#dcfce7',
-    color: '#15803d',
+    color: '#16a34a',
     borderRadius: '6px',
     fontSize: '11.5px',
     fontWeight: '700',
-    border: '1px solid #bbf7d0',
-    whiteSpace: 'nowrap'
+    letterSpacing: '0.4px',
+    border: '1px solid #16a34a',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
   },
   badgeMenunggu: {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '4px 8px',
-    backgroundColor: '#fef9c3',
-    color: '#854d0e',
+    minWidth: '105px',
+    height: '28px',
+    padding: '0 12px',
+    backgroundColor: '#fef3c7',
+    color: '#d97706',
     borderRadius: '6px',
-    fontSize: '11px',
+    fontSize: '11.5px',
     fontWeight: '700',
-    border: '1px solid #fef08a',
-    whiteSpace: 'nowrap'
+    letterSpacing: '0.4px',
+    border: '1px solid #d97706',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
   },
   badgeDitolak: {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '4px 8px',
+    minWidth: '105px',
+    height: '28px',
+    padding: '0 12px',
     backgroundColor: '#fee2e2',
-    color: '#b91c1c',
+    color: '#dc2626',
     borderRadius: '6px',
     fontSize: '11.5px',
     fontWeight: '700',
-    border: '1px solid #fecaca',
-    whiteSpace: 'nowrap'
+    letterSpacing: '0.4px',
+    border: '1px solid #dc2626',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
   },
   badgeDraf: {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '4px 8px',
+    minWidth: '105px',
+    height: '28px',
+    padding: '0 12px',
     backgroundColor: '#e0f2fe',
-    color: '#0369a1',
+    color: '#0284c7',
     borderRadius: '6px',
     fontSize: '11.5px',
     fontWeight: '700',
-    border: '1px solid #bae6fd',
-    whiteSpace: 'nowrap'
+    letterSpacing: '0.4px',
+    border: '1px solid #0284c7',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
   },
   badgeBelumDiinput: {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '4px 8px',
+    minWidth: '105px',
+    height: '28px',
+    padding: '0 12px',
     backgroundColor: '#f1f5f9',
     color: '#64748b',
     borderRadius: '6px',
     fontSize: '11.5px',
     fontWeight: '600',
-    border: '1px solid #cbd5e1',
-    whiteSpace: 'nowrap'
+    letterSpacing: '0.4px',
+    border: '1px solid #94a3b8',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
   }
 };
