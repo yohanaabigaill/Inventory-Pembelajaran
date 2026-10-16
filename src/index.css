@@ -160,26 +160,37 @@ select option:active {
   .filter-card-responsive {
     flex-direction: column !important;
     align-items: stretch !important;
-    gap: 14px !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    padding: 16px !important;
   }
 
   .filter-left-responsive {
     flex-direction: column !important;
+    align-items: stretch !important;
     width: 100% !important;
     gap: 12px !important;
+    flex: none !important;
   }
 
   .search-wrapper-responsive {
     width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    flex: none !important;
+    height: auto !important;
+    box-sizing: border-box !important;
   }
 
   .search-input-responsive {
     width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .select-wrapper-responsive {
     width: 100% !important;
     max-width: 100% !important;
+    flex: none !important;
     box-sizing: border-box !important;
   }
 
@@ -192,6 +203,21 @@ select option:active {
   .btn-add-responsive {
     width: 100% !important;
     justify-content: center !important;
+    box-sizing: border-box !important;
+  }
+
+  .bottom-actions-responsive {
+    width: 100% !important;
+    display: flex !important;
+    gap: 10px !important;
+    box-sizing: border-box !important;
+  }
+
+  .bottom-actions-responsive > button {
+    flex: 1 !important;
+    justify-content: center !important;
+    padding: 10px 8px !important;
+    font-size: 13px !important;
     box-sizing: border-box !important;
   }
 
@@ -253,6 +279,35 @@ select option:active {
     align-items: center !important;
     text-align: center !important;
     box-sizing: border-box !important;
+  }
+
+  .table-jenis-modul {
+    table-layout: auto !important;
+  }
+
+  .table-jenis-modul col.col-no {
+    width: 50px !important;
+  }
+
+  .table-jenis-modul col.col-aksi {
+    width: 90px !important;
+  }
+
+  .table-jenis-modul th.th-no,
+  .table-jenis-modul td.td-no {
+    width: 50px !important;
+    padding: 12px 6px !important;
+  }
+
+  .table-jenis-modul th.th-aksi,
+  .table-jenis-modul td.td-aksi {
+    width: 90px !important;
+    padding: 12px 6px !important;
+  }
+
+  .table-jenis-modul th.th-jenis,
+  .table-jenis-modul td.td-jenis {
+    padding: 12px 10px !important;
   }
 
   .action-buttons-responsive {
