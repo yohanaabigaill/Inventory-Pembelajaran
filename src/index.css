@@ -309,6 +309,34 @@ select option:active {
   .table-jenis-modul td.td-jenis {
     padding: 12px 10px !important;
   }
+
+  .action-buttons-responsive {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
+  .action-buttons-responsive > button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .btn-kirim-responsive {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .toast-responsive {
+    top: 20px !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    width: calc(100% - 32px) !important;
+    max-width: 420px !important;
+    box-sizing: border-box !important;
+    justify-content: center !important;
+  }
 }
 
 .date-input-clean::-webkit-calendar-picker-indicator {
