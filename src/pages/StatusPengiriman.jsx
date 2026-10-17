@@ -1153,7 +1153,7 @@ export default function StatusPengiriman() {
               style={styles.tabButton}
             >
               <AccountBalanceWalletOutlinedIcon sx={{ fontSize: 18 }} />
-              <span>Verifikasi Pembayaran</span>
+              <span>Pembayaran</span>
             </button>
 
             <button
@@ -1703,17 +1703,20 @@ const styles = {
   },
   tabContainer: {
     display: 'flex',
-    gap: '12px',
+    width: '100%',
     marginBottom: '22px',
     borderBottom: '2px solid #e2e8f0',
-    paddingBottom: '2px'
+    paddingBottom: '2px',
+    boxSizing: 'border-box'
   },
   tabButton: {
+    flex: 1,
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: '8px',
-    padding: '10px 20px',
-    fontSize: '14px',
+    padding: '11px 20px',
+    fontSize: '14.5px',
     fontWeight: '600',
     color: '#64748b',
     backgroundColor: 'transparent',
@@ -1721,10 +1724,12 @@ const styles = {
     borderBottom: '3px solid transparent',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
-    borderRadius: '6px 6px 0 0'
+    borderRadius: '8px 8px 0 0',
+    boxSizing: 'border-box'
   },
   tabButtonActive: {
     color: '#23573c',
+    fontWeight: '700',
     borderBottom: '3px solid #23573c',
     backgroundColor: 'rgba(35, 87, 60, 0.06)'
   },

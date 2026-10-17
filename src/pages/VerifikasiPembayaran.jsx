@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
@@ -16,8 +16,176 @@ import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalance
 import PendingActionsOutlinedIcon from '@mui/icons-material/PendingActionsOutlined';
 import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
 import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
-import RemoveCircleOutlineOutlinedIcon from '@mui/icons-material/RemoveCircleOutlineOutlined';
-import TimerOffOutlinedIcon from '@mui/icons-material/TimerOffOutlined';
+
+// Filter Status
+const STATUS_OPTIONS = [
+  'Semua Status',
+  'Belum Bayar',
+  'Menunggu Verifikasi',
+  'Disetujui',
+  'Ditolak'
+];
+
+// Filter Metode Pembayaran
+const METODE_OPTIONS = [
+  'Semua Metode',
+  'Transfer Bank',
+  'Tunai'
+];
+
+// Dropdown
+function CustomDropdown({
+  value,
+  onChange,
+  options = [],
+  style = {},
+  selectStyle = {},
+  arrowColor = '#23573c',
+  className = '',
+  disabled = false
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSelect = (val) => {
+    if (disabled) return;
+    onChange(val);
+    setIsOpen(false);
+  };
+
+  const currentOption = options.find((opt) =>
+    typeof opt === 'object' ? opt.value === value : opt === value
+  );
+  const displayLabel = typeof currentOption === 'object' ? currentOption.label : (currentOption || value);
+
+  return (
+    <div
+      ref={containerRef}
+      className={`custom-dropdown-container ${className}`}
+      style={{ position: 'relative', userSelect: 'none', ...style }}
+    >
+      <div
+        onClick={() => {
+          if (!disabled) setIsOpen(!isOpen);
+        }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          boxSizing: 'border-box',
+          padding: '8px 14px',
+          minHeight: '38px',
+          fontSize: '13.5px',
+          fontWeight: '600',
+          border: '1px solid #23573c',
+          borderRadius: '10px',
+          backgroundColor: '#f6faf7',
+          color: '#1a3e2b',
+          transition: 'all 0.2s ease',
+          borderColor: isOpen && !disabled ? '#23573c' : (selectStyle.borderColor || '#23573c'),
+          boxShadow:
+            isOpen && !disabled
+              ? '0 0 0 3px rgba(35, 87, 60, 0.15)'
+              : isHovered && !disabled
+              ? '0 0 0 3px rgba(35, 87, 60, 0.1)'
+              : 'none',
+          ...selectStyle
+        }}
+      >
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {displayLabel}
+        </span>
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke={disabled ? '#94a3b8' : arrowColor}
+          strokeWidth="2.5"
+          style={{
+            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 0.2s ease',
+            flexShrink: 0,
+            marginLeft: '8px'
+          }}
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </div>
+
+      {isOpen && !disabled && (
+        <div
+          className="custom-dropdown-menu"
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 4px)',
+            left: 0,
+            right: 0,
+            backgroundColor: '#ffffff',
+            border: '1px solid #23573c',
+            borderRadius: '10px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15)',
+            zIndex: 10005,
+            maxHeight: '220px',
+            overflowY: 'auto',
+            padding: 0
+          }}
+        >
+          {options.map((opt, idx) => {
+            const optVal = typeof opt === 'object' ? opt.value : opt;
+            const optLabel = typeof opt === 'object' ? opt.label : opt;
+            const isSelected = optVal === value;
+            const isFirst = idx === 0;
+            const isLast = idx === options.length - 1;
+
+            return (
+              <div
+                key={idx}
+                onClick={() => handleSelect(optVal)}
+                className="custom-dropdown-item"
+                onMouseEnter={(e) => {
+                  if (!isSelected) e.currentTarget.style.backgroundColor = '#f1f5f3';
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+                style={{
+                  padding: '10px 14px',
+                  fontSize: '13px',
+                  fontWeight: isSelected ? '700' : '500',
+                  color: isSelected ? '#ffffff' : '#1e293b',
+                  backgroundColor: isSelected ? '#23573c' : 'transparent',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.15s ease, color 0.15s ease',
+                  borderTopLeftRadius: isFirst ? '9px' : '0',
+                  borderTopRightRadius: isFirst ? '9px' : '0',
+                  borderBottomLeftRadius: isLast ? '9px' : '0',
+                  borderBottomRightRadius: isLast ? '9px' : '0'
+                }}
+              >
+                {optLabel}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // Data Awal
 const INITIAL_PESANAN = [
@@ -108,35 +276,6 @@ const INITIAL_PESANAN = [
     metodeBayar: 'Transfer Bank',
     status: 'Belum Bayar',
     alasanPenolakan: ''
-  },
-  {
-    id: 'ORD-2026-007',
-    tanggal: '2026-09-25',
-    namaPembeli: 'Dewi Lestari',
-    noHp: '0852-3344-5566',
-    alamat: 'Jl. Antapani Raya No. 15, Bandung',
-    itemModul: [
-      { nama: 'Buku Prestasi Anak', qty: 5, harga: 15000 }
-    ],
-    totalBayar: 75000,
-    metodeBayar: 'Transfer Bank',
-    status: 'Dibatalkan',
-    alasanPenolakan: ''
-  },
-  {
-    id: 'ORD-2026-008',
-    tanggal: '2026-08-14',
-    namaPembeli: 'Rian Hidayat',
-    noHp: '0877-6655-4433',
-    alamat: 'Komp. Margahayu Kencana Blok B2, Kab. Bandung',
-    itemModul: [
-      { nama: 'Tilawah Asasi', qty: 4, harga: 25000 },
-      { nama: 'Khat', qty: 2, harga: 22000 }
-    ],
-    totalBayar: 144000,
-    metodeBayar: 'Tunai',
-    status: 'Kedaluwarsa',
-    alasanPenolakan: ''
   }
 ];
 
@@ -145,9 +284,7 @@ const STATS_CONFIG = [
   { key: 'totalMenunggu', label: 'Menunggu Verifikasi', status: 'Menunggu Verifikasi', border: '#d97706', color: '#d97706', bg: '#fef3c7', icon: PendingActionsOutlinedIcon },
   { key: 'totalDisetujui', label: 'Disetujui', status: 'Disetujui', border: '#16a34a', color: '#16a34a', bg: '#dcfce7', icon: TaskAltOutlinedIcon },
   { key: 'totalDitolak', label: 'Ditolak', status: 'Ditolak', border: '#dc2626', color: '#dc2626', bg: '#fee2e2', icon: CancelOutlinedIcon },
-  { key: 'totalBelumBayar', label: 'Belum Bayar', status: 'Belum Bayar', border: '#2563eb', color: '#2563eb', bg: '#dbeafe', icon: AccessTimeOutlinedIcon },
-  { key: 'totalDibatalkan', label: 'Dibatalkan', status: 'Dibatalkan', border: '#94a3b8', color: '#94a3b8', bg: '#f1f5f9', icon: RemoveCircleOutlineOutlinedIcon },
-  { key: 'totalKedaluwarsa', label: 'Kedaluwarsa', status: 'Kedaluwarsa', border: '#64748b', color: '#64748b', bg: '#e2e8f0', icon: TimerOffOutlinedIcon }
+  { key: 'totalBelumBayar', label: 'Belum Bayar', status: 'Belum Bayar', border: '#2563eb', color: '#2563eb', bg: '#dbeafe', icon: AccessTimeOutlinedIcon }
 ];
 
 export default function VerifikasiPembayaran() {
@@ -159,8 +296,13 @@ export default function VerifikasiPembayaran() {
   const [pesananList, setPesananList] = useState(INITIAL_PESANAN);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('Semua Status');
+  const [metodeFilter, setMetodeFilter] = useState('Semua Metode');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [isDateFocused, setIsDateFocused] = useState(false);
+  const [isDateHovered, setIsDateHovered] = useState(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isSearchHovered, setIsSearchHovered] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [notification, setNotification] = useState(null);
@@ -173,10 +315,24 @@ export default function VerifikasiPembayaran() {
   const [alasanError, setAlasanError] = useState('');
 
   // Toast Notifikasi
+  const toastTimeoutRef = useRef(null);
   const showToast = (message, type = 'success') => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
     setNotification({ message, type });
-    setTimeout(() => setNotification(null), 4000);
+    toastTimeoutRef.current = setTimeout(() => {
+      setNotification(null);
+    }, 4000);
   };
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Format Rupiah
   const formatRupiah = (number) => {
@@ -205,23 +361,26 @@ export default function VerifikasiPembayaran() {
   // Filter Data
   const filteredPesanan = useMemo(() => {
     return pesananList.filter((item) => {
-      const matchSearch =
-        item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.namaPembeli.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.itemModul.some((m) => m.nama.toLowerCase().includes(searchQuery.toLowerCase()));
+      const matchSearch = item.namaPembeli
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase().trim());
 
       const matchStatus =
         statusFilter === 'Semua Status' ||
         item.status.toLowerCase() === statusFilter.toLowerCase() ||
         (statusFilter === 'Ditolak' && (item.status === 'Pembayaran Ditolak' || item.status === 'Ditolak'));
 
+      const matchMetode =
+        metodeFilter === 'Semua Metode' ||
+        item.metodeBayar.toLowerCase() === metodeFilter.toLowerCase();
+
       const matchDateRange =
         (!startDate || item.tanggal >= startDate) &&
         (!endDate || item.tanggal <= endDate);
 
-      return matchSearch && matchStatus && matchDateRange;
+      return matchSearch && matchStatus && matchMetode && matchDateRange;
     });
-  }, [pesananList, searchQuery, statusFilter, startDate, endDate]);
+  }, [pesananList, searchQuery, statusFilter, metodeFilter, startDate, endDate]);
 
   // Pagination
   const totalPages = Math.ceil(filteredPesanan.length / itemsPerPage) || 1;
@@ -236,9 +395,7 @@ export default function VerifikasiPembayaran() {
       totalMenunggu: pesananList.filter((p) => p.status === 'Menunggu Verifikasi').length,
       totalDisetujui: pesananList.filter((p) => p.status === 'Disetujui').length,
       totalDitolak: pesananList.filter((p) => p.status === 'Ditolak' || p.status === 'Pembayaran Ditolak').length,
-      totalBelumBayar: pesananList.filter((p) => p.status === 'Belum Bayar').length,
-      totalDibatalkan: pesananList.filter((p) => p.status === 'Dibatalkan').length,
-      totalKedaluwarsa: pesananList.filter((p) => p.status === 'Kedaluwarsa').length
+      totalBelumBayar: pesananList.filter((p) => p.status === 'Belum Bayar').length
     };
   }, [pesananList]);
 
@@ -248,17 +405,20 @@ export default function VerifikasiPembayaran() {
     setCurrentPage(1);
   };
 
-  // Warna Dot Status
-  const getStatusDotColor = (status) => {
+  // Badge Status
+  const renderStatusBadge = (status) => {
     switch (status) {
-      case 'Menunggu Verifikasi': return '#d97706';
-      case 'Disetujui': return '#16a34a';
+      case 'Menunggu Verifikasi':
+        return <span style={styles.statusMenunggu}>Menunggu Verifikasi</span>;
+      case 'Disetujui':
+        return <span style={styles.statusDisetujui}>Disetujui</span>;
       case 'Ditolak':
-      case 'Pembayaran Ditolak': return '#dc2626';
-      case 'Belum Bayar': return '#2563eb';
-      case 'Dibatalkan': return '#94a3b8';
-      case 'Kedaluwarsa': return '#64748b';
-      default: return '#94a3b8';
+      case 'Pembayaran Ditolak':
+        return <span style={styles.statusDitolak}>Ditolak</span>;
+      case 'Belum Bayar':
+        return <span style={styles.statusBelumBayar}>Belum Bayar</span>;
+      default:
+        return <span style={styles.statusDefault}>{status}</span>;
     }
   };
 
@@ -270,7 +430,7 @@ export default function VerifikasiPembayaran() {
     if (selectedDetail && selectedDetail.id === order.id) {
       setSelectedDetail((prev) => ({ ...prev, status: 'Disetujui', alasanPenolakan: '' }));
     }
-    showToast(`Pembayaran ${order.id} berhasil disetujui!`, 'success');
+    showToast('Pembayaran berhasil disetujui!', 'success');
   };
 
   // Buka Modal Tolak
@@ -296,7 +456,7 @@ export default function VerifikasiPembayaran() {
       setSelectedDetail((prev) => ({ ...prev, status: 'Ditolak', alasanPenolakan: alasanTolak.trim() }));
     }
     setRejectingOrder(null);
-    showToast(`Pembayaran ${orderId} telah ditolak.`, 'error');
+    showToast('Pembayaran telah ditolak', 'error');
   };
 
   return (
@@ -319,9 +479,10 @@ export default function VerifikasiPembayaran() {
           {/* Notifikasi Toast */}
           {notification && (
             <div
+              className="toast-responsive"
               style={{
                 ...styles.toast,
-                backgroundColor: notification.type === 'success' ? '#166534' : '#991b1b'
+                backgroundColor: notification.type === 'success' ? '#23573c' : '#dc2626'
               }}
             >
               {notification.type === 'success' ? (
@@ -344,10 +505,7 @@ export default function VerifikasiPembayaran() {
               }}
             >
               <AccountBalanceWalletOutlinedIcon sx={{ fontSize: 18 }} />
-              <span>Verifikasi Pembayaran</span>
-              {stats.totalMenunggu > 0 && (
-                <span style={styles.tabBadgeWarning}>{stats.totalMenunggu}</span>
-              )}
+              <span>Pembayaran</span>
             </button>
 
             <button
@@ -356,14 +514,14 @@ export default function VerifikasiPembayaran() {
               style={styles.tabButton}
             >
               <LocalShippingOutlinedIcon sx={{ fontSize: 18 }} />
-              <span>Status Pengiriman</span>
+              <span>Pengiriman</span>
             </button>
           </div>
 
-          {/* Tab 1: Verifikasi Pembayaran */}
+          {/* Tab Pembayaran */}
           {activeTab === 'verifikasi' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {/* Kartu Statistik */}
+              {/* Card Statistik */}
               <div style={styles.statsGrid} className="stats-grid-responsive">
                 {STATS_CONFIG.map((cfg) => {
                   const IconComp = cfg.icon;
@@ -380,7 +538,6 @@ export default function VerifikasiPembayaran() {
                           ? `0 0 0 2px ${cfg.border}, 0 4px 12px rgba(0,0,0,0.06)`
                           : '0 2px 8px rgba(0,0,0,0.04)'
                       }}
-                      title={`Klik untuk filter: ${cfg.label}`}
                     >
                       <div style={{ ...styles.statIconWrapper, backgroundColor: cfg.bg }}>
                         <IconComp sx={{ fontSize: 22, color: cfg.color }} />
@@ -394,10 +551,29 @@ export default function VerifikasiPembayaran() {
                 })}
               </div>
 
-              {/* Pencarian & Filter */}
+              {/* Filter Bar */}
               <div style={styles.filterCard} className="filter-card-responsive">
-                {/* Pencarian Nama Pembeli */}
-                <div style={styles.searchWrapper} className="search-wrapper-responsive">
+                {/* Pencarian */}
+                <div
+                  style={{
+                    ...styles.searchWrapper,
+                    boxShadow: isSearchFocused
+                      ? '0 0 0 3px rgba(35, 87, 60, 0.15)'
+                      : isSearchHovered
+                      ? '0 0 0 3px rgba(35, 87, 60, 0.1)'
+                      : 'none',
+                    borderColor: '#23573c'
+                  }}
+                  onMouseEnter={() => setIsSearchHovered(true)}
+                  onMouseLeave={() => setIsSearchHovered(false)}
+                  onFocus={() => setIsSearchFocused(true)}
+                  onBlur={(e) => {
+                    if (!e.currentTarget.contains(e.relatedTarget)) {
+                      setIsSearchFocused(false);
+                    }
+                  }}
+                  className="search-wrapper-responsive"
+                >
                   <SearchOutlinedIcon sx={{ color: '#23573c', fontSize: 20 }} />
                   <input
                     type="text"
@@ -412,8 +588,27 @@ export default function VerifikasiPembayaran() {
                   />
                 </div>
 
-                {/* Filter Rentang Tanggal (dd/mm/yyyy) */}
-                <div style={styles.dateRangeWrapper} className="date-range-responsive">
+                {/* Rentang Tanggal */}
+                <div
+                  style={{
+                    ...styles.dateRangeWrapper,
+                    boxShadow: isDateFocused
+                      ? '0 0 0 3px rgba(35, 87, 60, 0.15)'
+                      : isDateHovered
+                      ? '0 0 0 3px rgba(35, 87, 60, 0.1)'
+                      : 'none',
+                    borderColor: '#23573c'
+                  }}
+                  onMouseEnter={() => setIsDateHovered(true)}
+                  onMouseLeave={() => setIsDateHovered(false)}
+                  onFocus={() => setIsDateFocused(true)}
+                  onBlur={(e) => {
+                    if (!e.currentTarget.contains(e.relatedTarget)) {
+                      setIsDateFocused(false);
+                    }
+                  }}
+                  className="date-range-responsive"
+                >
                   <CalendarTodayOutlinedIcon sx={{ color: '#23573c', fontSize: 18, flexShrink: 0 }} />
                   <input
                     type="date"
@@ -428,7 +623,6 @@ export default function VerifikasiPembayaran() {
                     }}
                     style={styles.dateInput}
                     className="date-input-clean"
-                    title="Tanggal Mulai (dd/mm/yyyy)"
                   />
                   <span style={styles.dateSeparator}>s/d</span>
                   <input
@@ -444,7 +638,6 @@ export default function VerifikasiPembayaran() {
                     }}
                     style={styles.dateInput}
                     className="date-input-clean"
-                    title="Tanggal Akhir (dd/mm/yyyy)"
                   />
                   {(startDate || endDate) && (
                     <button
@@ -455,7 +648,6 @@ export default function VerifikasiPembayaran() {
                         setCurrentPage(1);
                       }}
                       style={styles.dateClearBtn}
-                      title="Reset filter rentang tanggal"
                     >
                       <CloseOutlinedIcon sx={{ fontSize: 14 }} />
                     </button>
@@ -463,30 +655,33 @@ export default function VerifikasiPembayaran() {
                 </div>
 
                 <div style={styles.filterRight} className="filter-right-responsive">
-                  <div style={styles.customSelectContainer} className="select-wrapper-responsive">
-                    <select
-                      value={statusFilter}
-                      onChange={(e) => {
-                        setStatusFilter(e.target.value);
-                        setCurrentPage(1);
-                      }}
-                      style={styles.selectFilterPill}
-                      className="select-responsive"
-                      title="Filter berdasarkan Status"
-                    >
-                      <option value="Semua Status">Semua Status</option>
-                      <option value="Belum Bayar">Belum Bayar</option>
-                      <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
-                      <option value="Disetujui">Disetujui</option>
-                      <option value="Ditolak">Ditolak</option>
-                      <option value="Dibatalkan">Dibatalkan</option>
-                      <option value="Kedaluwarsa">Kedaluwarsa</option>
-                    </select>
-                  </div>
+                  {/* Dropdown Metode */}
+                  <CustomDropdown
+                    value={metodeFilter}
+                    onChange={(val) => {
+                      setMetodeFilter(val);
+                      setCurrentPage(1);
+                    }}
+                    options={METODE_OPTIONS}
+                    className="select-wrapper-responsive"
+                    style={{ minWidth: '160px' }}
+                  />
+
+                  {/* Dropdown Status */}
+                  <CustomDropdown
+                    value={statusFilter}
+                    onChange={(val) => {
+                      setStatusFilter(val);
+                      setCurrentPage(1);
+                    }}
+                    options={STATUS_OPTIONS}
+                    className="select-wrapper-responsive"
+                    style={{ minWidth: '170px' }}
+                  />
                 </div>
               </div>
 
-              {/* Tabel Pesanan */}
+              {/* Tabel */}
               <div style={styles.tableCard}>
                 <div style={styles.tableResponsive}>
                   <table style={styles.table}>
@@ -512,7 +707,6 @@ export default function VerifikasiPembayaran() {
                             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f8faf9')}
                             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                             style={{ ...styles.tr, cursor: 'pointer' }}
-                            title="Klik baris untuk melihat detail lengkap pesanan"
                           >
                             {/* NO */}
                             <td style={{ ...styles.td, textAlign: 'center', fontWeight: '600', color: '#64748b' }}>
@@ -531,15 +725,7 @@ export default function VerifikasiPembayaran() {
 
                             {/* STATUS */}
                             <td style={styles.td}>
-                              <div style={styles.statusIndicatorWrapper}>
-                                <span
-                                  style={{
-                                    ...styles.statusDot,
-                                    backgroundColor: getStatusDotColor(item.status)
-                                  }}
-                                />
-                                <span style={styles.statusText}>{item.status}</span>
-                              </div>
+                              {renderStatusBadge(item.status)}
                             </td>
 
                             {/* TOTAL */}
@@ -558,7 +744,6 @@ export default function VerifikasiPembayaran() {
                                       setApprovingOrder(item);
                                     }}
                                     style={styles.btnApprove}
-                                    title="Setujui Pembayaran"
                                   >
                                     <CheckCircleOutlinedIcon sx={{ fontSize: 21 }} />
                                   </button>
@@ -570,7 +755,6 @@ export default function VerifikasiPembayaran() {
                                       handleOpenTolakModal(item);
                                     }}
                                     style={styles.btnReject}
-                                    title="Tolak Pembayaran"
                                   >
                                     <CancelOutlinedIcon sx={{ fontSize: 21 }} />
                                   </button>
@@ -608,58 +792,61 @@ export default function VerifikasiPembayaran() {
                     )}
                   </div>
 
-                  {filteredPesanan.length > 10 ? (
-                    <div style={styles.paginationButtons}>
+                  <div style={styles.paginationButtons}>
+                    <button
+                      type="button"
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      style={{
+                        ...styles.btnPageArrow,
+                        opacity: currentPage === 1 ? 0.35 : 1,
+                        cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+                      }}
+                      className="btn-page-arrow"
+                    >
+                      &lt;
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
                       <button
-                        disabled={currentPage === 1}
-                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                        style={{ ...styles.btnPageArrow, opacity: currentPage === 1 ? 0.4 : 1 }}
-                      >
-                        &lt;
-                      </button>
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-                        <button
-                          key={num}
-                          onClick={() => setCurrentPage(num)}
-                          style={{
-                            ...styles.btnPageNum,
-                            ...(currentPage === num ? styles.btnPageNumActive : {})
-                          }}
-                        >
-                          {num}
-                        </button>
-                      ))}
-                      <button
-                        disabled={currentPage === totalPages}
-                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        key={num}
+                        type="button"
+                        onClick={() => setCurrentPage(num)}
                         style={{
-                          ...styles.btnPageArrow,
-                          opacity: currentPage === totalPages ? 0.4 : 1
+                          ...styles.btnPageNum,
+                          ...(currentPage === num ? styles.btnPageNumActive : {})
                         }}
+                        className={`btn-page-num ${currentPage === num ? 'active' : ''}`}
                       >
-                        &gt;
+                        {num}
                       </button>
-                    </div>
-                  ) : (
-                    <div style={styles.paginationButtons}>
-                      <button disabled style={{ ...styles.btnPageArrow, opacity: 0.4 }}>&lt;</button>
-                      <button style={{ ...styles.btnPageNum, ...styles.btnPageNumActive }}>1</button>
-                      <button disabled style={{ ...styles.btnPageArrow, opacity: 0.4 }}>&gt;</button>
-                    </div>
-                  )}
+                    ))}
+                    <button
+                      type="button"
+                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      style={{
+                        ...styles.btnPageArrow,
+                        opacity: currentPage === totalPages ? 0.35 : 1,
+                        cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
+                      }}
+                      className="btn-page-arrow"
+                    >
+                      &gt;
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Tab 2: Status Pengiriman */}
+          {/* Tab Pengiriman */}
           {activeTab === 'pengiriman' && (
             <div style={styles.emptyTabContent} />
           )}
         </main>
       </div>
 
-      {/* Modal 1: Konfirmasi Setujui */}
+      {/* Modal Setujui */}
       {approvingOrder && (
         <div style={{ ...styles.modalOverlay, zIndex: 10001 }} onClick={() => setApprovingOrder(null)}>
           <div style={styles.modalContentSimpleReject} onClick={(e) => e.stopPropagation()}>
@@ -703,7 +890,7 @@ export default function VerifikasiPembayaran() {
         </div>
       )}
 
-      {/* Modal 3: Konfirmasi Tolak */}
+      {/* Modal Tolak */}
       {rejectingOrder && (
         <div style={{ ...styles.modalOverlay, zIndex: 10001 }} onClick={() => setRejectingOrder(null)}>
           <div style={styles.modalContentSimpleReject} onClick={(e) => e.stopPropagation()}>
@@ -766,7 +953,7 @@ export default function VerifikasiPembayaran() {
         </div>
       )}
 
-      {/* Modal 4: Detail Pesanan */}
+      {/* Modal Detail */}
       {selectedDetail && (
         <div style={styles.modalOverlay} onClick={() => setSelectedDetail(null)}>
           <div style={styles.modalContentDetail} className="modal-detail-responsive" onClick={(e) => e.stopPropagation()}>
@@ -782,7 +969,7 @@ export default function VerifikasiPembayaran() {
             </div>
 
             <div style={styles.detailBody}>
-              {/* Metadata Pesanan */}
+              {/* Metadata */}
               <div style={styles.detailMetaCard}>
                 <div style={styles.detailMetaItem}>
                   <span style={styles.detailMetaLabel}>No. Pesanan</span>
@@ -798,52 +985,43 @@ export default function VerifikasiPembayaran() {
                 </div>
                 <div style={styles.detailMetaItem}>
                   <span style={styles.detailMetaLabel}>Status Transaksi</span>
-                  <div style={styles.detailStatusWrapper}>
-                    <span
-                      style={{
-                        ...styles.statusDot,
-                        backgroundColor: getStatusDotColor(selectedDetail.status)
-                      }}
-                    />
-                    <span style={styles.detailStatusText}>{selectedDetail.status}</span>
+                  <div style={{ marginTop: '2px' }}>
+                    {renderStatusBadge(selectedDetail.status)}
                   </div>
                 </div>
               </div>
 
-              {/* Data Pemesan & Pengiriman */}
+              {/* Data Pembeli & Pengiriman */}
               <div style={styles.detailSection}>
-                <div style={styles.detailSectionTitle}>Data Pemesan & Pengiriman</div>
+                <div style={styles.detailSectionTitle}>Data Pembeli & Pengiriman</div>
                 <div style={styles.detailRecipientGrid} className="modal-form-grid2">
                   <div>
-                    <span style={styles.detailFieldLabel}>Nama Pemesan</span>
+                    <span style={styles.detailFieldLabel}>NAMA PEMBELI</span>
                     <div style={styles.detailFieldValue}>{selectedDetail.namaPembeli}</div>
                   </div>
                   <div>
-                    <span style={styles.detailFieldLabel}>No.Hp</span>
+                    <span style={styles.detailFieldLabel}>NO.HP</span>
                     <div style={styles.detailFieldValue}>{selectedDetail.noHp}</div>
                   </div>
                   <div style={{ gridColumn: 'span 2' }}>
-                    <span style={styles.detailFieldLabel}>Alamat Pengiriman</span>
+                    <span style={styles.detailFieldLabel}>ALAMAT PENGIRIMAN</span>
                     <div style={styles.detailFieldValue}>{selectedDetail.alamat}</div>
                   </div>
-                  {selectedDetail.alasanPenolakan && (
-                    <div style={{ gridColumn: 'span 2', ...styles.detailRejectAlert }}>
-                      <strong>Alasan Ditolak:</strong> {selectedDetail.alasanPenolakan}
-                    </div>
-                  )}
                 </div>
               </div>
 
               {/* Rincian Modul */}
               <div style={styles.detailSection}>
                 <div style={styles.detailSectionTitle}>Rincian Modul</div>
-                <div style={{ overflowX: 'auto', width: '100%', WebkitOverflowScrolling: 'touch' }}>
+                
+                {/* Desktop */}
+                <div className="rincian-modul-desktop" style={{ overflowX: 'auto', width: '100%', WebkitOverflowScrolling: 'touch' }}>
                   <table style={styles.detailItemTable}>
                     <thead>
                       <tr>
-                        <th style={styles.detailTh}>Judul Modul</th>
+                        <th style={{ ...styles.detailTh, textAlign: 'left' }}>Judul Modul</th>
                         <th style={{ ...styles.detailTh, textAlign: 'center' }}>Jumlah</th>
-                        <th style={{ ...styles.detailTh, textAlign: 'right' }}>Harga</th>
+                        <th style={{ ...styles.detailTh, textAlign: 'right' }}>Harga Satuan</th>
                         <th style={{ ...styles.detailTh, textAlign: 'right' }}>Subtotal</th>
                       </tr>
                     </thead>
@@ -869,20 +1047,56 @@ export default function VerifikasiPembayaran() {
                     </tbody>
                   </table>
                 </div>
+
+                {/* Mobile */}
+                <div className="rincian-modul-mobile">
+                  {selectedDetail.itemModul.map((item, idx) => (
+                    <div key={idx} style={styles.mobileItemCard}>
+                      <div style={styles.mobileItemName}>{item.nama}</div>
+                      <div style={styles.mobileItemBottom}>
+                        <span style={styles.mobileItemQtyPrice}>
+                          {item.qty} × {formatRupiah(item.harga)}
+                        </span>
+                        <span style={styles.mobileItemSubtotal}>
+                          {formatRupiah(item.harga * item.qty)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  <div style={styles.mobileTotalRow}>
+                    <span style={styles.mobileTotalLabel}>Total:</span>
+                    <span style={styles.mobileTotalValue}>
+                      {formatRupiah(selectedDetail.totalBayar)}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               {/* Bukti Transfer Bank */}
               {selectedDetail.metodeBayar === 'Transfer Bank' &&
-                selectedDetail.status !== 'Belum Bayar' &&
-                selectedDetail.status !== 'Dibatalkan' &&
-                selectedDetail.status !== 'Kedaluwarsa' && (
+                selectedDetail.status !== 'Belum Bayar' && (
                   <div style={styles.detailSection}>
                     <div style={styles.detailSectionTitle}>Bukti Transfer Bank</div>
                     <div style={styles.detailReceiptWrapper}>
                       <img src={contohBuktiTf} alt="Bukti Transfer" style={styles.detailReceiptImg} />
                     </div>
+                    {/* Alasan Ditolak */}
+                    {selectedDetail.alasanPenolakan && (
+                      <div style={styles.detailRejectAlert}>
+                        <strong>Alasan Ditolak:</strong> {selectedDetail.alasanPenolakan}
+                      </div>
+                    )}
                   </div>
                 )}
+
+              {/* Alasan Ditolak */}
+              {selectedDetail.metodeBayar !== 'Transfer Bank' && selectedDetail.alasanPenolakan && (
+                <div style={styles.detailSection}>
+                  <div style={styles.detailRejectAlert}>
+                    <strong>Alasan Ditolak:</strong> {selectedDetail.alasanPenolakan}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div style={styles.modalActions}>
@@ -891,17 +1105,16 @@ export default function VerifikasiPembayaran() {
                 onClick={() => setSelectedDetail(null)}
                 style={styles.btnModalClose}
               >
-                Batal
+                {selectedDetail.status === 'Menunggu Verifikasi' ? 'Batal' : 'Tutup'}
               </button>
 
-              {/* Tombol Aksi Verifikasi Langsung dari Modal Detail */}
+              {/* Tombol Aksi */}
               {selectedDetail.status === 'Menunggu Verifikasi' && (
                 <>
                   <button
                     type="button"
                     onClick={() => handleOpenTolakModal(selectedDetail)}
                     style={styles.btnModalReject}
-                    title="Tolak Pembayaran"
                   >
                     <CancelOutlinedIcon sx={{ fontSize: 18 }} />
                     <span>Tolak</span>
@@ -911,7 +1124,6 @@ export default function VerifikasiPembayaran() {
                     type="button"
                     onClick={() => setApprovingOrder(selectedDetail)}
                     style={styles.btnModalApprove}
-                    title="Setujui Pembayaran"
                   >
                     <CheckCircleOutlinedIcon sx={{ fontSize: 18 }} />
                     <span>Setujui</span>
@@ -949,30 +1161,38 @@ const styles = {
     margin: '0 auto'
   },
   toast: {
+    position: 'fixed',
+    top: '24px',
+    right: '24px',
+    zIndex: 99999,
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
-    color: '#ffffff',
-    padding: '12px 20px',
+    padding: '14px 22px',
     borderRadius: '10px',
-    marginBottom: '20px',
+    color: '#ffffff',
     fontSize: '14px',
-    fontWeight: '500',
-    boxShadow: '0 4px 14px rgba(0,0,0,0.12)'
+    fontWeight: '600',
+    boxShadow: '0 8px 28px rgba(0, 0, 0, 0.22)',
+    animation: 'fadeIn 0.25s ease',
+    maxWidth: 'calc(100vw - 48px)'
   },
   tabContainer: {
     display: 'flex',
-    gap: '10px',
+    width: '100%',
     marginBottom: '22px',
     borderBottom: '2px solid #e2e8f0',
-    paddingBottom: '2px'
+    paddingBottom: '2px',
+    boxSizing: 'border-box'
   },
   tabButton: {
+    flex: 1,
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: '8px',
-    padding: '10px 20px',
-    fontSize: '14px',
+    padding: '11px 20px',
+    fontSize: '14.5px',
     fontWeight: '600',
     color: '#64748b',
     backgroundColor: 'transparent',
@@ -980,27 +1200,19 @@ const styles = {
     borderBottom: '3px solid transparent',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
-    borderRadius: '6px 6px 0 0'
+    borderRadius: '8px 8px 0 0',
+    boxSizing: 'border-box'
   },
   tabButtonActive: {
     color: '#23573c',
+    fontWeight: '700',
     borderBottom: '3px solid #23573c',
     backgroundColor: 'rgba(35, 87, 60, 0.06)'
   },
-  tabBadgeWarning: {
-    backgroundColor: '#d97706',
-    color: '#ffffff',
-    padding: '2px 8px',
-    borderRadius: '12px',
-    fontSize: '11px',
-    fontWeight: '700'
-  },
-  emptyTabContent: {
-    minHeight: '300px'
-  },
+
   statsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+    gridTemplateColumns: 'repeat(4, 1fr)',
     gap: '12px'
   },
   statCard: {
@@ -1058,7 +1270,8 @@ const styles = {
     borderRadius: '10px',
     border: '1px solid #23573c',
     flex: 1,
-    minWidth: '220px'
+    minWidth: '220px',
+    transition: 'all 0.2s ease'
   },
   searchInput: {
     border: 'none',
@@ -1076,7 +1289,8 @@ const styles = {
     padding: '8px 14px',
     borderRadius: '10px',
     border: '1px solid #23573c',
-    boxSizing: 'border-box'
+    boxSizing: 'border-box',
+    transition: 'all 0.2s ease'
   },
   dateInput: {
     border: 'none',
@@ -1109,29 +1323,11 @@ const styles = {
   },
   filterRight: {
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
+    gap: '12px',
+    flexWrap: 'wrap'
   },
-  customSelectContainer: {
-    position: 'relative'
-  },
-  selectFilterPill: {
-    padding: '8px 36px 8px 16px',
-    borderRadius: '10px',
-    border: '1px solid #23573c',
-    backgroundColor: '#f6faf7',
-    fontSize: '13.5px',
-    fontWeight: '600',
-    color: '#1a3e2b',
-    outline: 'none',
-    cursor: 'pointer',
-    appearance: 'none',
-    WebkitAppearance: 'none',
-    backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2323573c' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'right 12px center',
-    backgroundSize: '14px',
-    boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-  },
+
   tableCard: {
     backgroundColor: '#ffffff',
     borderRadius: '16px',
@@ -1181,23 +1377,87 @@ const styles = {
     color: '#1a3e2b',
     fontSize: '14px'
   },
-  statusIndicatorWrapper: {
+  statusMenunggu: {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '7px'
-  },
-  statusDot: {
-    width: '7px',
-    height: '7px',
-    borderRadius: '50%',
-    display: 'inline-block',
-    flexShrink: 0
-  },
-  statusText: {
-    fontSize: '14px',
+    justifyContent: 'center',
+    width: '140px',
+    height: '28px',
+    backgroundColor: '#fef3c7',
+    color: '#d97706',
+    borderRadius: '6px',
+    fontSize: '11.5px',
     fontWeight: '700',
-    color: '#1a3e2b'
+    letterSpacing: '0.4px',
+    border: '1px solid #d97706',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
   },
+  statusDisetujui: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '140px',
+    height: '28px',
+    backgroundColor: '#dcfce7',
+    color: '#16a34a',
+    borderRadius: '6px',
+    fontSize: '11.5px',
+    fontWeight: '700',
+    letterSpacing: '0.4px',
+    border: '1px solid #16a34a',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
+  },
+  statusDitolak: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '140px',
+    height: '28px',
+    backgroundColor: '#fee2e2',
+    color: '#dc2626',
+    borderRadius: '6px',
+    fontSize: '11.5px',
+    fontWeight: '700',
+    letterSpacing: '0.4px',
+    border: '1px solid #dc2626',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
+  },
+  statusBelumBayar: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '140px',
+    height: '28px',
+    backgroundColor: '#dbeafe',
+    color: '#2563eb',
+    borderRadius: '6px',
+    fontSize: '11.5px',
+    fontWeight: '700',
+    letterSpacing: '0.4px',
+    border: '1px solid #2563eb',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
+  },
+  statusDefault: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '140px',
+    height: '28px',
+    backgroundColor: '#f1f5f9',
+    color: '#64748b',
+    borderRadius: '6px',
+    fontSize: '11.5px',
+    fontWeight: '600',
+    letterSpacing: '0.4px',
+    border: '1px solid #94a3b8',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
+  },
+
   actionButtonsWrapper: {
     display: 'flex',
     alignItems: 'center',
@@ -1285,10 +1545,10 @@ const styles = {
   },
   btnPageNumActive: {
     backgroundColor: '#23573c',
-    border: 'none',
+    border: '1px solid #23573c',
     color: '#ffffff',
     fontWeight: '700',
-    boxShadow: '0 2px 6px rgba(35, 87, 60, 0.3)'
+    boxShadow: '0 2px 6px rgba(35, 87, 60, 0.25)'
   },
   modalOverlay: {
     position: 'fixed',
@@ -1518,16 +1778,7 @@ const styles = {
     fontWeight: '700',
     color: '#166534'
   },
-  detailStatusWrapper: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px'
-  },
-  detailStatusText: {
-    fontSize: '13px',
-    fontWeight: '600',
-    color: '#334155'
-  },
+
   detailSection: {
     display: 'flex',
     flexDirection: 'column',
@@ -1578,7 +1829,8 @@ const styles = {
     padding: '6px 8px',
     borderBottom: '1px solid #e2e8f0',
     color: '#475569',
-    fontWeight: '600'
+    fontWeight: '600',
+    textAlign: 'left'
   },
   detailTd: {
     padding: '6px 8px',
@@ -1603,5 +1855,56 @@ const styles = {
     borderRadius: '8px',
     boxShadow: '0 4px 14px rgba(0,0,0,0.08)',
     border: '1px solid #e2e8f0'
+  },
+  mobileItemCard: {
+    backgroundColor: '#f8faf9',
+    borderRadius: '10px',
+    border: '1px solid #eef2ef',
+    padding: '12px 14px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px'
+  },
+  mobileItemName: {
+    fontSize: '14px',
+    fontWeight: '700',
+    color: '#1a3e2b',
+    lineHeight: '1.4'
+  },
+  mobileItemBottom: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '10px'
+  },
+  mobileItemQtyPrice: {
+    fontSize: '13.5px',
+    color: '#475569',
+    fontWeight: '600'
+  },
+  mobileItemSubtotal: {
+    fontSize: '14px',
+    fontWeight: '700',
+    color: '#1e293b'
+  },
+  mobileTotalRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#ffffff',
+    border: '1px solid #e2e8f0',
+    borderRadius: '10px',
+    padding: '12px 16px',
+    marginTop: '6px'
+  },
+  mobileTotalLabel: {
+    fontSize: '14px',
+    fontWeight: '700',
+    color: '#334155'
+  },
+  mobileTotalValue: {
+    fontSize: '14px',
+    fontWeight: '700',
+    color: '#166534'
   }
 };
