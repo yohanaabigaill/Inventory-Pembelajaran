@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 
@@ -6,7 +6,6 @@ import Navbar from '../components/Navbar';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import ArchiveOutlinedIcon from '@mui/icons-material/ArchiveOutlined';
-import PostAddOutlinedIcon from '@mui/icons-material/PostAddOutlined';
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 
@@ -128,7 +127,7 @@ function CustomDropdown({
     <div
       ref={containerRef}
       className={`custom-dropdown-container ${className}`}
-      style={{ position: 'relative', userSelect: 'none', ...style }}
+      style={{ position: 'relative', userSelect: 'none', zIndex: isOpen ? 100 : 1, ...style }}
     >
       <div
         onClick={() => setIsOpen(!isOpen)}
@@ -308,11 +307,6 @@ export default function ModulMasuk() {
     }, 3500);
   };
 
-  // Total Form
-  const totalQtyForm = useMemo(() => {
-    return modulItems.reduce((sum, it) => sum + (Number(it.jumlahDiterima) || 0), 0);
-  }, [modulItems]);
-
   // Tambah Baris
   const handleTambahBaris = () => {
     setModulItems((prev) => [
@@ -477,7 +471,7 @@ export default function ModulMasuk() {
         />
 
         {/* Content */}
-        <main style={styles.contentBody}>
+        <main style={styles.contentBody} className="content-body-responsive">
           {/* Toast */}
           {notification && (
             <div
@@ -492,7 +486,7 @@ export default function ModulMasuk() {
           )}
 
           {/* Card Total */}
-          <div style={styles.statCard}>
+          <div style={styles.statCard} className="stat-card-responsive-modul">
             <div style={styles.statLeft}>
               <div style={styles.statLabel}>TOTAL MODUL MASUK BULAN INI</div>
               <div style={styles.statValue}>
@@ -506,20 +500,10 @@ export default function ModulMasuk() {
 
           {/* Card Form */}
           <div style={styles.card}>
-            {/* Header */}
-            <div style={styles.cardHeader}>
-              <div style={styles.cardHeaderLeft}>
-                <div style={styles.headerIconBox}>
-                  <PostAddOutlinedIcon sx={{ fontSize: 20, color: '#ffffff' }} />
-                </div>
-                <h2 style={styles.cardTitle}>Formulir Modul Masuk</h2>
-              </div>
-            </div>
-
             {/* Form */}
-            <form onSubmit={handleSimpan} noValidate style={styles.formContainer}>
+            <form onSubmit={handleSimpan} noValidate style={styles.formContainer} className="form-container-responsive">
               {/* Tanggal Masuk */}
-              <div style={styles.tanggalMasukWrapper}>
+              <div style={styles.tanggalMasukWrapper} className="tanggal-masuk-wrapper-responsive">
                 <label style={styles.label}>Tanggal Masuk</label>
                 <input
                   type="date"
@@ -544,8 +528,8 @@ export default function ModulMasuk() {
                 )}
               </div>
 
-              {/* Tabel Input Modul Items */}
-              <div style={styles.tableResponsive}>
+              {/* Desktop */}
+              <div style={styles.tableResponsive} className="modul-masuk-desktop-table">
                 <table style={styles.table}>
                   <colgroup>
                     <col style={{ width: '50px' }} />
@@ -570,22 +554,22 @@ export default function ModulMasuk() {
                         .filter((it) => it.id !== item.id && it.judulModul)
                         .map((it) => it.judulModul);
 
-                      // Opsi judul modul disaring berdasarkan jenisModul
+                      // Filter modul
                       const availableModuls = (!item.jenisModul || item.jenisModul === 'Semua Jenis')
                         ? MASTER_MODULS
                         : MASTER_MODULS.filter((m) => m.kategori === item.jenisModul);
 
-                      // Judul unik
+                      // Opsi judul unik
                       const modulTitleOptions = Array.from(new Set(availableModuls.map((m) => m.nama)));
 
                       return (
                         <tr key={item.id} style={styles.tr}>
-                          {/* NO */}
+                          {/* No */}
                           <td style={{ ...styles.td, textAlign: 'center', fontWeight: '600', color: '#64748b' }}>
                             {index + 1}
                           </td>
 
-                          {/* JENIS MODUL */}
+                          {/* Jenis */}
                           <td style={styles.td}>
                             <CustomDropdown
                               value={item.jenisModul || 'Semua Jenis'}
@@ -605,7 +589,7 @@ export default function ModulMasuk() {
                             />
                           </td>
 
-                          {/* Judul Modul */}
+                          {/* Judul */}
                           <td style={styles.td}>
                             <CustomDropdown
                               value={item.judulModul}
@@ -630,10 +614,11 @@ export default function ModulMasuk() {
                             )}
                           </td>
 
-                          {/* Jumlah Diterima */}
+                          {/* Jumlah */}
                           <td style={styles.td}>
                             <input
                               type="number"
+                              min="1"
                               className="input-focus-green"
                               placeholder="Contoh: 100"
                               value={item.jumlahDiterima}
@@ -648,13 +633,12 @@ export default function ModulMasuk() {
                             )}
                           </td>
 
-                          {/* AKSI (HAPUS) */}
+                          {/* Aksi */}
                           <td style={{ ...styles.td, textAlign: 'center' }}>
                             <button
                               type="button"
                               onClick={() => handleHapusBaris(item.id)}
                               style={styles.btnActionDelete}
-                              title="Hapus baris ini"
                             >
                               <DeleteOutlineOutlinedIcon sx={{ fontSize: 18 }} />
                             </button>
@@ -666,12 +650,134 @@ export default function ModulMasuk() {
                 </table>
               </div>
 
+              {/* Mobile */}
+              <div className="modul-masuk-mobile-cards">
+                {modulItems.map((item, index) => {
+                  const rowErr = itemErrors[item.id] || {};
+                  const otherSelectedTitles = modulItems
+                    .filter((it) => it.id !== item.id && it.judulModul)
+                    .map((it) => it.judulModul);
+
+                  // Filter modul
+                  const availableModuls = (!item.jenisModul || item.jenisModul === 'Semua Jenis')
+                    ? MASTER_MODULS
+                    : MASTER_MODULS.filter((m) => m.kategori === item.jenisModul);
+
+                  // Opsi judul unik
+                  const modulTitleOptions = Array.from(new Set(availableModuls.map((m) => m.nama)));
+
+                  return (
+                    <div
+                      key={item.id}
+                      style={{
+                        backgroundColor: '#ffffff',
+                        border: '1px solid #dce4de',
+                        borderRadius: '12px',
+                        padding: '14px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '12px',
+                        boxShadow: '0 1px 4px rgba(0,0,0,0.03)'
+                      }}
+                    >
+                      {/* Header */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: '12px', fontWeight: '700', color: '#23573c', backgroundColor: '#eaf4ee', padding: '3px 10px', borderRadius: '6px' }}>
+                          Modul {index + 1}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleHapusBaris(item.id)}
+                          style={styles.btnActionDelete}
+                        >
+                          <DeleteOutlineOutlinedIcon sx={{ fontSize: 18 }} />
+                        </button>
+                      </div>
+
+                      {/* Jenis */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                        <label style={{ fontSize: '11.5px', fontWeight: '700', color: '#1a3e2b', textTransform: 'uppercase' }}>
+                          Jenis Modul
+                        </label>
+                        <CustomDropdown
+                          value={item.jenisModul || 'Semua Jenis'}
+                          onChange={(val) => handleItemChange(item.id, 'jenisModul', val)}
+                          placeholder="Pilih Jenis"
+                          options={KATEGORI_OPTIONS}
+                          withSearch={false}
+                          selectStyle={{
+                            height: '42px',
+                            padding: '0 14px',
+                            borderRadius: '8px',
+                            backgroundColor: '#ffffff',
+                            border: '1px solid #dce4de',
+                            fontSize: '13.5px',
+                            color: '#1e293b'
+                          }}
+                        />
+                      </div>
+
+                      {/* Judul */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                        <label style={{ fontSize: '11.5px', fontWeight: '700', color: '#1a3e2b', textTransform: 'uppercase' }}>
+                          Pilih Judul Modul
+                        </label>
+                        <CustomDropdown
+                          value={item.judulModul}
+                          onChange={(val) => handleItemChange(item.id, 'judulModul', val)}
+                          placeholder="Pilih Judul Modul"
+                          searchPlaceholder="Cari judul modul..."
+                          options={modulTitleOptions}
+                          disabledOptions={otherSelectedTitles}
+                          withSearch={true}
+                          selectStyle={{
+                            height: '42px',
+                            padding: '0 14px',
+                            borderRadius: '8px',
+                            backgroundColor: '#ffffff',
+                            border: `1px solid ${rowErr.judulModul ? '#dc2626' : '#dce4de'}`,
+                            fontSize: '13.5px',
+                            color: item.judulModul ? '#1e293b' : '#94a3b8'
+                          }}
+                        />
+                        {rowErr.judulModul && (
+                          <span style={styles.errorText}>{rowErr.judulModul}</span>
+                        )}
+                      </div>
+
+                      {/* Jumlah */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                        <label style={{ fontSize: '11.5px', fontWeight: '700', color: '#1a3e2b', textTransform: 'uppercase' }}>
+                          Jumlah Diterima
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          className="input-focus-green"
+                          placeholder="Contoh: 100"
+                          value={item.jumlahDiterima}
+                          onChange={(e) => handleItemChange(item.id, 'jumlahDiterima', e.target.value)}
+                          style={{
+                            ...styles.inputJumlah,
+                            borderColor: rowErr.jumlahDiterima ? '#dc2626' : '#dce4de'
+                          }}
+                        />
+                        {rowErr.jumlahDiterima && (
+                          <span style={styles.errorText}>{rowErr.jumlahDiterima}</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
               {/* Tambah Baris */}
               <div>
                 <button
                   type="button"
                   onClick={handleTambahBaris}
                   style={styles.btnTambahBaris}
+                  className="btn-tambah-baris-responsive"
                 >
                   <AddCircleOutlineOutlinedIcon sx={{ fontSize: 18 }} />
                   <span>Tambah Modul Masuk</span>
@@ -679,22 +785,19 @@ export default function ModulMasuk() {
               </div>
 
               {/* Aksi */}
-              <div style={styles.formActions}>
-                {modulItems.length > 1 && totalQtyForm > 0 && (
-                  <div style={styles.itemsSummary}>
-                    Total: <strong>{modulItems.length}</strong> judul modul ({totalQtyForm.toLocaleString('id-ID')} modul)
-                  </div>
-                )}
+              <div style={styles.formActions} className="form-actions-responsive">
                 <button
                   type="button"
                   onClick={handleBatal}
                   style={styles.btnBatal}
+                  className="btn-batal-responsive"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   style={styles.btnSimpan}
+                  className="btn-simpan-responsive"
                 >
                   <SaveOutlinedIcon sx={{ fontSize: 18 }} />
                   <span>Simpan & Update Stok Fisik</span>
@@ -791,36 +894,6 @@ const styles = {
     boxShadow: '0 2px 10px rgba(0, 0, 0, 0.02)',
     overflow: 'visible',
     position: 'relative'
-  },
-  cardHeader: {
-    padding: '16px 24px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#ebf2ed',
-    borderBottom: '1px solid #dce4de',
-    borderTopLeftRadius: '15px',
-    borderTopRightRadius: '15px'
-  },
-  cardHeaderLeft: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px'
-  },
-  headerIconBox: {
-    width: '30px',
-    height: '30px',
-    borderRadius: '8px',
-    backgroundColor: '#23573c',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  cardTitle: {
-    fontSize: '15px',
-    fontWeight: '700',
-    color: '#1d4632',
-    margin: 0
   },
   // Form
   formContainer: {
@@ -944,12 +1017,6 @@ const styles = {
     marginTop: '10px',
     paddingTop: '18px',
     borderTop: '1px solid #edf2ef'
-  },
-  itemsSummary: {
-    marginRight: 'auto',
-    fontSize: '13.5px',
-    color: '#64748b',
-    fontWeight: '500'
   },
   btnBatal: {
     backgroundColor: '#ffffff',
