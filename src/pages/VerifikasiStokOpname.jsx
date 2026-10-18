@@ -9,6 +9,7 @@ import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
+import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 
 const MONTH_NAMES = [
   'Januari',
@@ -250,6 +251,7 @@ function MonthYearCalendarPicker({
 
       {isOpen && (
         <div
+          className="calendar-picker-popup"
           style={{
             position: 'absolute',
             top: 'calc(100% + 6px)',
@@ -260,6 +262,7 @@ function MonthYearCalendarPicker({
             boxShadow: '0 12px 30px -4px rgba(0, 0, 0, 0.16)',
             zIndex: 9999,
             width: '270px',
+            maxWidth: 'calc(100vw - 32px)',
             padding: '16px',
             boxSizing: 'border-box'
           }}
@@ -496,6 +499,8 @@ export default function VerifikasiStokOpname() {
   const [monthlyData, setMonthlyData] = useState(getInitialMonthlyVerificationData);
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchHovered, setIsSearchHovered] = useState(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('Semua Jenis');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -534,10 +539,6 @@ export default function VerifikasiStokOpname() {
       }
     };
   }, []);
-
-  useEffect(() => {
-    setSelectedItemIds(new Set());
-  }, [periodKey]);
 
   // Ambil data periode aktif
   const currentPeriodData = useMemo(() => {
@@ -778,7 +779,7 @@ export default function VerifikasiStokOpname() {
         />
 
         {/* Content Body */}
-        <main style={styles.contentBody}>
+        <main className="content-body-responsive" style={styles.contentBody}>
           {/* Toast Notification */}
           {notification && (
             <div
@@ -866,14 +867,30 @@ export default function VerifikasiStokOpname() {
           <div className="filter-card-responsive" style={styles.filterCard}>
             <div className="filter-left-responsive" style={styles.filterLeft}>
               {/* Search Bar */}
-              <div className="search-wrapper-responsive" style={styles.searchWrapper}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5b7566" strokeWidth="2" style={styles.searchIcon}>
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
+              <div
+                style={{
+                  ...styles.searchWrapper,
+                  boxShadow: isSearchFocused
+                    ? '0 0 0 3px rgba(35, 87, 60, 0.15)'
+                    : isSearchHovered
+                    ? '0 0 0 3px rgba(35, 87, 60, 0.1)'
+                    : 'none',
+                  borderColor: '#23573c'
+                }}
+                onMouseEnter={() => setIsSearchHovered(true)}
+                onMouseLeave={() => setIsSearchHovered(false)}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={(e) => {
+                  if (!e.currentTarget.contains(e.relatedTarget)) {
+                    setIsSearchFocused(false);
+                  }
+                }}
+                className="search-wrapper-responsive"
+              >
+                <SearchOutlinedIcon sx={{ color: '#23573c', fontSize: 20, flexShrink: 0 }} />
                 <input
                   type="text"
-                  placeholder="Cari judul modul ..."
+                  placeholder="Cari judul modul..."
                   value={searchQuery}
                   onChange={(e) => {
                     setSearchQuery(e.target.value);
@@ -882,6 +899,27 @@ export default function VerifikasiStokOpname() {
                   className="search-input-responsive"
                   style={styles.searchInput}
                 />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setCurrentPage(1);
+                    }}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#64748b',
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: 0
+                    }}
+                    aria-label="Hapus pencarian"
+                  >
+                    <CloseOutlinedIcon sx={{ fontSize: 16 }} />
+                  </button>
+                )}
               </div>
 
               {/* Dropdown Jenis Modul */}
@@ -893,7 +931,7 @@ export default function VerifikasiStokOpname() {
                 }}
                 options={KATEGORI_OPTIONS}
                 className="select-wrapper-responsive"
-                style={{ width: '145px', flexShrink: 0 }}
+                style={{ minWidth: '155px', flex: '0 1 auto' }}
                 selectStyle={styles.customSelect}
                 arrowColor="#1a3e2b"
               />
@@ -909,7 +947,7 @@ export default function VerifikasiStokOpname() {
                   setCurrentPage(1);
                 }}
                 className="select-wrapper-responsive"
-                style={{ width: '175px', flexShrink: 0 }}
+                style={{ minWidth: '185px', flex: '0 1 auto' }}
                 selectStyle={styles.customSelect}
               />
             </div>
@@ -1013,18 +1051,18 @@ export default function VerifikasiStokOpname() {
             <div style={styles.tableResponsive}>
               <table style={styles.table}>
                 <colgroup>
+                  <col style={{ width: '70px' }} />
+                  <col style={{ width: '45px' }} />
+                  <col style={{ width: '265px' }} />
+                  <col style={{ width: '165px' }} />
+                  <col style={{ width: '105px' }} />
+                  <col style={{ width: '105px' }} />
                   <col style={{ width: '85px' }} />
-                  <col style={{ width: '50px' }} />
-                  <col />
-                  <col style={{ width: '120px' }} />
-                  <col style={{ width: '105px' }} />
-                  <col style={{ width: '105px' }} />
-                  <col style={{ width: '75px' }} />
-                  <col style={{ width: '180px' }} />
+                  <col style={{ width: '200px' }} />
                 </colgroup>
                 <thead>
                   <tr style={styles.thRow}>
-                    <th style={{ ...styles.th, textAlign: 'center', whiteSpace: 'nowrap' }}>
+                    <th style={{ ...styles.th, width: '70px', textAlign: 'center', whiteSpace: 'nowrap' }}>
                       <label
                         style={{
                           display: 'inline-flex',
@@ -1064,13 +1102,13 @@ export default function VerifikasiStokOpname() {
                         </span>
                       </label>
                     </th>
-                    <th style={{ ...styles.th, textAlign: 'center' }}>NO</th>
-                    <th style={styles.th}>JUDUL MODUL</th>
-                    <th style={{ ...styles.th, paddingRight: '4px' }}>JENIS</th>
-                    <th style={{ ...styles.th, textAlign: 'center' }}>STOK SISTEM</th>
-                    <th style={{ ...styles.th, textAlign: 'center' }}>INPUT FISIK</th>
-                    <th style={{ ...styles.th, textAlign: 'center' }}>SELISIH</th>
-                    <th style={{ ...styles.th, textAlign: 'center', paddingRight: '16px' }}>STATUS</th>
+                    <th style={{ ...styles.th, width: '45px', textAlign: 'center' }}>NO</th>
+                    <th style={{ ...styles.th, width: '265px' }}>JUDUL MODUL</th>
+                    <th style={{ ...styles.th, width: '165px' }}>JENIS</th>
+                    <th style={{ ...styles.th, width: '105px', textAlign: 'center' }}>STOK SISTEM</th>
+                    <th style={{ ...styles.th, width: '105px', textAlign: 'center' }}>INPUT FISIK</th>
+                    <th style={{ ...styles.th, width: '85px', textAlign: 'center' }}>SELISIH</th>
+                    <th style={{ ...styles.th, width: '200px', textAlign: 'center', paddingRight: '20px' }}>STATUS</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1122,13 +1160,13 @@ export default function VerifikasiStokOpname() {
 
                           {/* JUDUL MODUL */}
                           <td style={styles.td}>
-                            <div style={styles.moduleNameMain} title={item.nama}>
+                            <div style={styles.moduleNameMain}>
                               {item.nama}
                             </div>
                           </td>
 
                           {/* JENIS */}
-                          <td style={{ ...styles.td, paddingRight: '4px' }}>
+                          <td style={styles.td}>
                             <span style={styles.jenisTextPlainBold}>{item.kategori}</span>
                           </td>
 
@@ -1178,7 +1216,7 @@ export default function VerifikasiStokOpname() {
                           </td>
 
                           {/* STATUS */}
-                          <td style={{ ...styles.td, textAlign: 'center', paddingRight: '16px' }}>
+                          <td style={{ ...styles.td, textAlign: 'center', paddingRight: '20px' }}>
                             {renderStatusBadge(item.status)}
                           </td>
                         </tr>
@@ -1412,7 +1450,7 @@ const styles = {
     backgroundColor: '#f8faf9'
   },
   contentBody: {
-    padding: '28px 36px 120px',
+    padding: '24px 32px 100px',
     display: 'flex',
     flexDirection: 'column',
     gap: '20px'
@@ -1467,39 +1505,37 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: '14px',
+    gap: '12px',
     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
-    flexWrap: 'nowrap'
+    flexWrap: 'wrap'
   },
   filterLeft: {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-    flex: 1,
-    flexWrap: 'nowrap'
+    flex: '1 1 auto',
+    flexWrap: 'wrap'
   },
   searchWrapper: {
-    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    backgroundColor: '#f6faf7',
+    padding: '8px 16px',
+    borderRadius: '10px',
+    border: '1px solid #23573c',
     flex: 1,
-    minWidth: '160px'
-  },
-  searchIcon: {
-    position: 'absolute',
-    left: '12px',
-    top: '50%',
-    transform: 'translateY(-50%)'
+    minWidth: '220px',
+    transition: 'all 0.2s ease',
+    boxSizing: 'border-box'
   },
   searchInput: {
-    width: '100%',
-    height: '40px',
-    padding: '0 14px 0 38px',
-    borderRadius: '8px',
-    border: '1px solid #dce4de',
-    fontSize: '13px',
-    color: '#1e293b',
-    backgroundColor: '#ffffff',
+    border: 'none',
     outline: 'none',
-    boxSizing: 'border-box'
+    backgroundColor: 'transparent',
+    fontSize: '13.5px',
+    width: '100%',
+    color: '#1a3e2b'
   },
   customSelect: {
     height: '40px',
@@ -1516,7 +1552,8 @@ const styles = {
   actionButtonsSuperAdmin: {
     display: 'flex',
     alignItems: 'center',
-    gap: '10px'
+    gap: '10px',
+    flexShrink: 0
   },
   btnSetujui: {
     height: '40px',
@@ -1532,7 +1569,9 @@ const styles = {
     alignItems: 'center',
     gap: '8px',
     boxShadow: '0 2px 6px rgba(35, 87, 60, 0.25)',
-    transition: 'all 0.15s ease'
+    transition: 'all 0.15s ease',
+    whiteSpace: 'nowrap',
+    flexShrink: 0
   },
   btnTolak: {
     height: '40px',
@@ -1548,7 +1587,9 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
-    transition: 'all 0.15s ease'
+    transition: 'all 0.15s ease',
+    whiteSpace: 'nowrap',
+    flexShrink: 0
   },
 
   // Table Card
@@ -1566,7 +1607,7 @@ const styles = {
   },
   table: {
     width: '100%',
-    minWidth: '850px',
+    minWidth: '980px',
     tableLayout: 'fixed',
     borderCollapse: 'collapse',
     fontSize: '13.5px',
