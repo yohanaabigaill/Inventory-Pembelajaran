@@ -2,7 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 import coverModul from '../assets/fotomodul.jpg';
+import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 
+//Dropdown
 function CustomDropdown({
   value,
   onChange,
@@ -39,6 +41,7 @@ function CustomDropdown({
       style={{ position: 'relative', userSelect: 'none', ...style }}
     >
       <div
+        // Tombol untuk membuka dan menutup dropdown
         onClick={() => setIsOpen(!isOpen)}
         style={{
           display: 'flex',
@@ -110,10 +113,7 @@ function CustomDropdown({
                   backgroundColor: isSelected ? '#23573c' : 'transparent',
                   cursor: 'pointer',
                   transition: 'background-color 0.15s ease, color 0.15s ease',
-                  borderTopLeftRadius: isFirst ? '9px' : '0',
-                  borderTopRightRadius: isFirst ? '9px' : '0',
-                  borderBottomLeftRadius: isLast ? '9px' : '0',
-                  borderBottomRightRadius: isLast ? '9px' : '0'
+                  borderTopLeftRadius: isFirst ? '9px' : '0', borderTopRightRadius: isFirst ? '9px' : '0', borderBottomLeftRadius: isLast ? '9px' : '0',      borderBottomRightRadius: isLast ? '9px' : '0'
                 }}
               >
                 {optLabel}
@@ -126,6 +126,7 @@ function CustomDropdown({
   );
 }
 
+// Kategori pada filter
 const KATEGORI_OPTIONS = [
   'Semua Jenis',
   'Al Haqq',
@@ -137,15 +138,8 @@ const KATEGORI_OPTIONS = [
   'Al Quran'
 ];
 
-const MODAL_KATEGORI_OPTIONS = [
-  'Al Haqq',
-  'Al Hisan',
-  'Tahsin Usmani',
-  'RSQ Kids',
-  'Umum',
-  'Al Quran Wakaf',
-  'Al Quran'
-];
+// Kategori untuk Modal
+const MODAL_KATEGORI_OPTIONS = KATEGORI_OPTIONS.filter(opt => opt !== 'Semua Jenis');
 
 const STATUS_OPTIONS = [
   'Semua Status',
@@ -154,8 +148,28 @@ const STATUS_OPTIONS = [
   'Habis'
 ];
 
+// Nilai awal form data & form errors
+const INITIAL_FORM_DATA = {
+  nama: '',
+  kategori: 'Al Haqq',
+  hpp: '',
+  hargaJual: '',
+  stok: '',
+  cover: null,
+};
+
+const INITIAL_FORM_ERRORS = {
+  nama: '',
+  hpp: '',
+  hargaJual: '',
+  stok: '',
+  cover: ''
+};
+
 export default function DataModul() {
   const fileInputRef = useRef(null);
+
+  // Data Modul
   const [modulList, setModulList] = useState([
     {
       id: 1,
@@ -209,7 +223,7 @@ export default function DataModul() {
     }
   ]);
 
-  //Filters dan Search
+  // Search dan Filter
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedKategori, setSelectedKategori] = useState('Semua Jenis');
   const [selectedStatus, setSelectedStatus] = useState('Semua Status');
@@ -217,30 +231,34 @@ export default function DataModul() {
   // Modal Tambah dan Edit
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingModul, setEditingModul] = useState(null);
-  const [formData, setFormData] = useState({
-    sku: '',
-    nama: '',
-    kategori: 'Al Haqq',
-    hpp: '',
-    hargaJual: '',
-    stok: '',
-    minRestock: 50,
-    deskripsi: ''
-  });
-  const [formErrors, setFormErrors] = useState({
-    nama: '',
-    hpp: '',
-    hargaJual: '',
-    stok: '',
-    cover: ''
-  });
+  const [formData, setFormData] = useState(INITIAL_FORM_DATA);
+  const [formErrors, setFormErrors] = useState(INITIAL_FORM_ERRORS);
 
-  // Modal Hapus State
+  // Konfirmasi Hapus
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
-  // Mobile Sidebar State
+  // Sidebar Responsif
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
+  // Notifikasi
+  const [notification, setNotification] = useState(null);
+  const notifTimerRef = useRef(null);
+
+  const showNotification = (message, type = 'success') => {
+    if (notifTimerRef.current) clearTimeout(notifTimerRef.current);
+    setNotification({ message, type });
+    notifTimerRef.current = setTimeout(() => {
+      setNotification(null);
+    }, 4000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (notifTimerRef.current) clearTimeout(notifTimerRef.current);
+    };
+  }, []);
+
+  // Validasi rupiah pada HPP dan harga jual
   const formatNumberDots = (val) => {
     if (!val && val !== 0) return '';
     const raw = String(val).replace(/\D/g, '');
@@ -256,16 +274,17 @@ export default function DataModul() {
     fileInputRef.current?.click();
   };
 
+  // Unggah file foto dan URL preview
   const handleFileChange = (e) => {
     const file = e.target.files && e.target.files[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file);
       setFormData(prev => ({
         ...prev,
-        cover: imageUrl,
-        fileName: file.name
+        cover: imageUrl
       }));
       setFormErrors(prev => ({ ...prev, cover: '' }));
+      e.target.value = '';
     }
   };
 
@@ -276,29 +295,31 @@ export default function DataModul() {
     }
   };
 
-  // Tambah Modul
+  // Validasi nominal Rupiah
+  const handlePriceBlur = (field) => {
+    const raw = parseNumberOnly(formData[field]);
+    if (formData[field] !== '' && formData[field] !== null && formData[field] !== undefined) {
+      if (raw > 0 && raw < 1000) {
+        setFormErrors(prev => ({
+          ...prev,
+          [field]: 'Nominal rupiah tidak valid'
+        }));
+      }
+    }
+  };
+
+  // Modal Tambah Modul
   const handleOpenAdd = () => {
     setEditingModul(null);
-    setFormErrors({ nama: '', hpp: '', hargaJual: '', stok: '', cover: '' });
-    setFormData({
-      sku: '',
-      nama: '',
-      kategori: 'Al Haqq',
-      hpp: '',
-      hargaJual: '',
-      stok: '',
-      minRestock: 50,
-      deskripsi: '',
-      cover: null,
-      fileName: ''
-    });
+    setFormErrors(INITIAL_FORM_ERRORS);
+    setFormData(INITIAL_FORM_DATA);
     setIsModalOpen(true);
   };
 
-  // Edit Modul
+  // Modal Edit Modul
   const handleOpenEdit = (modul) => {
     setEditingModul(modul);
-    setFormErrors({ nama: '', hpp: '', hargaJual: '', stok: '', cover: '' });
+    setFormErrors(INITIAL_FORM_ERRORS);
     setFormData({
       sku: modul.sku || '',
       nama: modul.nama || '',
@@ -308,13 +329,12 @@ export default function DataModul() {
       stok: modul.stok !== undefined ? modul.stok : '',
       minRestock: modul.minRestock || 50,
       deskripsi: modul.deskripsi || '',
-      cover: modul.cover || coverModul,
-      fileName: modul.fileName || ''
+      cover: modul.cover || coverModul
     });
     setIsModalOpen(true);
   };
 
-  // Modal Hapus
+  // Modal Hapus Modul
   const handleRequestDelete = (id) => {
     setDeleteConfirmId(id);
   };
@@ -323,13 +343,14 @@ export default function DataModul() {
     if (deleteConfirmId) {
       setModulList(prev => prev.filter(item => item.id !== deleteConfirmId));
       setDeleteConfirmId(null);
+      showNotification('Modul berhasil dihapus!', 'success');
     }
   };
 
+  // Batalkan hapus modul
   const handleCancelDelete = () => {
     setDeleteConfirmId(null);
   };
-
   const handleSave = (e) => {
     e.preventDefault();
 
@@ -337,12 +358,25 @@ export default function DataModul() {
     if (!formData.nama || !formData.nama.trim()) {
       errors.nama = 'Judul modul wajib diisi';
     }
-    if (formData.hpp === '' || formData.hpp === null || formData.hpp === undefined) {
-      errors.hpp = 'HPP wajib diisi';
-    }
-    if (formData.hargaJual === '' || formData.hargaJual === null || formData.hargaJual === undefined) {
-      errors.hargaJual = 'Harga jual wajib diisi';
-    }
+
+    // Validasi nominal Rupiah pada HPP dan Harga Jual
+    const validatePrice = (val, label) => {
+      const num = parseNumberOnly(val);
+      if (val === '' || val === null || val === undefined) {
+        return `${label} wajib diisi`;
+      }
+      if (num < 1000) {
+        return 'Nominal rupiah tidak valid';
+      }
+      return '';
+    };
+
+    const hppErr = validatePrice(formData.hpp, 'HPP');
+    if (hppErr) errors.hpp = hppErr;
+
+    const hargaErr = validatePrice(formData.hargaJual, 'Harga jual');
+    if (hargaErr) errors.hargaJual = hargaErr;
+
     if (formData.stok === '' || formData.stok === null || formData.stok === undefined) {
       errors.stok = 'Stok modul wajib diisi';
     }
@@ -354,7 +388,7 @@ export default function DataModul() {
       setFormErrors(errors);
       return;
     }
-    setFormErrors({ nama: '', hpp: '', hargaJual: '', stok: '', cover: '' });
+    setFormErrors(INITIAL_FORM_ERRORS);
 
     const hppNum = parseNumberOnly(formData.hpp);
     const hargaNum = parseNumberOnly(formData.hargaJual);
@@ -388,9 +422,13 @@ export default function DataModul() {
     }
 
     setIsModalOpen(false);
+    showNotification(
+      editingModul ? 'Modul berhasil diperbarui!' : 'Modul berhasil ditambahkan!',
+      'success'
+    );
   };
 
-  // Filter
+  // Filter data modul berdasarkan pencarian, kategori, dan status
   const filteredList = modulList.filter(item => {
     const matchSearch = item.nama.toLowerCase().includes(searchTerm.toLowerCase());
     const matchKategori = selectedKategori === 'Semua Jenis' || item.kategori === selectedKategori;
@@ -398,6 +436,7 @@ export default function DataModul() {
     return matchSearch && matchKategori && matchStatus;
   });
 
+  // Validasi Format Rupiah
   const formatRupiah = (number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(number);
   };
@@ -419,6 +458,19 @@ export default function DataModul() {
         />
 
         <main style={styles.contentBody}>
+          {/* Notifikasi */}
+          {notification && (
+            <div
+              style={{
+                ...styles.toast,
+                backgroundColor: notification.type === 'success' ? '#23573c' : '#dc2626'
+              }}
+            >
+              <CheckCircleOutlinedIcon sx={{ fontSize: 20 }} />
+              <span>{notification.message}</span>
+            </div>
+          )}
+
           {/* Filter */}
           <div className="filter-card-responsive" style={styles.filterCard}>
             <div className="filter-left-responsive" style={styles.filterLeft}>
@@ -499,8 +551,8 @@ export default function DataModul() {
                         {/* FOTO */}
                         <td style={{ ...styles.td, textAlign: 'center' }}>
                           <img
-                            src={coverModul}
-                            alt="Cover Modul"
+                            src={item.cover || coverModul}
+                            alt={item.nama || "Cover Modul"}
                             style={styles.coverThumb}
                           />
                         </td>
@@ -600,8 +652,8 @@ export default function DataModul() {
 
       {/* Modal Tambah dan Edit */}
       {isModalOpen && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalContent}>
+        <div style={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
+          <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div style={styles.modalHeader}>
               <h2 style={styles.modalTitle}>
@@ -657,6 +709,7 @@ export default function DataModul() {
                       type="text"
                       value={formData.hpp}
                       onChange={(e) => handleInputChange('hpp', formatNumberDots(e.target.value))}
+                      onBlur={() => handlePriceBlur('hpp')}
                       placeholder="Rp 00.000"
                       style={{
                         ...styles.modalInput,
@@ -673,6 +726,7 @@ export default function DataModul() {
                       type="text"
                       value={formData.hargaJual}
                       onChange={(e) => handleInputChange('hargaJual', formatNumberDots(e.target.value))}
+                      onBlur={() => handlePriceBlur('hargaJual')}
                       placeholder="Rp 00.000"
                       style={{
                         ...styles.modalInput,
@@ -692,7 +746,7 @@ export default function DataModul() {
                     type="number"
                     value={formData.stok}
                     onChange={(e) => handleInputChange('stok', e.target.value)}
-                    placeholder="100"
+                    placeholder="Contoh: 100 "
                     style={{
                       ...styles.modalInput,
                       borderColor: formErrors.stok ? '#ef4444' : '#23573c'
@@ -721,16 +775,27 @@ export default function DataModul() {
                           style={{ width: '36px', height: '48px', objectFit: 'cover', borderRadius: '4px' }}
                         />
                         <div style={{ textAlign: 'left' }}>
-                          <span style={styles.uploadMainText}>{formData.fileName || 'Foto Modul Terpilih'}</span>
-                          <p style={{ fontSize: '11.5px', color: '#23573c', margin: '2px 0 0 0', fontWeight: '600' }}>Klik untuk mengganti foto</p>
+                          <p style={{ fontSize: '12.5px', color: '#23573c', margin: 0, fontWeight: '600' }}>
+                            Klik untuk mengganti foto
+                          </p>
                         </div>
                       </div>
                     ) : (
                       <>
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2" style={{ marginBottom: '4px' }}>
-                          <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />
-                          <polyline points="12 13 12 8 10 10" />
-                          <polyline points="12 8 14 10" />
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="#23573c"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          style={{ marginBottom: '2px' }}
+                        >
+                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                          <circle cx="8.5" cy="8.5" r="1.5" />
+                          <polyline points="21 15 16 10 5 21" />
                         </svg>
                         <span style={styles.uploadMainText}>Unggah foto</span>
                         <span style={styles.uploadSubText}>Format JPG/PNG, maks. 2MB</span>
@@ -759,8 +824,8 @@ export default function DataModul() {
 
       {/*Modal Hapus */}
       {deleteConfirmId && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.deleteModalContent}>
+        <div style={styles.modalOverlay} onClick={handleCancelDelete}>
+          <div style={styles.deleteModalContent} onClick={(e) => e.stopPropagation()}>
             <div style={styles.deleteIconWrapper}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2">
                 <polyline points="3 6 5 6 21 6" />
@@ -787,6 +852,21 @@ export default function DataModul() {
     </div>
   );
 }
+
+// Status (Tersedia, Menipis, Habis)
+const baseStatusBadge = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '105px',
+  height: '28px',
+  borderRadius: '6px',
+  fontSize: '11.5px',
+  fontWeight: '700',
+  letterSpacing: '0.4px',
+  whiteSpace: 'nowrap',
+  boxSizing: 'border-box'
+};
 
 const styles = {
   layoutContainer: {
@@ -941,52 +1021,22 @@ const styles = {
   },
 
   statusTersediaNoDot: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '105px',
-    height: '28px',
+    ...baseStatusBadge,
     backgroundColor: '#dcfce7',
     color: '#16a34a',
-    borderRadius: '6px',
-    fontSize: '11.5px',
-    fontWeight: '700',
-    letterSpacing: '0.4px',
-    border: '1px solid #16a34a',
-    whiteSpace: 'nowrap',
-    boxSizing: 'border-box'
+    border: '1px solid #16a34a'
   },
   statusMenipisNoDot: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '105px',
-    height: '28px',
+    ...baseStatusBadge,
     backgroundColor: '#fef3c7',
     color: '#d97706',
-    borderRadius: '6px',
-    fontSize: '11.5px',
-    fontWeight: '700',
-    letterSpacing: '0.4px',
-    border: '1px solid #d97706',
-    whiteSpace: 'nowrap',
-    boxSizing: 'border-box'
+    border: '1px solid #d97706'
   },
   statusHabisNoDot: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '105px',
-    height: '28px',
+    ...baseStatusBadge,
     backgroundColor: '#fee2e2',
     color: '#dc2626',
-    borderRadius: '6px',
-    fontSize: '11.5px',
-    fontWeight: '700',
-    letterSpacing: '0.4px',
-    border: '1px solid #dc2626',
-    whiteSpace: 'nowrap',
-    boxSizing: 'border-box'
+    border: '1px solid #dc2626'
   },
 
   actionFlex: {
@@ -1099,38 +1149,11 @@ const styles = {
     justifyContent: 'space-between',
     backgroundColor: '#f8fafc'
   },
-  modalHeaderLeft: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px'
-  },
-  modalHeaderIconBox: {
-    width: '36px',
-    height: '36px',
-    backgroundColor: '#18181b',
-    borderRadius: '8px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
   modalTitle: {
     fontSize: '16px',
     fontWeight: '700',
     color: '#0f172a',
     margin: 0
-  },
-  modalSubtitle: {
-    fontSize: '12px',
-    color: '#64748b',
-    margin: '2px 0 0 0'
-  },
-  btnModalClose: {
-    background: 'none',
-    border: 'none',
-    fontSize: '22px',
-    color: '#64748b',
-    cursor: 'pointer',
-    padding: '4px'
   },
   modalFormWrapper: {
     display: 'flex',
@@ -1156,9 +1179,11 @@ const styles = {
     fontWeight: '700',
     color: '#1e293b'
   },
-  requiredStar: {
+  errorText: {
+    fontSize: '11.5px',
     color: '#ef4444',
-    marginLeft: '2px'
+    fontWeight: '500',
+    marginTop: '4px'
   },
   modalInput: {
     padding: '11px 14px',
@@ -1169,11 +1194,6 @@ const styles = {
     backgroundColor: '#ffffff',
     color: '#1e293b',
     fontFamily: 'inherit'
-  },
-  modalSelectWrapper: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center'
   },
   modalSelect: {
     width: '100%',
@@ -1186,51 +1206,10 @@ const styles = {
     color: '#1e293b',
     cursor: 'pointer'
   },
-  modalSelectArrow: {
-    position: 'absolute',
-    right: '14px',
-    pointerEvents: 'none'
-  },
   formGrid2: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
     gap: '14px'
-  },
-  restockInputRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px'
-  },
-  modalInputRestock: {
-    flex: 1,
-    padding: '11px 14px',
-    fontSize: '13px',
-    borderRadius: '10px',
-    border: '1px solid #23573c',
-    outline: 'none',
-    backgroundColor: '#ffffff',
-    color: '#1e293b'
-  },
-  unitText: {
-    fontSize: '13px',
-    fontWeight: '500',
-    color: '#64748b'
-  },
-  subHelpText: {
-    fontSize: '11.5px',
-    color: '#64748b',
-    margin: '2px 0 0 0'
-  },
-  modalTextarea: {
-    padding: '11px 14px',
-    fontSize: '13px',
-    borderRadius: '10px',
-    border: '1px solid #23573c',
-    outline: 'none',
-    backgroundColor: '#ffffff',
-    color: '#1e293b',
-    resize: 'vertical',
-    fontFamily: 'inherit'
   },
   uploadDropzone: {
     backgroundColor: '#ffffff',
@@ -1344,5 +1323,17 @@ const styles = {
     fontSize: '13.5px',
     fontWeight: '600',
     cursor: 'pointer'
+  },
+  toast: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '12px 20px',
+    borderRadius: '10px',
+    color: '#ffffff',
+    fontSize: '14px',
+    fontWeight: '500',
+    boxShadow: '0 4px 14px rgba(0,0,0,0.12)',
+    animation: 'fadeIn 0.2s ease'
   }
 };
