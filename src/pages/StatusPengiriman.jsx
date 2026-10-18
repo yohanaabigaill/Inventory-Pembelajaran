@@ -4,6 +4,200 @@ import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 import buktiSampaiImg from '../assets/bukti_pengiriman.jpg';
 
+// Icons
+import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
+import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
+import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
+import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
+
+// Konstanta
+const ONGKIR_FLAT_KURIR = 10000;
+
+const METODE_OPTIONS = [
+  'Semua Metode',
+  'Ambil di RSQ Pusat',
+  'Via Kurir',
+  'Titip ke Ustazah'
+];
+
+const STATUS_FILTER_OPTIONS = [
+  'Semua Status',
+  'Perlu Dikirim',
+  'Dikirim',
+  'Selesai'
+];
+
+const STATS_CONFIG = [
+  { key: 'totalPerluDikirim', label: 'Perlu Dikirim', status: 'Perlu Dikirim', border: '#d97706', color: '#d97706', bg: '#fef3c7', icon: Inventory2OutlinedIcon },
+  { key: 'totalDikirim', label: 'Dikirim', status: 'Dikirim', border: '#2563eb', color: '#2563eb', bg: '#dbeafe', icon: LocalShippingOutlinedIcon },
+  { key: 'totalSelesai', label: 'Selesai', status: 'Selesai', border: '#16a34a', color: '#16a34a', bg: '#dcfce7', icon: TaskAltOutlinedIcon }
+];
+
+// Validasi Nominal Rupiah
+const formatRupiah = (number) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    maximumFractionDigits: 0
+  }).format(number || 0);
+};
+
+// Data Pengiriman
+const INITIAL_PENGIRIMAN = [
+  {
+    id: 'ORD-2026-001',
+    idPesanan: 'ORD-2026-001',
+    namaPembeli: 'Yohana Abigail',
+    noHp: '0812-3456-7890',
+    metode: 'Via Kurir',
+    ongkirFlat: ONGKIR_FLAT_KURIR,
+    alamat: 'Jl. Hang Kesturi, Nongsa',
+    noKwitansi: '',
+    ustazahNama: '',
+    lokasiAmbil: '',
+    tanggalKirim: '',
+    status: 'Perlu Dikirim',
+    itemModul: [
+      { nama: 'Tilawah Asasi', qty: 5, harga: 25000 },
+      { nama: 'Tajwidi', qty: 3, harga: 30000 }
+    ]
+  },
+  {
+    id: 'ORD-2026-002',
+    idPesanan: 'ORD-2026-002',
+    namaPembeli: 'Ririn Anisa',
+    noHp: '0857-9876-5432',
+    metode: 'Ambil di RSQ Pusat',
+    ongkirFlat: 0,
+    alamat: 'Komplek Griya Indah Blok C3',
+    noKwitansi: '',
+    ustazahNama: '',
+    lokasiAmbil: 'Kantor RSQ Pusat',
+    tanggalKirim: '',
+    status: 'Perlu Dikirim',
+    itemModul: [
+      { nama: 'Buku Prestasi Anak', qty: 10, harga: 15000 },
+      { nama: 'Anak 1', qty: 10, harga: 20000 }
+    ]
+  },
+  {
+    id: 'ORD-2026-003',
+    idPesanan: 'ORD-2026-003',
+    namaPembeli: 'Hendra Pratama',
+    noHp: '0821-5566-7788',
+    metode: 'Titip ke Ustazah',
+    ongkirFlat: 0,
+    alamat: 'Kavling Baru, Batu Aji ',
+    noKwitansi: '',
+    ustazahNama: 'Ustazah Fatimah Azzahra',
+    lokasiAmbil: '',
+    tanggalKirim: '',
+    status: 'Perlu Dikirim',
+    itemModul: [
+      { nama: 'Tahmidi', qty: 4, harga: 28000 }
+    ]
+  },
+  {
+    id: 'ORD-2026-004',
+    idPesanan: 'ORD-2026-004',
+    namaPembeli: 'Ust. Ridwan Kamil',
+    noHp: '0813-1122-3344',
+    metode: 'Via Kurir',
+    ongkirFlat: ONGKIR_FLAT_KURIR,
+    alamat: 'Perumhan Taman Raya Blok B',
+    noKwitansi: '',
+    ustazahNama: '',
+    lokasiAmbil: '',
+    tanggalKirim: '2026-10-11',
+    status: 'Dikirim',
+    itemModul: [
+      { nama: 'Mushaf Ash Shahib A5 Terjemah', qty: 8, harga: 75000 },
+      { nama: 'Panduan Guru', qty: 2, harga: 40000 }
+    ]
+  },
+  {
+    id: 'ORD-2026-005',
+    idPesanan: 'ORD-2026-005',
+    namaPembeli: 'Budi Santoso',
+    noHp: '0878-4455-6677',
+    metode: 'Ambil di RSQ Pusat',
+    ongkirFlat: 0,
+    alamat: 'Perumahan Green Vienna Blok D',
+    noKwitansi: '',
+    ustazahNama: '',
+    lokasiAmbil: 'Kantor RSQ Pusat',
+    tanggalKirim: '2026-10-12',
+    status: 'Dikirim',
+    itemModul: [
+      { nama: 'Khat', qty: 4, harga: 22000 }
+    ]
+  },
+  {
+    id: 'ORD-2026-006',
+    idPesanan: 'ORD-2026-006',
+    namaPembeli: 'Farhan Ramadhan',
+    noHp: '0812-7788-9900',
+    metode: 'Titip ke Ustazah',
+    ongkirFlat: 0,
+    alamat: 'Jl. Sukajadi No. 102, Sukasari',
+    noKwitansi: '',
+    ustazahNama: 'Ustazah Maryam S.Pd.I',
+    lokasiAmbil: '',
+    tanggalKirim: '2026-10-13',
+    status: 'Dikirim',
+    itemModul: [
+      { nama: 'Tahsin Dewasa', qty: 3, harga: 35000 },
+      { nama: 'Tajwidi', qty: 1, harga: 30000 }
+    ]
+  },
+  {
+    id: 'ORD-2026-007',
+    idPesanan: 'ORD-2026-007',
+    namaPembeli: 'Dewi Lestari',
+    noHp: '0852-3344-5566',
+    metode: 'Via Kurir',
+    ongkirFlat: ONGKIR_FLAT_KURIR,
+    alamat: 'Jl. Antapani Raya No. 15',
+    noKwitansi: 'KWT-2026-007',
+    ustazahNama: '',
+    lokasiAmbil: '',
+    tanggalKirim: '2026-10-10',
+    status: 'Selesai',
+    buktiSampai: {
+      fotoUrl: buktiSampaiImg
+    },
+    itemModul: [
+      { nama: 'Buku Prestasi Anak', qty: 5, harga: 15000 }
+    ]
+  },
+  {
+    id: 'ORD-2026-008',
+    idPesanan: 'ORD-2026-008',
+    namaPembeli: 'Rian Hidayat',
+    noHp: '0877-6655-4433',
+    metode: 'Ambil di RSQ Pusat',
+    ongkirFlat: 0,
+    alamat: 'Komp. Margahayu Kencana Blok B2',
+    noKwitansi: 'KWT-2026-008',
+    ustazahNama: '',
+    lokasiAmbil: 'Kantor RSQ Pusat',
+    tanggalKirim: '2026-10-09',
+    status: 'Selesai',
+    buktiSampai: {
+      fotoUrl: buktiSampaiImg
+    },
+    itemModul: [
+      { nama: 'Tilawah Asasi', qty: 4, harga: 25000 },
+      { nama: 'Khat', qty: 2, harga: 22000 }
+    ]
+  }
+];
+
 // Dropdown
 function CustomDropdown({
   value,
@@ -154,7 +348,7 @@ function CustomDropdown({
   );
 }
 
-// Responsif Mobile & Desktop
+// Responsif Mobile dan Desktop
 function CustomDatePicker({
   value,
   onChange,
@@ -163,7 +357,10 @@ function CustomDatePicker({
   style = {}
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMonthYearOpen, setIsMonthYearOpen] = useState(false);
+  const [alignRight, setAlignRight] = useState(false);
   const containerRef = useRef(null);
+  const activeYearRef = useRef(null);
 
   const [viewYear, setViewYear] = useState(() => {
     if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -178,69 +375,67 @@ function CustomDatePicker({
     return new Date().getMonth();
   });
 
-  const [isMonthOpen, setIsMonthOpen] = useState(false);
-  const [isYearOpen, setIsYearOpen] = useState(false);
-  const selectedYearRef = useRef(null);
-  const yearListRef = useRef(null);
-  const selectedMonthRef = useRef(null);
-  const monthListRef = useRef(null);
-
-  useEffect(() => {
-    if (isYearOpen && selectedYearRef.current && yearListRef.current) {
-      const container = yearListRef.current;
-      const target = selectedYearRef.current;
-      container.scrollTop = target.offsetTop - container.clientHeight / 2 + target.clientHeight / 2;
-    }
-  }, [isYearOpen]);
-
-  useEffect(() => {
-    if (isMonthOpen && selectedMonthRef.current && monthListRef.current) {
-      const container = monthListRef.current;
-      const target = selectedMonthRef.current;
-      container.scrollTop = target.offsetTop - container.clientHeight / 2 + target.clientHeight / 2;
-    }
-  }, [isMonthOpen]);
-
-  const [isMobile, setIsMobile] = useState(() => {
-    return typeof window !== 'undefined' ? window.innerWidth <= 640 : false;
-  });
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 640);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const [expandedYear, setExpandedYear] = useState(viewYear);
 
   useEffect(() => {
     if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
-      setViewYear(parseInt(value.slice(0, 4), 10));
-      setViewMonth(parseInt(value.slice(5, 7), 10) - 1);
+      const parts = value.split('-').map(Number);
+      setViewYear(parts[0]);
+      setViewMonth(parts[1] - 1);
+      setExpandedYear(parts[0]);
     }
   }, [value]);
 
   useEffect(() => {
-    if (isMobile) return;
+    setExpandedYear(viewYear);
+  }, [viewYear, isMonthYearOpen]);
+
+  useEffect(() => {
+    if (isMonthYearOpen && activeYearRef.current) {
+      activeYearRef.current.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  }, [isMonthYearOpen, expandedYear]);
+
+  useEffect(() => {
+    if (isOpen && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      if (window.innerWidth - rect.left < 285) {
+        setAlignRight(true);
+      } else {
+        setAlignRight(false);
+      }
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     const handleClickOutside = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
         setIsOpen(false);
-        setIsMonthOpen(false);
-        setIsYearOpen(false);
+        setIsMonthYearOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isMobile]);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
 
   const MONTH_NAMES = [
-    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
   ];
-  const DAY_NAMES = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+  const SHORT_MONTHS = [
+    'Jan', 'Feb', 'Mar', 'Apr',
+    'May', 'Jun', 'Jul', 'Aug',
+    'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+  const DAY_NAMES = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
   const prevMonth = (e) => {
     e.stopPropagation();
-    setIsMonthOpen(false);
-    setIsYearOpen(false);
+    setIsMonthYearOpen(false);
     if (viewMonth === 0) {
       setViewMonth(11);
       setViewYear((y) => y - 1);
@@ -251,8 +446,7 @@ function CustomDatePicker({
 
   const nextMonth = (e) => {
     e.stopPropagation();
-    setIsMonthOpen(false);
-    setIsYearOpen(false);
+    setIsMonthYearOpen(false);
     if (viewMonth === 11) {
       setViewMonth(0);
       setViewYear((y) => y + 1);
@@ -263,44 +457,86 @@ function CustomDatePicker({
 
   const handleSelectDay = (day) => {
     if (disabled) return;
-    setIsMonthOpen(false);
-    setIsYearOpen(false);
     const mStr = String(viewMonth + 1).padStart(2, '0');
     const dStr = String(day).padStart(2, '0');
     onChange(`${viewYear}-${mStr}-${dStr}`);
     setIsOpen(false);
   };
 
+  const handleSelectPrevMonthDay = (day) => {
+    if (disabled) return;
+    let prevY = viewYear;
+    let prevM = viewMonth - 1;
+    if (prevM < 0) {
+      prevM = 11;
+      prevY -= 1;
+    }
+    const mStr = String(prevM + 1).padStart(2, '0');
+    const dStr = String(day).padStart(2, '0');
+    onChange(`${prevY}-${mStr}-${dStr}`);
+    setViewYear(prevY);
+    setViewMonth(prevM);
+    setIsOpen(false);
+  };
+
+  const handleSelectNextMonthDay = (day) => {
+    if (disabled) return;
+    let nextY = viewYear;
+    let nextM = viewMonth + 1;
+    if (nextM > 11) {
+      nextM = 0;
+      nextY += 1;
+    }
+    const mStr = String(nextM + 1).padStart(2, '0');
+    const dStr = String(day).padStart(2, '0');
+    onChange(`${nextY}-${mStr}-${dStr}`);
+    setViewYear(nextY);
+    setViewMonth(nextM);
+    setIsOpen(false);
+  };
+
   const handleSetToday = (e) => {
     e.stopPropagation();
     if (disabled) return;
-    setIsMonthOpen(false);
-    setIsYearOpen(false);
+    setIsMonthYearOpen(false);
     const now = new Date();
     const yStr = now.getFullYear();
     const mStr = String(now.getMonth() + 1).padStart(2, '0');
     const dStr = String(now.getDate()).padStart(2, '0');
     onChange(`${yStr}-${mStr}-${dStr}`);
+    setViewYear(now.getFullYear());
+    setViewMonth(now.getMonth());
     setIsOpen(false);
   };
 
   const handleClear = (e) => {
     e.stopPropagation();
     if (disabled) return;
-    setIsMonthOpen(false);
-    setIsYearOpen(false);
+    setIsMonthYearOpen(false);
     onChange('');
     setIsOpen(false);
   };
 
+  // Kalender
   const firstDayOfWeek = new Date(viewYear, viewMonth, 1).getDay();
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
   const daysInPrevMonth = new Date(viewYear, viewMonth, 0).getDate();
 
-  const today = new Date();
-  const isCurrentMonthToday =
-    today.getFullYear() === viewYear && today.getMonth() === viewMonth;
-  const todayDate = today.getDate();
+  const prevDays = [];
+  for (let i = 0; i < firstDayOfWeek; i++) {
+    prevDays.push(daysInPrevMonth - firstDayOfWeek + i + 1);
+  }
+
+  const currentDays = [];
+  for (let i = 1; i <= daysInMonth; i++) {
+    currentDays.push(i);
+  }
+
+  const remainingCells = 42 - (prevDays.length + currentDays.length);
+  const nextDays = [];
+  for (let i = 1; i <= remainingCells; i++) {
+    nextDays.push(i);
+  }
 
   let selY = null, selM = null, selD = null;
   if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -310,362 +546,12 @@ function CustomDatePicker({
     selD = parts[2];
   }
 
-  const startYear = Math.min(2020, viewYear - 2);
-  const endYear = Math.max(2035, viewYear + 5);
-  const yearOptions = [];
-  for (let y = startYear; y <= endYear; y++) {
-    yearOptions.push(y);
+  const yearRange = [];
+  for (let y = Math.min(2020, viewYear - 3); y <= Math.max(2035, viewYear + 6); y++) {
+    yearRange.push(y);
   }
 
   const displayText = value && selY ? `${String(selD).padStart(2, '0')}/${String(selM + 1).padStart(2, '0')}/${selY}` : 'Pilih tanggal...';
-
-  const calendarContent = (
-    <div
-      onClick={(e) => {
-        e.stopPropagation();
-        setIsMonthOpen(false);
-        setIsYearOpen(false);
-      }}
-      style={{
-        backgroundColor: '#ffffff',
-        borderRadius: '12px',
-        border: '1px solid #dce4de',
-        boxShadow: '0 12px 30px rgba(0, 0, 0, 0.18)',
-        padding: '14px',
-        boxSizing: 'border-box',
-        width: isMobile ? '290px' : '280px',
-        userSelect: 'none'
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', gap: '4px' }}>
-        <button
-          type="button"
-          onClick={prevMonth}
-          style={{
-            background: 'none',
-            border: '1px solid #e2e8f0',
-            borderRadius: '6px',
-            width: '28px',
-            height: '28px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            color: '#1a3e2b',
-            fontWeight: 'bold',
-            fontSize: '13px',
-            flexShrink: 0
-          }}
-          title="Bulan sebelumnya"
-        >
-          &lt;
-        </button>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          {/* Dropdown Bulan */}
-          <div style={{ position: 'relative' }}>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsMonthOpen((prev) => !prev);
-                setIsYearOpen(false);
-              }}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                padding: '4px 8px',
-                fontSize: '12px',
-                fontWeight: '700',
-                color: isMonthOpen ? '#ffffff' : '#1a3e2b',
-                backgroundColor: isMonthOpen ? '#23573c' : '#f6faf7',
-                border: '1px solid #23573c',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-              title="Pilih Bulan"
-            >
-              <span>{MONTH_NAMES[viewMonth]}</span>
-              <svg
-                width="10"
-                height="10"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                style={{
-                  transform: isMonthOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.15s ease'
-                }}
-              >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-
-            {isMonthOpen && (
-              <div
-                ref={monthListRef}
-                onClick={(e) => e.stopPropagation()}
-                style={{
-                  position: 'absolute',
-                  top: 'calc(100% + 4px)',
-                  left: 0,
-                  width: '120px',
-                  maxHeight: '160px',
-                  overflowY: 'auto',
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #23573c',
-                  borderRadius: '8px',
-                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.16)',
-                  zIndex: 10050,
-                  padding: '4px 0'
-                }}
-              >
-                {MONTH_NAMES.map((mName, idx) => {
-                  const isSel = idx === viewMonth;
-                  return (
-                    <div
-                      key={idx}
-                      ref={isSel ? selectedMonthRef : null}
-                      onClick={() => {
-                        setViewMonth(idx);
-                        setIsMonthOpen(false);
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isSel) e.currentTarget.style.backgroundColor = '#f1f5f3';
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isSel) e.currentTarget.style.backgroundColor = 'transparent';
-                      }}
-                      style={{
-                        padding: '6px 10px',
-                        fontSize: '12px',
-                        fontWeight: isSel ? '700' : '500',
-                        backgroundColor: isSel ? '#23573c' : 'transparent',
-                        color: isSel ? '#ffffff' : '#1e293b',
-                        cursor: 'pointer',
-                        transition: 'background-color 0.15s'
-                      }}
-                    >
-                      {mName}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Dropdown Tahun */}
-          <div style={{ position: 'relative' }}>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsYearOpen((prev) => !prev);
-                setIsMonthOpen(false);
-              }}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                padding: '4px 8px',
-                fontSize: '12px',
-                fontWeight: '700',
-                color: isYearOpen ? '#ffffff' : '#1a3e2b',
-                backgroundColor: isYearOpen ? '#23573c' : '#f6faf7',
-                border: '1px solid #23573c',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-              title="Pilih Tahun"
-            >
-              <span>{viewYear}</span>
-              <svg
-                width="10"
-                height="10"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                style={{
-                  transform: isYearOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.15s ease'
-                }}
-              >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-
-            {isYearOpen && (
-              <div
-                ref={yearListRef}
-                onClick={(e) => e.stopPropagation()}
-                style={{
-                  position: 'absolute',
-                  top: 'calc(100% + 4px)',
-                  right: 0,
-                  width: '90px',
-                  maxHeight: '160px',
-                  overflowY: 'auto',
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #23573c',
-                  borderRadius: '8px',
-                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.16)',
-                  zIndex: 10050,
-                  padding: '4px 0'
-                }}
-              >
-                {yearOptions.map((y) => {
-                  const isSel = y === viewYear;
-                  return (
-                    <div
-                      key={y}
-                      ref={isSel ? selectedYearRef : null}
-                      onClick={() => {
-                        setViewYear(y);
-                        setIsYearOpen(false);
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isSel) e.currentTarget.style.backgroundColor = '#f1f5f3';
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isSel) e.currentTarget.style.backgroundColor = 'transparent';
-                      }}
-                      style={{
-                        padding: '6px 10px',
-                        fontSize: '12px',
-                        textAlign: 'center',
-                        fontWeight: isSel ? '700' : '500',
-                        backgroundColor: isSel ? '#23573c' : 'transparent',
-                        color: isSel ? '#ffffff' : '#1e293b',
-                        cursor: 'pointer',
-                        transition: 'background-color 0.15s'
-                      }}
-                    >
-                      {y}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={nextMonth}
-          style={{
-            background: 'none',
-            border: '1px solid #e2e8f0',
-            borderRadius: '6px',
-            width: '28px',
-            height: '28px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            color: '#1a3e2b',
-            fontWeight: 'bold',
-            fontSize: '13px',
-            flexShrink: 0
-          }}
-          title="Bulan berikutnya"
-        >
-          &gt;
-        </button>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', textAlign: 'center', marginBottom: '6px' }}>
-        {DAY_NAMES.map((d, i) => (
-          <div key={i} style={{ fontSize: '11px', fontWeight: '700', color: i === 0 ? '#ef4444' : '#64748b', padding: '4px 0' }}>
-            {d}
-          </div>
-        ))}
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px' }}>
-        {Array.from({ length: firstDayOfWeek }).map((_, i) => {
-          const prevDate = daysInPrevMonth - firstDayOfWeek + i + 1;
-          return (
-            <div
-              key={`prev-${i}`}
-              style={{
-                height: '30px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '11.5px',
-                color: '#cbd5e1'
-              }}
-            >
-              {prevDate}
-            </div>
-          );
-        })}
-
-        {Array.from({ length: daysInMonth }).map((_, i) => {
-          const day = i + 1;
-          const isSelected = selY === viewYear && selM === viewMonth && selD === day;
-          const isToday = isCurrentMonthToday && todayDate === day;
-
-          return (
-            <button
-              key={`day-${day}`}
-              type="button"
-              onClick={() => handleSelectDay(day)}
-              style={{
-                height: '30px',
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '12px',
-                fontWeight: isSelected ? '700' : isToday ? '700' : '500',
-                borderRadius: '6px',
-                border: isSelected ? 'none' : isToday ? '1px solid #23573c' : 'none',
-                backgroundColor: isSelected ? '#23573c' : 'transparent',
-                color: isSelected ? '#ffffff' : isToday ? '#23573c' : '#1e293b',
-                cursor: 'pointer',
-                transition: 'background-color 0.15s ease'
-              }}
-              onMouseEnter={(e) => {
-                if (!isSelected) e.currentTarget.style.backgroundColor = '#f1f5f3';
-              }}
-              onMouseLeave={(e) => {
-                if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent';
-              }}
-            >
-              {day}
-            </button>
-          );
-        })}
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #f1f5f9', marginTop: '10px', paddingTop: '8px' }}>
-        <button
-          type="button"
-          onClick={handleClear}
-          style={{ background: 'none', border: 'none', fontSize: '11.5px', color: '#64748b', cursor: 'pointer', fontWeight: '600' }}
-        >
-          Hapus
-        </button>
-        <button
-          type="button"
-          onClick={handleSetToday}
-          style={{ background: 'none', border: 'none', fontSize: '11.5px', color: '#23573c', cursor: 'pointer', fontWeight: '700' }}
-        >
-          Hari Ini
-        </button>
-      </div>
-    </div>
-  );
 
   return (
     <div
@@ -673,12 +559,13 @@ function CustomDatePicker({
       className="custom-datepicker-container"
       style={{ position: 'relative', width: '100%', userSelect: 'none', ...style }}
     >
+      {/* Input Display Bar */}
       <div
+        id="btn-datepicker-trigger"
         onClick={() => {
           if (!disabled) {
             setIsOpen(!isOpen);
-            setIsMonthOpen(false);
-            setIsYearOpen(false);
+            setIsMonthYearOpen(false);
           }
         }}
         title={title}
@@ -721,238 +608,767 @@ function CustomDatePicker({
         </svg>
       </div>
 
+      {/* Popover Kalender */}
       {isOpen && !disabled && (
-        isMobile ? (
-          <>
-            <div
-              onClick={() => {
-                setIsOpen(false);
-                setIsMonthOpen(false);
-                setIsYearOpen(false);
-              }}
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 6px)',
+            left: alignRight ? 'auto' : 0,
+            right: alignRight ? 0 : 'auto',
+            width: '272px',
+            backgroundColor: '#ffffff',
+            borderRadius: '8px',
+            border: '1px solid #dadce0',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.16)',
+            padding: '16px 14px 12px',
+            boxSizing: 'border-box',
+            zIndex: 10050,
+            userSelect: 'none',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif'
+          }}
+        >
+          {/* Header Kalender */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '12px'
+            }}
+          >
+            {/* Bulan dan Tahun dan Dropdown */}
+            <button
+              type="button"
+              onClick={() => setIsMonthYearOpen((prev) => !prev)}
               style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: 'rgba(0, 0, 0, 0.4)',
-                zIndex: 10025,
-                animation: 'fadeIn 0.2s ease'
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                background: 'none',
+                border: 'none',
+                padding: '2px 4px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                fontWeight: '700',
+                color: '#202124',
+                transition: 'background-color 0.15s'
               }}
-            />
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f3f4')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+              title={isMonthYearOpen ? 'Kembali ke Kalender Hari' : 'Pilih Bulan & Tahun'}
+            >
+              <span>{MONTH_NAMES[viewMonth]} {viewYear}</span>
+              <span
+                style={{
+                  fontSize: '9px',
+                  color: '#3c4043',
+                  display: 'inline-block',
+                  transform: isMonthYearOpen ? 'rotate(180deg)' : 'none',
+                  transition: 'transform 0.15s ease'
+                }}
+              >
+                ▼
+              </span>
+            </button>
+
+            {!isMonthYearOpen && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <button
+                  type="button"
+                  onClick={prevMonth}
+                  title="Bulan sebelumnya"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '28px',
+                    height: '28px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    color: '#202124',
+                    transition: 'background-color 0.15s'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f3f4')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="12" y1="19" x2="12" y2="5" />
+                    <polyline points="5 12 12 5 19 12" />
+                  </svg>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={nextMonth}
+                  title="Bulan berikutnya"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '28px',
+                    height: '28px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    color: '#202124',
+                    transition: 'background-color 0.15s'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f3f4')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <polyline points="19 12 12 19 5 12" />
+                  </svg>
+                </button>
+              </div>
+            )}
+          </div>
+          {isMonthYearOpen ? (
             <div
               style={{
-                position: 'fixed',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                zIndex: 10030
+                maxHeight: '270px',
+                overflowY: 'auto',
+                paddingRight: '2px',
+                borderTop: '1px solid #f1f3f4'
               }}
             >
-              {calendarContent}
+              {yearRange.map((y) => {
+                const isExpanded = y === expandedYear;
+
+                return (
+                  <div key={y} ref={isExpanded ? activeYearRef : null}>
+                    <div
+                      onClick={() => setExpandedYear(y)}
+                      style={{
+                        padding: '8px 12px',
+                        fontSize: '13.5px',
+                        fontWeight: isExpanded ? '600' : '400',
+                        color: '#202124',
+                        backgroundColor: isExpanded ? '#f1f3f4' : 'transparent',
+                        borderBottom: '1px solid #e8eaed',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isExpanded) e.currentTarget.style.backgroundColor = '#f8faf9';
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isExpanded) e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                    >
+                      {y}
+                    </div>
+
+                    {isExpanded && (
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(4, 1fr)',
+                          gap: '10px 4px',
+                          padding: '12px 6px 14px',
+                          backgroundColor: '#ffffff',
+                          borderBottom: '1px solid #e8eaed'
+                        }}
+                      >
+                        {SHORT_MONTHS.map((mShort, mIdx) => {
+                          const isSelectedMonth =
+                            (selY === y && selM === mIdx) || (y === viewYear && mIdx === viewMonth);
+
+                          return (
+                            <button
+                              key={mShort}
+                              type="button"
+                              onClick={() => {
+                                setViewYear(y);
+                                setViewMonth(mIdx);
+                                setIsMonthYearOpen(false);
+                              }}
+                              style={{
+                                height: '32px',
+                                width: '46px',
+                                margin: '0 auto',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '13px',
+                                fontWeight: isSelectedMonth ? '700' : '400',
+                                color: isSelectedMonth ? '#ffffff' : '#202124',
+                                backgroundColor: isSelectedMonth ? '#3c4043' : 'transparent',
+                                border: isSelectedMonth ? '2px solid #202124' : 'none',
+                                borderRadius: '3px',
+                                cursor: 'pointer',
+                                boxSizing: 'border-box',
+                                transition: 'background-color 0.15s ease'
+                              }}
+                              onMouseEnter={(e) => {
+                                if (!isSelectedMonth) e.currentTarget.style.backgroundColor = '#f1f3f4';
+                              }}
+                              onMouseLeave={(e) => {
+                                if (!isSelectedMonth) e.currentTarget.style.backgroundColor = 'transparent';
+                              }}
+                            >
+                              {mShort}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-          </>
-        ) : (
-          <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 10020 }}>
-            {calendarContent}
-          </div>
-        )
+          ) : (
+            <>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(7, 1fr)',
+                  textAlign: 'center',
+                  marginBottom: '10px'
+                }}
+              >
+                {DAY_NAMES.map((d) => (
+                  <div
+                    key={d}
+                    style={{
+                      fontSize: '12.5px',
+                      fontWeight: '500',
+                      color: '#202124'
+                    }}
+                  >
+                    {d}
+                  </div>
+                ))}
+              </div>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(7, 1fr)',
+                  rowGap: '6px',
+                  columnGap: '2px',
+                  textAlign: 'center'
+                }}
+              >
+                {prevDays.map((d, i) => (
+                  <button
+                    key={`prev-${i}`}
+                    type="button"
+                    onClick={() => handleSelectPrevMonthDay(d)}
+                    style={{
+                      height: '28px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '13px',
+                      color: '#70757a',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      borderRadius: '3px'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f3f4')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                  >
+                    {d}
+                  </button>
+                ))}
+
+                {currentDays.map((d) => {
+                  const isSelected = selY === viewYear && selM === viewMonth && selD === d;
+
+                  return (
+                    <button
+                      key={`day-${d}`}
+                      type="button"
+                      onClick={() => handleSelectDay(d)}
+                      style={{
+                        height: '28px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '13px',
+                        fontWeight: isSelected ? '700' : '400',
+                        borderRadius: '3px',
+                        border: isSelected ? '2px solid #202124' : 'none',
+                        backgroundColor: isSelected ? '#3c4043' : 'transparent',
+                        color: isSelected ? '#ffffff' : '#202124',
+                        cursor: 'pointer',
+                        boxSizing: 'border-box',
+                        transition: 'background-color 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isSelected) e.currentTarget.style.backgroundColor = '#f1f3f4';
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                    >
+                      {d}
+                    </button>
+                  );
+                })}
+
+                {nextDays.map((d, i) => (
+                  <button
+                    key={`next-${i}`}
+                    type="button"
+                    onClick={() => handleSelectNextMonthDay(d)}
+                    style={{
+                      height: '28px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '13px',
+                      color: '#70757a',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      borderRadius: '3px'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f3f4')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginTop: '16px',
+                  paddingTop: '6px'
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={handleClear}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    color: '#1a73e8',
+                    cursor: 'pointer',
+                    padding: '4px 6px',
+                    borderRadius: '4px'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f3f4')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
+                  Clear
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSetToday}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    color: '#1a73e8',
+                    cursor: 'pointer',
+                    padding: '4px 6px',
+                    borderRadius: '4px'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f3f4')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
+                  Today
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       )}
     </div>
   );
 }
 
-const METODE_OPTIONS = [
-  'Semua Metode',
-  'Ambil di RSQ Pusat',
-  'Via Kurir',
-  'Titip ke Ustazah'
-];
+// Modal Detail Pengiriman Modul  
+function DetailPengirimanModal({
+  selectedDetail,
+  setSelectedDetail,
+  pengirimanList,
+  onClose,
+  onSave,
+  onPreviewProof
+}) {
+  const [isCopied, setIsCopied] = useState(false);
 
-const STATUS_FILTER_OPTIONS = [
-  'Semua Status',
-  'Perlu Dikirim',
-  'Dikirim',
-  'Selesai'
-];
+  const subtotalModul = useMemo(() => {
+    return (selectedDetail.itemModul || []).reduce(
+      (sum, item) => sum + (item.harga || 0) * (item.qty || 1),
+      0
+    );
+  }, [selectedDetail.itemModul]);
 
-// Icons
-import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
-import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
-import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
-import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
-import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
-import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
-import DoneAllOutlinedIcon from '@mui/icons-material/DoneAllOutlined';
-import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
-import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
+  const ongkirKurir = selectedDetail.metode === 'Via Kurir' ? ONGKIR_FLAT_KURIR : 0;
+  const totalHarga = subtotalModul + ongkirKurir;
 
-// Data Pengiriman
-const INITIAL_PENGIRIMAN = [
-  {
-    id: 'ORD-2026-001',
-    idPesanan: 'ORD-2026-001',
-    namaPembeli: 'Yohana Abigail',
-    noHp: '0812-3456-7890',
-    metode: 'Via Kurir',
-    ongkirFlat: 10000,
-    alamat: 'Jl. Hang Kesturi, Nongsa',
-    noKwitansi: '',
-    ustazahNama: '',
-    lokasiAmbil: '',
-    tanggalKirim: '',
-    status: 'Perlu Dikirim',
-    itemModul: [
-      { nama: 'Tilawah Asasi', qty: 5, harga: 25000 },
-      { nama: 'Tajwidi', qty: 3, harga: 30000 }
-    ]
-  },
-  {
-    id: 'ORD-2026-002',
-    idPesanan: 'ORD-2026-002',
-    namaPembeli: 'Ririn Anisa',
-    noHp: '0857-9876-5432',
-    metode: 'Ambil di RSQ Pusat',
-    ongkirFlat: 0,
-    alamat: 'Komplek Griya Indah Blok C3',
-    noKwitansi: '',
-    ustazahNama: '',
-    lokasiAmbil: 'Kantor RSQ Pusat',
-    tanggalKirim: '',
-    status: 'Perlu Dikirim',
-    itemModul: [
-      { nama: 'Buku Prestasi Anak', qty: 10, harga: 15000 },
-      { nama: 'Anak 1', qty: 10, harga: 20000 }
-    ]
-  },
-  {
-    id: 'ORD-2026-003',
-    idPesanan: 'ORD-2026-003',
-    namaPembeli: 'Hendra Pratama',
-    noHp: '0821-5566-7788',
-    metode: 'Titip ke Ustazah',
-    ongkirFlat: 0,
-    alamat: 'Kavling Baru, Batu Aji ',
-    noKwitansi: '',
-    ustazahNama: 'Ustazah Fatimah Azzahra',
-    lokasiAmbil: '',
-    tanggalKirim: '',
-    status: 'Perlu Dikirim',
-    itemModul: [
-      { nama: 'Tahmidi', qty: 4, harga: 28000 }
-    ]
-  },
-  {
-    id: 'ORD-2026-004',
-    idPesanan: 'ORD-2026-004',
-    namaPembeli: 'Ust. Ridwan Kamil',
-    noHp: '0813-1122-3344',
-    metode: 'Via Kurir',
-    ongkirFlat: 10000,
-    alamat: 'Perumhan Taman Raya Blok B',
-    noKwitansi: '',
-    ustazahNama: '',
-    lokasiAmbil: '',
-    tanggalKirim: '2026-10-11',
-    status: 'Dikirim',
-    itemModul: [
-      { nama: 'Mushaf Ash Shahib A5 Terjemah', qty: 8, harga: 75000 },
-      { nama: 'Panduan Guru', qty: 2, harga: 40000 }
-    ]
-  },
-  {
-    id: 'ORD-2026-005',
-    idPesanan: 'ORD-2026-005',
-    namaPembeli: 'Budi Santoso',
-    noHp: '0878-4455-6677',
-    metode: 'Ambil di RSQ Pusat',
-    ongkirFlat: 0,
-    alamat: 'Perumahan Green Vienna Blok D',
-    noKwitansi: '',
-    ustazahNama: '',
-    lokasiAmbil: 'Kantor RSQ Pusat',
-    tanggalKirim: '2026-10-12',
-    status: 'Dikirim',
-    itemModul: [
-      { nama: 'Khat', qty: 4, harga: 22000 }
-    ]
-  },
-  {
-    id: 'ORD-2026-006',
-    idPesanan: 'ORD-2026-006',
-    namaPembeli: 'Farhan Ramadhan',
-    noHp: '0812-7788-9900',
-    metode: 'Titip ke Ustazah',
-    ongkirFlat: 0,
-    alamat: 'Jl. Sukajadi No. 102, Sukasari',
-    noKwitansi: '',
-    ustazahNama: 'Ustazah Maryam S.Pd.I',
-    lokasiAmbil: '',
-    tanggalKirim: '2026-10-13',
-    status: 'Dikirim',
-    itemModul: [
-      { nama: 'Tahsin Dewasa', qty: 3, harga: 35000 },
-      { nama: 'Tajwidi', qty: 1, harga: 30000 }
-    ]
-  },
-  {
-    id: 'ORD-2026-007',
-    idPesanan: 'ORD-2026-007',
-    namaPembeli: 'Dewi Lestari',
-    noHp: '0852-3344-5566',
-    metode: 'Via Kurir',
-    ongkirFlat: 10000,
-    alamat: 'Jl. Antapani Raya No. 15',
-    noKwitansi: 'KWT-2026-007',
-    ustazahNama: '',
-    lokasiAmbil: '',
-    tanggalKirim: '2026-10-10',
-    status: 'Selesai',
-    buktiSampai: {
-      fotoUrl: buktiSampaiImg
-    },
-    itemModul: [
-      { nama: 'Buku Prestasi Anak', qty: 5, harga: 15000 }
-    ]
-  },
-  {
-    id: 'ORD-2026-008',
-    idPesanan: 'ORD-2026-008',
-    namaPembeli: 'Rian Hidayat',
-    noHp: '0877-6655-4433',
-    metode: 'Ambil di RSQ Pusat',
-    ongkirFlat: 0,
-    alamat: 'Komp. Margahayu Kencana Blok B2',
-    noKwitansi: 'KWT-2026-008',
-    ustazahNama: '',
-    lokasiAmbil: 'Kantor RSQ Pusat',
-    tanggalKirim: '2026-10-09',
-    status: 'Selesai',
-    buktiSampai: {
-      fotoUrl: buktiSampaiImg
-    },
-    itemModul: [
-      { nama: 'Tilawah Asasi', qty: 4, harga: 25000 },
-      { nama: 'Khat', qty: 2, harga: 22000 }
-    ]
-  }
-];
+  const originalStatus = useMemo(() => {
+    return pengirimanList.find((p) => p.id === selectedDetail.id)?.status || selectedDetail.status;
+  }, [pengirimanList, selectedDetail.id, selectedDetail.status]);
 
-// Card Statistik
-const STATS_CONFIG = [
-  { key: 'totalPerluDikirim', label: 'Perlu Dikirim', status: 'Perlu Dikirim', border: '#d97706', color: '#d97706', bg: '#fef3c7', icon: Inventory2OutlinedIcon },
-  { key: 'totalDikirim', label: 'Dikirim', status: 'Dikirim', border: '#2563eb', color: '#2563eb', bg: '#dbeafe', icon: LocalShippingOutlinedIcon },
-  { key: 'totalSelesai', label: 'Selesai', status: 'Selesai', border: '#16a34a', color: '#16a34a', bg: '#dcfce7', icon: TaskAltOutlinedIcon }
-];
+  const statusOptions = originalStatus === 'Perlu Dikirim'
+    ? ['Perlu Dikirim', 'Dikirim']
+    : ['Dikirim', 'Selesai'];
 
+  const handleCopyKwitansi = async (kwitansi) => {
+    if (!kwitansi) return;
+    let success = false;
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(kwitansi);
+        success = true;
+      }
+    } catch {
+      // Fallback
+    }
+
+    if (!success) {
+      try {
+        const tempInput = document.createElement('textarea');
+        tempInput.value = kwitansi;
+        tempInput.setAttribute('readonly', '');
+        tempInput.style.position = 'absolute';
+        tempInput.style.left = '-9999px';
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+        success = true;
+      } catch {}
+    }
+
+    if (success) {
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    }
+  };
+
+  const handleStatusChange = (newStatus) => {
+    setSelectedDetail((prev) => {
+      const today = new Date().toISOString().split('T')[0];
+      const autoKwitansi =
+        prev.noKwitansi || (prev.id ? prev.id.replace('ORD', 'KWT') : 'KWT-2026-001');
+      const autoBuktiSampai =
+        prev.buktiSampai || { fotoUrl: buktiSampaiImg };
+
+      return {
+        ...prev,
+        status: newStatus,
+        tanggalKirim:
+          newStatus === 'Dikirim' && !prev.tanggalKirim ? today : prev.tanggalKirim,
+        noKwitansi:
+          newStatus === 'Selesai' ? autoKwitansi : prev.noKwitansi,
+        buktiSampai:
+          newStatus === 'Selesai' ? autoBuktiSampai : prev.buktiSampai
+      };
+    });
+  };
+
+  return (
+    <div style={styles.modalOverlay} onClick={onClose}>
+      <div
+        style={styles.modalContentDetail}
+        className="modal-detail-responsive"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header Modal */}
+        <div style={styles.modalHeader}>
+          <h3 style={styles.modalTitle}>Detail Pengiriman Modul</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            style={styles.modalCloseBtn}
+            title="Tutup Modal"
+          >
+            <CloseOutlinedIcon sx={{ fontSize: 20 }} />
+          </button>
+        </div>
+
+        <div style={styles.detailBody}>
+          {/* Metadata Pesanan & Status */}
+          <div style={styles.detailMetaCard}>
+            <div style={styles.detailMetaItem}>
+              <span style={styles.detailMetaLabel}>No. Pesanan</span>
+              <span style={styles.detailMetaValueGreen}>{selectedDetail.id}</span>
+            </div>
+            <div style={styles.detailMetaItem}>
+              <span style={styles.detailMetaLabel}>Metode Pengiriman</span>
+              <span style={styles.detailMetaValue}>{selectedDetail.metode}</span>
+            </div>
+            <div style={styles.detailMetaItem}>
+              <span style={styles.detailMetaLabel}>Tanggal Pengiriman</span>
+              <div style={{ marginTop: '2px' }}>
+                <CustomDatePicker
+                  value={selectedDetail.tanggalKirim || ''}
+                  onChange={(newDate) =>
+                    setSelectedDetail((prev) => ({ ...prev, tanggalKirim: newDate }))
+                  }
+                  disabled={selectedDetail.status === 'Selesai'}
+                  title={
+                    selectedDetail.status === 'Selesai'
+                      ? 'Status sudah selesai (tanggal tidak dapat diubah)'
+                      : 'Pilih atau ubah tanggal pengiriman'
+                  }
+                />
+              </div>
+            </div>
+            <div style={styles.detailMetaItem}>
+              <span style={styles.detailMetaLabel}>
+                {selectedDetail.status === 'Selesai' ? 'Status' : 'Ubah Status'}
+              </span>
+              <div style={{ marginTop: '2px' }}>
+                <CustomDropdown
+                  disabled={selectedDetail.status === 'Selesai'}
+                  value={selectedDetail.status}
+                  onChange={handleStatusChange}
+                  options={statusOptions}
+                  style={{ width: '100%' }}
+                  selectStyle={{
+                    padding: '6px 12px',
+                    minHeight: '34px',
+                    fontSize: '12.5px',
+                    fontWeight: '700',
+                    borderRadius: '10px'
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Data Pembeli & Pengiriman */}
+          <div style={styles.detailSection}>
+            <div style={styles.detailSectionTitle}>Data Pembeli & Pengiriman</div>
+            <div style={styles.detailRecipientGrid} className="modal-form-grid2">
+              <div>
+                <span style={styles.detailFieldLabel}>Nama Pembeli</span>
+                <div style={styles.detailFieldValue}>{selectedDetail.namaPembeli}</div>
+              </div>
+              <div>
+                <span style={styles.detailFieldLabel}>No.Hp</span>
+                <div style={styles.detailFieldValue}>{selectedDetail.noHp}</div>
+              </div>
+
+              {selectedDetail.metode === 'Titip ke Ustazah' && (
+                <div style={{ gridColumn: 'span 2' }}>
+                  <span style={styles.detailFieldLabel}>Nama Ustazah</span>
+                  <div style={styles.detailFieldValue}>{selectedDetail.ustazahNama || '-'}</div>
+                </div>
+              )}
+
+              {selectedDetail.metode === 'Ambil di RSQ Pusat' && (
+                <div style={{ gridColumn: 'span 2' }}>
+                  <span style={styles.detailFieldLabel}>Lokasi Pengambilan</span>
+                  <div style={styles.detailFieldValue}>Kantor RSQ Pusat</div>
+                </div>
+              )}
+
+              {selectedDetail.metode === 'Via Kurir' && (
+                <div style={{ gridColumn: 'span 2' }}>
+                  <span style={styles.detailFieldLabel}>Alamat Pengiriman</span>
+                  <div style={styles.detailFieldValue}>{selectedDetail.alamat}</div>
+                </div>
+              )}
+
+              {selectedDetail.status === 'Selesai' && (
+                <div style={{ gridColumn: 'span 2' }}>
+                  <span style={styles.detailFieldLabel}>No. Kwitansi</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                    <input
+                      type="text"
+                      placeholder="Masukkan no. kwitansi..."
+                      value={selectedDetail.noKwitansi || ''}
+                      onChange={(e) =>
+                        setSelectedDetail((prev) => ({ ...prev, noKwitansi: e.target.value }))
+                      }
+                      style={styles.metaTextInput}
+                    />
+                    {selectedDetail.noKwitansi && (
+                      <button
+                        id="btn-copy-kwitansi"
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCopyKwitansi(selectedDetail.noKwitansi);
+                        }}
+                        style={isCopied ? styles.btnCopySuccess : styles.btnCopyResiSimple}
+                        title={isCopied ? 'Nomor kwitansi tersalin!' : 'Salin No. Kwitansi'}
+                      >
+                        {isCopied ? (
+                          <>
+                            <CheckCircleOutlinedIcon sx={{ fontSize: 13, color: '#16a34a' }} />
+                            <span style={{ color: '#16a34a', fontWeight: '700' }}>Tersalin!</span>
+                          </>
+                        ) : (
+                          <>
+                            <ContentCopyOutlinedIcon sx={{ fontSize: 13 }} />
+                            <span>Salin</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Rincian Modul & Total Harga */}
+          <div style={styles.detailSection}>
+            <div style={styles.detailSectionTitle}>Rincian Modul</div>
+            
+            {/* Desktop Table */}
+            <div className="rincian-modul-desktop" style={{ overflowX: 'auto', width: '100%', WebkitOverflowScrolling: 'touch' }}>
+              <table style={styles.detailItemTable}>
+                <thead>
+                  <tr>
+                    <th style={{ ...styles.detailTh, textAlign: 'left' }}>Judul Modul</th>
+                    <th style={{ ...styles.detailTh, textAlign: 'center' }}>Jumlah</th>
+                    <th style={{ ...styles.detailTh, textAlign: 'right' }}>Harga Satuan</th>
+                    <th style={{ ...styles.detailTh, textAlign: 'right' }}>Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(selectedDetail.itemModul || []).map((item, idx) => (
+                    <tr key={idx}>
+                      <td style={styles.detailTd}>{item.nama}</td>
+                      <td style={{ ...styles.detailTd, textAlign: 'center' }}>{item.qty}</td>
+                      <td style={{ ...styles.detailTd, textAlign: 'right' }}>{formatRupiah(item.harga || 0)}</td>
+                      <td style={{ ...styles.detailTd, textAlign: 'right', fontWeight: '600' }}>
+                        {formatRupiah((item.harga || 0) * (item.qty || 1))}
+                      </td>
+                    </tr>
+                  ))}
+                  {selectedDetail.metode === 'Via Kurir' && (
+                    <tr>
+                      <td style={styles.detailTd}>Biaya Kurir</td>
+                      <td style={{ ...styles.detailTd, textAlign: 'center' }}>-</td>
+                      <td style={{ ...styles.detailTd, textAlign: 'right' }}>{formatRupiah(ONGKIR_FLAT_KURIR)}</td>
+                      <td style={{ ...styles.detailTd, textAlign: 'right', fontWeight: '600' }}>
+                        {formatRupiah(ONGKIR_FLAT_KURIR)}
+                      </td>
+                    </tr>
+                  )}
+                  <tr>
+                    <td colSpan={3} style={{ ...styles.detailTd, textAlign: 'right', fontWeight: '700' }}>
+                      Total:
+                    </td>
+                    <td style={{ ...styles.detailTd, textAlign: 'right', fontWeight: '700', color: '#166534' }}>
+                      {formatRupiah(totalHarga)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card List */}
+            <div className="rincian-modul-mobile">
+              {(selectedDetail.itemModul || []).map((item, idx) => (
+                <div key={idx} style={styles.mobileItemCard}>
+                  <div style={styles.mobileItemName}>{item.nama}</div>
+                  <div style={styles.mobileItemBottom}>
+                    <span style={styles.mobileItemQtyPrice}>
+                      {item.qty} × {formatRupiah(item.harga || 0)}
+                    </span>
+                    <span style={styles.mobileItemSubtotal}>
+                      {formatRupiah((item.harga || 0) * (item.qty || 1))}
+                    </span>
+                  </div>
+                </div>
+              ))}
+              {selectedDetail.metode === 'Via Kurir' && (
+                <div style={styles.mobileItemCard}>
+                  <div style={styles.mobileItemName}>Biaya Kurir</div>
+                  <div style={styles.mobileItemBottom}>
+                    <span style={styles.mobileItemQtyPrice}>Ongkir Flat</span>
+                    <span style={styles.mobileItemSubtotal}>{formatRupiah(ONGKIR_FLAT_KURIR)}</span>
+                  </div>
+                </div>
+              )}
+              <div style={styles.mobileTotalRow}>
+                <span style={styles.mobileTotalLabel}>Total:</span>
+                <span style={styles.mobileTotalValue}>
+                  {formatRupiah(totalHarga)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Foto Bukti Diterima */}
+          {(selectedDetail.status === 'Selesai' || selectedDetail.status === 'Terkirim') && (
+            <div style={styles.detailSection}>
+              <div style={styles.detailSectionTitle}>Foto Bukti Diterima</div>
+              <div style={styles.detailReceiptWrapper}>
+                <img
+                  src={selectedDetail.buktiSampai?.fotoUrl || buktiSampaiImg}
+                  alt="Foto Bukti Diterima"
+                  style={{ ...styles.detailReceiptImg, cursor: 'pointer' }}
+                  onClick={() => onPreviewProof(selectedDetail.buktiSampai?.fotoUrl || buktiSampaiImg)}
+                  title="Klik untuk memperbesar foto bukti"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Tombol Batal & Simpan */}
+        <div style={styles.modalActions}>
+          <button
+            type="button"
+            onClick={onClose}
+            style={styles.btnModalClose}
+          >
+            Batal
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onSave(selectedDetail)}
+            style={styles.btnModalSave}
+          >
+            Simpan
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Halaman Utama Status Pengirima
 export default function StatusPengiriman() {
   const navigate = useNavigate();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-
-  // Data State
   const [pengirimanList, setPengirimanList] = useState(INITIAL_PENGIRIMAN);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('Semua Status');
@@ -964,49 +1380,22 @@ export default function StatusPengiriman() {
   // Modal State
   const [selectedDetail, setSelectedDetail] = useState(null);
   const [previewProofImg, setPreviewProofImg] = useState(null);
-  const [isCopied, setIsCopied] = useState(false);
 
-  // Toast Notifikasi
+  // Notifikasi
   const showToast = (message, type = 'success') => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 4000);
   };
 
-  // Format Rupiah
-  const formatRupiah = (number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      maximumFractionDigits: 0
-    }).format(number);
-  };
-
-  // Format Tanggal
-  const formatTanggal = (dateStr) => {
-    if (!dateStr) return '-';
-    try {
-      const [year, month, day] = dateStr.split('-');
-      if (year && month && day) {
-        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-        return `${parseInt(day, 10)} ${monthNames[parseInt(month, 10) - 1] || month} ${year}`;
-      }
-      return dateStr;
-    } catch {
-      return dateStr;
-    }
-  };
-
   // Filter Data
   const filteredPengiriman = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
     return pengirimanList.filter((item) => {
       const matchSearch =
-        item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.idPesanan.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.namaPembeli.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (item.noKwitansi && item.noKwitansi.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (item.noResi && item.noResi.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        item.alamat.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (item.ustazahNama && item.ustazahNama.toLowerCase().includes(searchQuery.toLowerCase()));
+        !query ||
+        item.namaPembeli.toLowerCase().includes(query) ||
+        (item.idPesanan && item.idPesanan.toLowerCase().includes(query));
 
       const matchStatus =
         statusFilter === 'Semua Status' || item.status.toLowerCase() === statusFilter.toLowerCase();
@@ -1030,11 +1419,7 @@ export default function StatusPengiriman() {
     return {
       totalPerluDikirim: pengirimanList.filter((p) => p.status === 'Perlu Dikirim').length,
       totalDikirim: pengirimanList.filter((p) => p.status === 'Dikirim').length,
-      totalSelesai: pengirimanList.filter((p) => p.status === 'Selesai').length,
-      totalSemua: pengirimanList.length,
-      totalKurir: pengirimanList.filter((p) => p.metode === 'Via Kurir').length,
-      totalRsqPusat: pengirimanList.filter((p) => p.metode === 'Ambil di RSQ Pusat').length,
-      totalUstazah: pengirimanList.filter((p) => p.metode === 'Titip ke Ustazah').length
+      totalSelesai: pengirimanList.filter((p) => p.status === 'Selesai').length
     };
   }, [pengirimanList]);
 
@@ -1044,48 +1429,17 @@ export default function StatusPengiriman() {
     setCurrentPage(1);
   };
 
-  // Salin No. Kwitansi
-  const handleCopyKwitansi = (kwitansi) => {
-    if (!kwitansi) return;
-    try {
-      if (navigator?.clipboard?.writeText) {
-        navigator.clipboard.writeText(kwitansi).catch(() => {});
-      } else {
-        const tempInput = document.createElement('textarea');
-        tempInput.value = kwitansi;
-        document.body.appendChild(tempInput);
-        tempInput.select();
-        document.execCommand('copy');
-        document.body.removeChild(tempInput);
-      }
-    } catch {
-      try {
-        const tempInput = document.createElement('textarea');
-        tempInput.value = kwitansi;
-        document.body.appendChild(tempInput);
-        tempInput.select();
-        document.execCommand('copy');
-        document.body.removeChild(tempInput);
-      } catch {}
-    }
-    setIsCopied(true);
-    setTimeout(() => {
-      setIsCopied(false);
-    }, 2000);
-  };
-
   // Simpan Perubahan dari Pop-up Detail
-  const handleSaveDetail = () => {
-    if (!selectedDetail) return;
+  const handleSaveDetail = (updatedDetail) => {
+    if (!updatedDetail) return;
     setPengirimanList((prevList) =>
-      prevList.map((item) => (item.id === selectedDetail.id ? { ...selectedDetail } : item))
+      prevList.map((item) => (item.id === updatedDetail.id ? { ...updatedDetail } : item))
     );
     showToast('Perubahan data pengiriman berhasil disimpan!', 'success');
     setSelectedDetail(null);
-    setIsCopied(false);
   };
 
-  // Badge Status Kotak (seperti Data Modul)
+  // Badge Status Kotak
   const renderStatusBadge = (status) => {
     switch (status) {
       case 'Perlu Dikirim':
@@ -1098,20 +1452,6 @@ export default function StatusPengiriman() {
         return <span style={styles.statusSelesai}>Selesai</span>;
       default:
         return <span style={styles.statusDefault}>{status}</span>;
-    }
-  };
-
-  // Badge Metode Pengiriman
-  const renderMetodeBadge = (metode) => {
-    switch (metode) {
-      case 'Ambil di RSQ Pusat':
-        return <span style={styles.badgeRsqPusat}>🏢 RSQ Pusat</span>;
-      case 'Via Kurir':
-        return <span style={styles.badgeKurir}>🚚 Via Kurir</span>;
-      case 'Titip ke Ustazah':
-        return <span style={styles.badgeUstazah}>🧕 Titip Ustazah</span>;
-      default:
-        return <span style={styles.badgeKurir}>{metode || 'Via Kurir'}</span>;
     }
   };
 
@@ -1186,7 +1526,6 @@ export default function StatusPengiriman() {
                         ? `0 0 0 2px ${cfg.border}, 0 4px 12px rgba(0,0,0,0.06)`
                         : '0 2px 8px rgba(0,0,0,0.04)'
                     }}
-                    title={`Klik untuk filter: ${cfg.label}`}
                   >
                     <div style={{ ...styles.statIconWrapper, backgroundColor: cfg.bg }}>
                       <IconComp sx={{ fontSize: 22, color: cfg.color }} />
@@ -1220,7 +1559,10 @@ export default function StatusPengiriman() {
                   {searchQuery && (
                     <button
                       type="button"
-                      onClick={() => setSearchQuery('')}
+                      onClick={() => {
+                        setSearchQuery('');
+                        setCurrentPage(1);
+                      }}
                       style={styles.searchClearBtn}
                       title="Hapus pencarian"
                     >
@@ -1263,10 +1605,10 @@ export default function StatusPengiriman() {
               <div style={styles.tableResponsive}>
                 <table style={styles.table}>
                   <colgroup>
-                    <col style={{ width: '60px' }} />
-                    <col style={{ width: '35%' }} />
-                    <col style={{ width: '28%' }} />
-                    <col style={{ width: '31%' }} />
+                    <col style={{ width: '8%', minWidth: '55px' }} />
+                    <col style={{ width: '38%', minWidth: '180px' }} />
+                    <col style={{ width: '28%', minWidth: '150px' }} />
+                    <col style={{ width: '26%', minWidth: '130px' }} />
                   </colgroup>
                   <thead>
                     <tr style={styles.thRow}>
@@ -1287,7 +1629,6 @@ export default function StatusPengiriman() {
                             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f8faf9')}
                             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                             style={{ ...styles.tr, cursor: 'pointer' }}
-                            title="Klik baris untuk melihat detail lengkap pengiriman"
                           >
                             {/* NO */}
                             <td style={{ ...styles.td, textAlign: 'center', color: '#64748b', fontWeight: '600' }}>
@@ -1307,10 +1648,10 @@ export default function StatusPengiriman() {
                             {/* AKSI */}
                             <td style={{ ...styles.td, textAlign: 'center' }}>
                               <button
+                                id={`btn-detail-${index + 1}`}
                                 type="button"
                                 onClick={() => setSelectedDetail(item)}
                                 style={styles.btnActionDetailOnly}
-                                title="Lihat Detail Lengkap Pengiriman"
                               >
                                 <VisibilityOutlinedIcon sx={{ fontSize: 16 }} />
                                 <span>Detail</span>
@@ -1386,266 +1727,16 @@ export default function StatusPengiriman() {
       </div>
 
       {/* Modal Detail Pengiriman Modul */}
-      {selectedDetail && (() => {
-        const subtotalModul = (selectedDetail.itemModul || []).reduce(
-          (sum, item) => sum + (item.harga || 0) * (item.qty || 1),
-          0
-        );
-        const ongkirKurir = selectedDetail.metode === 'Via Kurir' ? 10000 : 0;
-        const totalHarga = subtotalModul + ongkirKurir;
-        const originalStatus = pengirimanList.find((p) => p.id === selectedDetail.id)?.status || selectedDetail.status;
-        const statusOptions = originalStatus === 'Perlu Dikirim'
-          ? ['Perlu Dikirim', 'Dikirim']
-          : ['Dikirim', 'Selesai'];
-
-        return (
-          <div style={styles.modalOverlay} onClick={() => setSelectedDetail(null)}>
-            <div style={styles.modalContentDetail} className="modal-detail-responsive" onClick={(e) => e.stopPropagation()}>
-              {/* Header Modal */}
-              <div style={styles.modalHeader}>
-                <h3 style={styles.modalTitle}>Detail Pengiriman Modul</h3>
-                <button
-                  type="button"
-                  onClick={() => setSelectedDetail(null)}
-                  style={styles.modalCloseBtn}
-                  title="Tutup Modal"
-                >
-                  <CloseOutlinedIcon sx={{ fontSize: 20 }} />
-                </button>
-              </div>
-
-              <div style={styles.detailBody}>
-                {/* Metadata Pesanan & Status */}
-                <div style={styles.detailMetaCard}>
-                  <div style={styles.detailMetaItem}>
-                    <span style={styles.detailMetaLabel}>No. Pesanan</span>
-                    <span style={styles.detailMetaValueGreen}>{selectedDetail.id}</span>
-                  </div>
-                  <div style={styles.detailMetaItem}>
-                    <span style={styles.detailMetaLabel}>Metode Pengiriman</span>
-                    <span style={styles.detailMetaValue}>{selectedDetail.metode}</span>
-                  </div>
-                  <div style={styles.detailMetaItem}>
-                    <span style={styles.detailMetaLabel}>Tanggal Pengiriman</span>
-                    <div style={{ marginTop: '2px' }}>
-                      <CustomDatePicker
-                        value={selectedDetail.tanggalKirim || ''}
-                        onChange={(newDate) =>
-                          setSelectedDetail((prev) => ({ ...prev, tanggalKirim: newDate }))
-                        }
-                        disabled={selectedDetail.status === 'Selesai'}
-                        title={
-                          selectedDetail.status === 'Selesai'
-                            ? 'Status sudah selesai (tanggal tidak dapat diubah)'
-                            : 'Pilih atau ubah tanggal pengiriman'
-                        }
-                      />
-                    </div>
-                  </div>
-                  <div style={styles.detailMetaItem}>
-                    <span style={styles.detailMetaLabel}>
-                      {selectedDetail.status === 'Selesai' ? 'Status' : 'Ubah Status'}
-                    </span>
-                    <div style={{ marginTop: '2px' }}>
-                      <CustomDropdown
-                        disabled={selectedDetail.status === 'Selesai'}
-                        value={selectedDetail.status}
-                        onChange={(newStatus) =>
-                          setSelectedDetail((prev) => {
-                            const today = new Date().toISOString().split('T')[0];
-                            const autoKwitansi =
-                              prev.noKwitansi || (prev.id ? prev.id.replace('ORD', 'KWT') : 'KWT-2026-001');
-                            const autoBuktiSampai =
-                              prev.buktiSampai || { fotoUrl: buktiSampaiImg };
-                            return {
-                              ...prev,
-                              status: newStatus,
-                              tanggalKirim:
-                                newStatus === 'Dikirim' && !prev.tanggalKirim ? today : prev.tanggalKirim,
-                              noKwitansi:
-                                newStatus === 'Selesai' ? autoKwitansi : prev.noKwitansi,
-                              buktiSampai:
-                                newStatus === 'Selesai' ? autoBuktiSampai : prev.buktiSampai
-                            };
-                          })
-                        }
-                        options={statusOptions}
-                        style={{ width: '100%' }}
-                        selectStyle={{
-                          padding: '6px 12px',
-                          minHeight: '34px',
-                          fontSize: '12.5px',
-                          fontWeight: '700',
-                          borderRadius: '10px'
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Data Pembeli & Pengiriman */}
-                <div style={styles.detailSection}>
-                  <div style={styles.detailSectionTitle}>Data Pembeli & Pengiriman</div>
-                  <div style={styles.detailRecipientGrid} className="modal-form-grid2">
-                    <div>
-                      <span style={styles.detailFieldLabel}>Nama Pembeli</span>
-                      <div style={styles.detailFieldValue}>{selectedDetail.namaPembeli}</div>
-                    </div>
-                    <div>
-                      <span style={styles.detailFieldLabel}>No.Hp</span>
-                      <div style={styles.detailFieldValue}>{selectedDetail.noHp}</div>
-                    </div>
-
-                    {selectedDetail.metode === 'Titip ke Ustazah' && (
-                      <div>
-                        <span style={styles.detailFieldLabel}>Nama Ustazah</span>
-                        <div style={styles.detailFieldValue}>{selectedDetail.ustazahNama || '-'}</div>
-                      </div>
-                    )}
-
-                    {selectedDetail.metode === 'Ambil di RSQ Pusat' && (
-                      <div>
-                        <span style={styles.detailFieldLabel}>Lokasi Pengambilan</span>
-                        <div style={styles.detailFieldValue}>Kantor RSQ Pusat</div>
-                      </div>
-                    )}
-
-                    {selectedDetail.metode === 'Via Kurir' && (
-                      <div style={{ gridColumn: selectedDetail.status === 'Selesai' ? 'span 1' : 'span 2' }}>
-                        <span style={styles.detailFieldLabel}>Alamat Pengiriman</span>
-                        <div style={styles.detailFieldValue}>{selectedDetail.alamat}</div>
-                      </div>
-                    )}
-
-                    {selectedDetail.status === 'Selesai' && (
-                      <div>
-                        <span style={styles.detailFieldLabel}>No. Kwitansi</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
-                          <input
-                            type="text"
-                            placeholder="Masukkan no. kwitansi..."
-                            value={selectedDetail.noKwitansi || ''}
-                            onChange={(e) =>
-                              setSelectedDetail((prev) => ({ ...prev, noKwitansi: e.target.value }))
-                            }
-                            style={styles.metaTextInput}
-                          />
-                          {selectedDetail.noKwitansi && (
-                            <button
-                              id="btn-copy-kwitansi"
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleCopyKwitansi(selectedDetail.noKwitansi);
-                              }}
-                              style={isCopied ? styles.btnCopySuccess : styles.btnCopyResiSimple}
-                              title={isCopied ? 'Nomor kwitansi tersalin!' : 'Salin No. Kwitansi'}
-                            >
-                              {isCopied ? (
-                                <>
-                                  <CheckCircleOutlinedIcon sx={{ fontSize: 13, color: '#16a34a' }} />
-                                  <span style={{ color: '#16a34a', fontWeight: '700' }}>Tersalin!</span>
-                                </>
-                              ) : (
-                                <>
-                                  <ContentCopyOutlinedIcon sx={{ fontSize: 13 }} />
-                                  <span>Salin</span>
-                                </>
-                              )}
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Rincian Modul & Total Harga */}
-                <div style={styles.detailSection}>
-                  <div style={styles.detailSectionTitle}>Rincian Modul</div>
-                  <div style={{ overflowX: 'auto', width: '100%', WebkitOverflowScrolling: 'touch' }}>
-                    <table style={styles.detailItemTable}>
-                      <thead>
-                        <tr>
-                          <th style={styles.detailTh}>Judul Modul</th>
-                          <th style={{ ...styles.detailTh, textAlign: 'center' }}>Jumlah</th>
-                          <th style={{ ...styles.detailTh, textAlign: 'right' }}>Harga Satuan</th>
-                          <th style={{ ...styles.detailTh, textAlign: 'right' }}>Subtotal</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(selectedDetail.itemModul || []).map((item, idx) => (
-                          <tr key={idx}>
-                            <td style={styles.detailTd}>{item.nama}</td>
-                            <td style={{ ...styles.detailTd, textAlign: 'center' }}>{item.qty} Buku</td>
-                            <td style={{ ...styles.detailTd, textAlign: 'right' }}>{formatRupiah(item.harga || 0)}</td>
-                            <td style={{ ...styles.detailTd, textAlign: 'right', fontWeight: '600' }}>
-                              {formatRupiah((item.harga || 0) * (item.qty || 1))}
-                            </td>
-                          </tr>
-                        ))}
-                        {selectedDetail.metode === 'Via Kurir' && (
-                          <tr>
-                            <td style={styles.detailTd}>Biaya Kurir</td>
-                            <td style={{ ...styles.detailTd, textAlign: 'center' }}>-</td>
-                            <td style={{ ...styles.detailTd, textAlign: 'right' }}>{formatRupiah(10000)}</td>
-                            <td style={{ ...styles.detailTd, textAlign: 'right', fontWeight: '600' }}>
-                              {formatRupiah(10000)}
-                            </td>
-                          </tr>
-                        )}
-                        <tr>
-                          <td colSpan={3} style={{ ...styles.detailTd, textAlign: 'right', fontWeight: '700' }}>
-                            Total:
-                          </td>
-                          <td style={{ ...styles.detailTd, textAlign: 'right', fontWeight: '700', color: '#166534', fontSize: '13.5px' }}>
-                            {formatRupiah(totalHarga)}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {/* Foto Bukti Diterima */}
-                {(selectedDetail.status === 'Selesai' || selectedDetail.status === 'Terkirim') && (
-                  <div style={styles.detailSection}>
-                    <div style={styles.detailSectionTitle}>Foto Bukti Diterima</div>
-                    <div style={styles.detailReceiptWrapper}>
-                      <img
-                        src={selectedDetail.buktiSampai?.fotoUrl || buktiSampaiImg}
-                        alt="Foto Bukti Diterima"
-                        style={{ ...styles.detailReceiptImg, cursor: 'pointer' }}
-                        onClick={() => setPreviewProofImg(selectedDetail.buktiSampai?.fotoUrl || buktiSampaiImg)}
-                        title="Klik untuk memperbesar foto bukti"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Tombol Batal & Simpan */}
-              <div style={styles.modalActions}>
-                <button
-                  type="button"
-                  onClick={() => setSelectedDetail(null)}
-                  style={styles.btnModalClose}
-                >
-                  Batal
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleSaveDetail}
-                  style={styles.btnModalSave}
-                >
-                  Simpan
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
+      {selectedDetail && (
+        <DetailPengirimanModal
+          selectedDetail={selectedDetail}
+          setSelectedDetail={setSelectedDetail}
+          pengirimanList={pengirimanList}
+          onClose={() => setSelectedDetail(null)}
+          onSave={handleSaveDetail}
+          onPreviewProof={(imgUrl) => setPreviewProofImg(imgUrl)}
+        />
+      )}
 
       {/* Preview Foto Bukti Penerimaan */}
       {previewProofImg && (
@@ -1667,7 +1758,6 @@ export default function StatusPengiriman() {
   );
 }
 
-// Styles
 const styles = {
   layoutContainer: {
     display: 'flex',
@@ -1732,14 +1822,6 @@ const styles = {
     fontWeight: '700',
     borderBottom: '3px solid #23573c',
     backgroundColor: 'rgba(35, 87, 60, 0.06)'
-  },
-  tabBadgeWarning: {
-    backgroundColor: '#d97706',
-    color: '#ffffff',
-    padding: '2px 8px',
-    borderRadius: '12px',
-    fontSize: '11px',
-    fontWeight: '700'
   },
   statsGrid: {
     display: 'grid',
@@ -1849,11 +1931,12 @@ const styles = {
   },
   tableResponsive: {
     width: '100%',
-    overflowX: 'auto'
+    overflowX: 'auto',
+    WebkitOverflowScrolling: 'touch'
   },
   table: {
     width: '100%',
-    tableLayout: 'fixed',
+    minWidth: '520px',
     borderCollapse: 'collapse',
     textAlign: 'left'
   },
@@ -1883,7 +1966,8 @@ const styles = {
   buyerNameText: {
     fontWeight: '700',
     color: '#1a3e2b',
-    fontSize: '14px'
+    fontSize: '14px',
+    whiteSpace: 'nowrap'
   },
   statusPerluDikirim: {
     display: 'inline-flex',
@@ -1949,198 +2033,20 @@ const styles = {
     whiteSpace: 'nowrap',
     boxSizing: 'border-box'
   },
-  badgeRsqPusat: {
-    display: 'inline-block',
+  btnActionDetailOnly: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
     backgroundColor: '#ecfdf5',
-    color: '#047857',
+    color: '#166534',
     border: '1px solid #a7f3d0',
-    fontSize: '11px',
+    borderRadius: '8px',
+    padding: '6px 14px',
+    fontSize: '12.5px',
     fontWeight: '700',
-    padding: '4px 10px',
-    borderRadius: '6px',
-    width: 'fit-content',
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
     whiteSpace: 'nowrap'
-  },
-  badgeKurir: {
-    display: 'inline-block',
-    backgroundColor: '#eff6ff',
-    color: '#1d4ed8',
-    border: '1px solid #bfdbfe',
-    fontSize: '11px',
-    fontWeight: '700',
-    padding: '4px 10px',
-    borderRadius: '6px',
-    width: 'fit-content',
-    whiteSpace: 'nowrap'
-  },
-  badgeUstazah: {
-    display: 'inline-block',
-    backgroundColor: '#f5f3ff',
-    color: '#6d28d9',
-    border: '1px solid #ddd6fe',
-    fontSize: '11px',
-    fontWeight: '700',
-    padding: '4px 10px',
-    borderRadius: '6px',
-    width: 'fit-content',
-    whiteSpace: 'nowrap'
-  },
-  badgeDefault: {
-    display: 'inline-block',
-    backgroundColor: '#f1f5f9',
-    color: '#475569',
-    fontSize: '11px',
-    fontWeight: '600',
-    padding: '3px 8px',
-    borderRadius: '6px'
-  },
-  subBadgeKurir: {
-    display: 'inline-block',
-    backgroundColor: 'rgba(35, 87, 60, 0.08)',
-    color: '#23573c',
-    fontSize: '11px',
-    fontWeight: '700',
-    padding: '2px 6px',
-    borderRadius: '4px'
-  },
-  noResiBadge: {
-    display: 'inline-block',
-    backgroundColor: '#fef3c7',
-    color: '#b45309',
-    fontSize: '11px',
-    fontWeight: '600',
-    padding: '2px 6px',
-    borderRadius: '4px'
-  },
-  btnCopyResi: {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    color: '#64748b',
-    padding: '2px',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: '4px',
-    transition: 'color 0.2s'
-  },
-  addressLine: {
-    fontSize: '11.5px',
-    color: '#475569',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    maxWidth: '250px'
-  },
-  statusSelesaiBadge: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '95px',
-    height: '28px',
-    backgroundColor: '#dcfce7',
-    color: '#15803d',
-    borderRadius: '6px',
-    fontSize: '11.5px',
-    fontWeight: '700',
-    letterSpacing: '0.4px',
-    border: '1px solid #bbf7d0',
-    whiteSpace: 'nowrap',
-    boxSizing: 'border-box'
-  },
-  statusDikirimBadge: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '95px',
-    height: '28px',
-    backgroundColor: '#e0f2fe',
-    color: '#0369a1',
-    borderRadius: '6px',
-    fontSize: '11.5px',
-    fontWeight: '700',
-    letterSpacing: '0.4px',
-    border: '1px solid #bae6fd',
-    whiteSpace: 'nowrap',
-    boxSizing: 'border-box'
-  },
-  statusPerluDikirimBadge: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '115px',
-    height: '28px',
-    backgroundColor: '#fef9c3',
-    color: '#854d0e',
-    borderRadius: '6px',
-    fontSize: '11.5px',
-    fontWeight: '700',
-    letterSpacing: '0.4px',
-    border: '1px solid #fef08a',
-    whiteSpace: 'nowrap',
-    boxSizing: 'border-box'
-  },
-  actionButtonsWrapper: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '6px'
-  },
-  btnActionDetail: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '32px',
-    height: '32px',
-    padding: '6px',
-    borderRadius: '6px',
-    border: 'none',
-    backgroundColor: '#f0f5f2',
-    color: '#23573c',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease'
-  },
-  btnActionSend: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '32px',
-    height: '32px',
-    padding: '6px',
-    borderRadius: '6px',
-    border: 'none',
-    backgroundColor: '#eff6ff',
-    color: '#2563eb',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease'
-  },
-  btnActionComplete: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '32px',
-    height: '32px',
-    padding: '6px',
-    borderRadius: '6px',
-    border: 'none',
-    backgroundColor: '#f0fdf4',
-    color: '#16a34a',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease'
-  },
-  badgeDoneIcon: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '32px',
-    height: '32px',
-    color: '#16a34a'
-  },
-  emptyTable: {
-    textAlign: 'center',
-    padding: '40px',
-    color: '#94a3b8',
-    fontSize: '14px'
   },
   cardFooter: {
     padding: '14px 20px',
@@ -2192,6 +2098,12 @@ const styles = {
     color: '#ffffff',
     borderColor: '#23573c'
   },
+  emptyTable: {
+    textAlign: 'center',
+    padding: '40px',
+    color: '#94a3b8',
+    fontSize: '14px'
+  },
   modalOverlay: {
     position: 'fixed',
     top: 0,
@@ -2205,17 +2117,6 @@ const styles = {
     zIndex: 9999,
     padding: '16px'
   },
-  modalContentLarge: {
-    backgroundColor: '#ffffff',
-    borderRadius: '16px',
-    padding: '24px',
-    width: '100%',
-    maxWidth: '820px',
-    maxHeight: '90vh',
-    display: 'flex',
-    flexDirection: 'column',
-    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-  },
   modalContentDetail: {
     backgroundColor: '#ffffff',
     borderRadius: '12px',
@@ -2227,25 +2128,6 @@ const styles = {
     boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
     boxSizing: 'border-box'
   },
-  modalContentForm: {
-    backgroundColor: '#ffffff',
-    borderRadius: '14px',
-    padding: '24px',
-    width: '100%',
-    maxWidth: '560px',
-    maxHeight: '90vh',
-    display: 'flex',
-    flexDirection: 'column',
-    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-  },
-  modalContentSimpleReject: {
-    backgroundColor: '#ffffff',
-    borderRadius: '14px',
-    padding: '22px 24px',
-    width: '100%',
-    maxWidth: '440px',
-    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-  },
   modalHeader: {
     display: 'flex',
     alignItems: 'center',
@@ -2254,22 +2136,10 @@ const styles = {
     paddingBottom: '10px',
     borderBottom: '1px solid #e2e8f0'
   },
-  modalHeaderSimple: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: '12px'
-  },
   modalTitle: {
     fontSize: '16px',
     fontWeight: '700',
     color: '#1a3e2b',
-    margin: 0
-  },
-  modalTitleSimpleGreen: {
-    fontSize: '16px',
-    fontWeight: '700',
-    color: '#166534',
     margin: 0
   },
   modalCloseBtn: {
@@ -2281,60 +2151,6 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '2px'
-  },
-  modalBodyScroll: {
-    overflowY: 'auto',
-    paddingRight: '4px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px'
-  },
-  stepperContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#f8faf9',
-    borderRadius: '12px',
-    padding: '16px 20px',
-    border: '1px solid #eef2ef'
-  },
-  stepItem: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    textAlign: 'center',
-    zIndex: 1
-  },
-  stepCircle: {
-    width: '28px',
-    height: '28px',
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '12px',
-    fontWeight: '700',
-    marginBottom: '6px',
-    transition: 'all 0.2s ease'
-  },
-  stepTitle: {
-    fontSize: '11px',
-    fontWeight: '700',
-    color: '#1e293b',
-    lineHeight: '1.2'
-  },
-  stepSubtitle: {
-    fontSize: '10px',
-    color: '#64748b',
-    marginTop: '2px'
-  },
-  stepLine: {
-    flex: 1,
-    height: '3px',
-    margin: '0 6px',
-    marginTop: '-20px',
-    borderRadius: '2px',
-    transition: 'all 0.2s ease'
   },
   detailBody: {
     display: 'flex',
@@ -2405,41 +2221,19 @@ const styles = {
     color: '#1e293b',
     lineHeight: '1.4'
   },
-  detailItemTable: {
-    width: '100%',
-    borderCollapse: 'collapse',
-    fontSize: '12.5px'
-  },
-  detailTh: {
-    backgroundColor: '#f8fafc',
-    padding: '6px 8px',
-    borderBottom: '1px solid #e2e8f0',
-    color: '#475569',
-    fontWeight: '600'
-  },
-  detailTd: {
-    padding: '6px 8px',
-    borderBottom: '1px solid #f1f5f9',
-    color: '#334155'
-  },
-  detailReceiptWrapper: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f8fafc',
-    borderRadius: '10px',
-    padding: '12px',
-    border: '1px solid #e2e8f0',
-    marginTop: '6px'
-  },
-  detailReceiptImg: {
-    width: '100%',
-    maxWidth: '320px',
-    maxHeight: '260px',
-    objectFit: 'cover',
+  metaTextInput: {
+    padding: '5px 8px',
     borderRadius: '6px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-    border: '1px solid #e2e8f0'
+    border: '1px solid #cbd5e1',
+    fontSize: '12.5px',
+    fontWeight: '600',
+    color: '#1e293b',
+    backgroundColor: '#ffffff',
+    outline: 'none',
+    fontFamily: 'inherit',
+    width: '100%',
+    maxWidth: '220px',
+    boxSizing: 'border-box'
   },
   btnCopyResiSimple: {
     display: 'inline-flex',
@@ -2469,60 +2263,123 @@ const styles = {
     cursor: 'default',
     transition: 'all 0.2s ease'
   },
-  metaDateInput: {
-    marginTop: '2px',
-    padding: '5px 8px',
-    borderRadius: '6px',
-    border: '1px solid #cbd5e1',
-    fontSize: '12.5px',
-    fontWeight: '600',
-    color: '#1e293b',
-    backgroundColor: '#ffffff',
-    outline: 'none',
-    fontFamily: 'inherit',
-    cursor: 'pointer',
-    boxSizing: 'border-box',
+  detailItemTable: {
     width: '100%',
-    maxWidth: '170px'
+    borderCollapse: 'collapse',
+    fontSize: '12.5px'
   },
-  metaTextInput: {
-    padding: '5px 8px',
-    borderRadius: '6px',
-    border: '1px solid #cbd5e1',
-    fontSize: '12.5px',
-    fontWeight: '600',
-    color: '#1e293b',
-    backgroundColor: '#ffffff',
-    outline: 'none',
-    fontFamily: 'inherit',
-    width: '100%',
-    maxWidth: '220px',
-    boxSizing: 'border-box'
+  detailTh: {
+    backgroundColor: '#f8fafc',
+    padding: '6px 8px',
+    borderBottom: '1px solid #e2e8f0',
+    color: '#475569',
+    fontWeight: '600'
   },
-  btnActionDetailOnly: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    backgroundColor: '#ecfdf5',
-    color: '#166534',
-    border: '1px solid #a7f3d0',
-    borderRadius: '8px',
-    padding: '6px 14px',
-    fontSize: '12.5px',
+  detailTd: {
+    padding: '6px 8px',
+    borderBottom: '1px solid #f1f5f9',
+    color: '#334155'
+  },
+  mobileItemCard: {
+    backgroundColor: '#f8faf9',
+    borderRadius: '10px',
+    border: '1px solid #eef2ef',
+    padding: '12px 14px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px'
+  },
+  mobileItemName: {
+    fontSize: '14px',
     fontWeight: '700',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease'
+    color: '#1a3e2b',
+    lineHeight: '1.4'
   },
-  metodeFixedBanner: {
+  mobileItemBottom: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#f8fafc',
-    padding: '10px 14px',
-    borderRadius: '10px',
+    gap: '10px'
+  },
+  mobileItemQtyPrice: {
+    fontSize: '13.5px',
+    color: '#475569',
+    fontWeight: '600'
+  },
+  mobileItemSubtotal: {
+    fontSize: '14px',
+    fontWeight: '700',
+    color: '#1e293b'
+  },
+  mobileTotalRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#ffffff',
     border: '1px solid #e2e8f0',
-    flexWrap: 'wrap',
-    gap: '8px'
+    borderRadius: '10px',
+    padding: '12px 16px',
+    marginTop: '6px'
+  },
+  mobileTotalLabel: {
+    fontSize: '14px',
+    fontWeight: '700',
+    color: '#334155'
+  },
+  mobileTotalValue: {
+    fontSize: '14px',
+    fontWeight: '700',
+    color: '#166534'
+  },
+  detailReceiptWrapper: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderRadius: '10px',
+    padding: '12px',
+    border: '1px solid #e2e8f0',
+    marginTop: '6px'
+  },
+  detailReceiptImg: {
+    width: '100%',
+    maxWidth: '320px',
+    maxHeight: '260px',
+    objectFit: 'cover',
+    borderRadius: '6px',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+    border: '1px solid #e2e8f0'
+  },
+  modalActions: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: '10px',
+    marginTop: '16px',
+    flexWrap: 'wrap'
+  },
+  btnModalClose: {
+    padding: '8px 20px',
+    borderRadius: '8px',
+    border: '1.5px solid #23573c',
+    backgroundColor: '#ffffff',
+    color: '#23573c',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.15s ease'
+  },
+  btnModalSave: {
+    padding: '8px 22px',
+    borderRadius: '8px',
+    border: 'none',
+    backgroundColor: '#166534',
+    color: '#ffffff',
+    fontSize: '13px',
+    fontWeight: '700',
+    cursor: 'pointer',
+    boxShadow: '0 2px 6px rgba(22, 101, 52, 0.25)',
+    transition: 'all 0.2s ease'
   },
   lightboxContainer: {
     position: 'relative',
@@ -2557,198 +2414,5 @@ const styles = {
     justifyContent: 'center',
     cursor: 'pointer',
     boxShadow: '0 4px 6px rgba(0,0,0,0.15)'
-  },
-  modalActions: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: '10px',
-    marginTop: '16px',
-    flexWrap: 'wrap'
-  },
-  btnModalClose: {
-    padding: '8px 20px',
-    borderRadius: '8px',
-    border: '1.5px solid #23573c',
-    backgroundColor: '#ffffff',
-    color: '#23573c',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease'
-  },
-  btnModalSave: {
-    padding: '8px 22px',
-    borderRadius: '8px',
-    border: 'none',
-    backgroundColor: '#166534',
-    color: '#ffffff',
-    fontSize: '13px',
-    fontWeight: '700',
-    cursor: 'pointer',
-    boxShadow: '0 2px 6px rgba(22, 101, 52, 0.25)',
-    transition: 'all 0.2s ease'
-  },
-  btnModalPrimary: {
-    padding: '8px 18px',
-    borderRadius: '8px',
-    border: 'none',
-    backgroundColor: '#23573c',
-    color: '#ffffff',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    boxShadow: '0 2px 6px rgba(35, 87, 60, 0.25)',
-    transition: 'all 0.2s ease'
-  },
-  btnModalApprove: {
-    padding: '8px 16px',
-    borderRadius: '6px',
-    border: 'none',
-    backgroundColor: '#166534',
-    color: '#ffffff',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px'
-  },
-  summaryInfoCard: {
-    backgroundColor: '#f8faf9',
-    border: '1px solid #e2e8f0',
-    borderRadius: '10px',
-    padding: '12px 14px'
-  },
-  metodeRadioGroup: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-    gap: '8px',
-    marginTop: '6px'
-  },
-  metodeRadioCard: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: '8px',
-    padding: '10px 12px',
-    borderRadius: '10px',
-    border: '1.5px solid #e2e8f0',
-    backgroundColor: '#ffffff',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease'
-  },
-  metodeRadioCardActiveGreen: {
-    borderColor: '#059669',
-    backgroundColor: 'rgba(5, 150, 105, 0.05)'
-  },
-  metodeRadioCardActiveBlue: {
-    borderColor: '#2563eb',
-    backgroundColor: 'rgba(37, 99, 235, 0.05)'
-  },
-  metodeRadioCardActivePurple: {
-    borderColor: '#7c3aed',
-    backgroundColor: 'rgba(124, 58, 237, 0.05)'
-  },
-  formSectionBoxBlue: {
-    backgroundColor: '#eff6ff',
-    border: '1px solid #bfdbfe',
-    borderRadius: '10px',
-    padding: '12px 14px'
-  },
-  formSectionBoxGreen: {
-    backgroundColor: '#ecfdf5',
-    border: '1px solid #a7f3d0',
-    borderRadius: '10px',
-    padding: '12px 14px'
-  },
-  formSectionBoxPurple: {
-    backgroundColor: '#f5f3ff',
-    border: '1px solid #ddd6fe',
-    borderRadius: '10px',
-    padding: '12px 14px'
-  },
-  formLabel: {
-    fontSize: '12px',
-    fontWeight: '600',
-    color: '#334155',
-    display: 'block',
-    marginBottom: '5px'
-  },
-  formInput: {
-    width: '100%',
-    padding: '9px 12px',
-    borderRadius: '8px',
-    border: '1px solid #cbd5e1',
-    fontSize: '13px',
-    color: '#1e293b',
-    outline: 'none',
-    backgroundColor: '#ffffff',
-    boxSizing: 'border-box'
-  },
-  formSelect: {
-    width: '100%',
-    padding: '9px 12px',
-    borderRadius: '8px',
-    border: '1px solid #cbd5e1',
-    fontSize: '13px',
-    color: '#1e293b',
-    outline: 'none',
-    backgroundColor: '#ffffff',
-    boxSizing: 'border-box'
-  },
-  formTextarea: {
-    width: '100%',
-    padding: '9px 12px',
-    borderRadius: '8px',
-    border: '1px solid #cbd5e1',
-    fontSize: '13px',
-    color: '#1e293b',
-    outline: 'none',
-    backgroundColor: '#ffffff',
-    boxSizing: 'border-box',
-    fontFamily: 'inherit',
-    resize: 'vertical'
-  },
-  errorText: {
-    color: '#dc2626',
-    fontSize: '11.5px',
-    marginTop: '4px',
-    display: 'block'
-  },
-  simpleModalBody: {
-    padding: '10px 0 16px'
-  },
-  simpleConfirmText: {
-    fontSize: '13.5px',
-    color: '#334155',
-    lineHeight: '1.5'
-  },
-  simpleModalFooter: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: '10px'
-  },
-  btnSimpleCancel: {
-    padding: '8px 16px',
-    borderRadius: '6px',
-    border: '1px solid #cbd5e1',
-    backgroundColor: '#ffffff',
-    color: '#475569',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer'
-  },
-  btnSimpleConfirmApprove: {
-    padding: '8px 16px',
-    borderRadius: '6px',
-    border: 'none',
-    backgroundColor: '#166534',
-    color: '#ffffff',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer'
   }
 };
