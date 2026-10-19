@@ -103,8 +103,8 @@ select option:active {
   to { opacity: 1; }
 }
 
-/* Mobile Media Queries */
-@media (max-width: 768px) {
+/* Mobile & Tablet */
+@media (max-width: 1368px) {
   .hamburger-btn {
     display: flex !important;
     align-items: center;
@@ -194,12 +194,6 @@ select option:active {
     box-sizing: border-box !important;
   }
 
-  .select-responsive {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-  }
-
   .btn-add-responsive {
     width: 100% !important;
     justify-content: center !important;
@@ -263,11 +257,6 @@ select option:active {
 
   .modal-form-grid2 > * {
     grid-column: span 1 !important;
-  }
-
-  .modal-two-col-responsive {
-    grid-template-columns: 1fr !important;
-    gap: 14px !important;
   }
 
   .pagination-responsive {
@@ -394,6 +383,11 @@ select option:active {
     max-width: 420px !important;
     box-sizing: border-box !important;
     justify-content: center !important;
+  }
+
+  .calendar-picker-popup {
+    right: 0 !important;
+    left: auto !important;
   }
 }
 
