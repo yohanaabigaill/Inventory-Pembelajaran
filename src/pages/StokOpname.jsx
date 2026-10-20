@@ -852,6 +852,7 @@ export default function StokOpname() {
           {/* Toast Notification */}
           {notification && (
             <div
+              className="toast-responsive"
               style={{
                 ...styles.toast,
                 backgroundColor: notification.type === 'success' ? '#23573c' : '#dc2626'
@@ -1034,7 +1035,7 @@ export default function StokOpname() {
 
                           {/* JUDUL MODUL */}
                           <td style={{ ...styles.td, paddingLeft: '16px' }}>
-                            <div style={styles.moduleNameMain}>{item.nama}</div>
+                            <div style={styles.moduleNameMain} className="stok-opname-module-name">{item.nama}</div>
                           </td>
 
                           {/* JENIS */}
@@ -1185,16 +1186,21 @@ const styles = {
     gap: '20px'
   },
   toast: {
+    position: 'fixed',
+    top: '24px',
+    right: '24px',
+    zIndex: 99999,
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
-    padding: '12px 20px',
+    padding: '14px 22px',
     borderRadius: '10px',
     color: '#ffffff',
     fontSize: '14px',
-    fontWeight: '500',
-    boxShadow: '0 4px 14px rgba(0,0,0,0.12)',
-    animation: 'fadeIn 0.2s ease'
+    fontWeight: '600',
+    boxShadow: '0 8px 28px rgba(0, 0, 0, 0.22)',
+    animation: 'fadeIn 0.25s ease',
+    maxWidth: 'calc(100vw - 48px)'
   },
   card: {
     backgroundColor: '#ffffff',
