@@ -233,8 +233,8 @@ select option:active {
   }
 
   .stats-grid-responsive {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 12px !important;
   }
 
   .stat-card-responsive {
@@ -504,5 +504,27 @@ select option:active {
     display: flex !important;
     flex-direction: column !important;
     gap: 8px !important;
+  }
+}
+
+/* Dashboard Responsive Grid */
+.dashboard-main-grid-responsive {
+  display: grid;
+  grid-template-columns: 1.6fr 1.1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1368px) {
+  .dashboard-main-grid-responsive {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .stats-grid-responsive {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
   }
 }
