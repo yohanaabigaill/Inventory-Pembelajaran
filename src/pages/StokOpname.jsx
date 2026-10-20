@@ -450,34 +450,55 @@ const getInitialMonthlyData = () => {
   const defaults = {};
 
   // September 2026 (Menunggu Verifikasi)
-  defaults['2026-09'] = INITIAL_MODULS.map((m) => {
-    if (m.id === 1) {
-      return { ...m, inputFisik: 445, catatan: '5 buku rusak di rak bawah', status: 'Menunggu Verifikasi' };
-    }
-    if (m.id === 3) {
-      return { ...m, inputFisik: 314, catatan: 'Kurang 6 eks saat pengiriman', status: 'Menunggu Verifikasi' };
-    }
-    return { ...m, inputFisik: m.stokSistem, catatan: '', status: 'Menunggu Verifikasi' };
-  });
+  defaults['2026-09'] = {
+    statusPeriode: 'Menunggu Verifikasi',
+    catatanPenolakan: '',
+    tanggalVerifikasi: null,
+    items: INITIAL_MODULS.map((m) => {
+      if (m.id === 1) {
+        return { ...m, inputFisik: 445, catatan: '5 buku rusak di rak bawah', status: 'Menunggu Verifikasi' };
+      }
+      if (m.id === 3) {
+        return { ...m, inputFisik: 314, catatan: 'Kurang 6 eks saat pengiriman', status: 'Menunggu Verifikasi' };
+      }
+      return { ...m, inputFisik: m.stokSistem, catatan: '', status: 'Menunggu Verifikasi' };
+    })
+  };
 
   // Agustus 2026 (Disetujui)
-  defaults['2026-08'] = INITIAL_MODULS.map((m) => ({
-    ...m,
-    inputFisik: m.stokSistem,
-    catatan: '',
-    status: 'Disetujui'
-  }));
+  defaults['2026-08'] = {
+    statusPeriode: 'Disetujui',
+    catatanPenolakan: '',
+    tanggalVerifikasi: '31 Agustus 2026, 16:45 WIB',
+    items: INITIAL_MODULS.map((m) => ({
+      ...m,
+      inputFisik: m.stokSistem,
+      catatan: '',
+      status: 'Disetujui',
+      isLocked: true
+    }))
+  };
 
-  // Juli 2026 (Ditolak)
-  defaults['2026-07'] = INITIAL_MODULS.map((m) => {
-    if (m.id === 11) {
-      return { ...m, inputFisik: 412, catatan: 'Fisik belum ketemu di rak B', status: 'Ditolak' };
-    }
-    return { ...m, inputFisik: m.stokSistem, catatan: '', status: 'Ditolak' };
-  });
+  // Juli 2026 (Ditolak dengan Catatan Super Admin)
+  defaults['2026-07'] = {
+    statusPeriode: 'Ditolak',
+    catatanPenolakan: 'Mohon hitung ulang fisik modul Asasi karena ada selisih 8 modul.',
+    tanggalVerifikasi: '31 Juli 2026, 15:30 WIB',
+    items: INITIAL_MODULS.map((m) => {
+      if (m.id === 1) {
+        return { ...m, inputFisik: 442, catatan: 'Fisik awal 442 di rak bawah, selisih 8 modul', status: 'Ditolak', isLocked: false };
+      }
+      return { ...m, inputFisik: m.stokSistem, catatan: '', status: 'Disetujui', isLocked: true };
+    })
+  };
 
-  // Oktober 2026 (Bulan Berjalan - Belum Diinput)
-  defaults['2026-10'] = createDefaultModulData('Belum Diinput');
+  // Oktober 2026 (Belum Diinput)
+  defaults['2026-10'] = {
+    statusPeriode: 'Belum Diinput',
+    catatanPenolakan: '',
+    tanggalVerifikasi: null,
+    items: createDefaultModulData('Belum Diinput')
+  };
 
   return defaults;
 };
@@ -487,7 +508,27 @@ export default function StokOpname() {
   const [selectedTahun, setSelectedTahun] = useState('2026');
   const [selectedBulan, setSelectedBulan] = useState('Oktober');
 
-  const [monthlyData, setMonthlyData] = useState(getInitialMonthlyData);
+  // jika Super Admin menolak stok opname
+  const [monthlyData, setMonthlyData] = useState(() => {
+    const initial = getInitialMonthlyData();
+    try {
+      const saved = localStorage.getItem('rsq_stok_opname_shared');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const juliData = parsed && parsed['2026-07'];
+        return {
+          ...initial,
+          ...parsed,
+          '2026-07': (juliData && juliData.statusPeriode === 'Ditolak')
+            ? { ...juliData, catatanPenolakan: 'Mohon hitung ulang fisik modul Asasi karena ada selisih 8 modul.' }
+            : initial['2026-07']
+        };
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return initial;
+  });
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua Jenis');
@@ -535,51 +576,119 @@ export default function StokOpname() {
     return `${effectiveYear}-${String(selectedMonthIndex + 1).padStart(2, '0')}`;
   }, [effectiveYear, selectedMonthIndex]);
 
-  // Ambil data untuk bulan yang dipilih
-  const currentModulList = useMemo(() => {
-    return monthlyData[selectedMonthKey] || createDefaultModulData('Belum Diinput');
+  // Ambil data untuk periode yang dipilih
+  const currentPeriodData = useMemo(() => {
+    const raw = monthlyData[selectedMonthKey];
+    if (!raw) {
+      return {
+        statusPeriode: 'Belum Diinput',
+        catatanPenolakan: '',
+        tanggalVerifikasi: null,
+        items: createDefaultModulData('Belum Diinput')
+      };
+    }
+    if (Array.isArray(raw)) {
+      const hasDitolak = raw.some((i) => i.status === 'Ditolak');
+      const hasMenunggu = raw.some((i) => i.status === 'Menunggu Verifikasi');
+      const hasDisetujui = raw.every((i) => i.status === 'Disetujui');
+      return {
+        statusPeriode: hasDitolak ? 'Ditolak' : hasMenunggu ? 'Menunggu Verifikasi' : hasDisetujui ? 'Disetujui' : 'Belum Diinput',
+        catatanPenolakan: hasDitolak ? 'Mohon hitung ulang fisik modul yang memiliki selisih fisik.' : '',
+        tanggalVerifikasi: hasDitolak || hasDisetujui ? '19 Oktober 2026, 23:15 WIB' : null,
+        items: raw
+      };
+    }
+    return raw;
   }, [monthlyData, selectedMonthKey]);
 
-  // Handler Perubahan Input Fisik (jika bukan bulan sebelumnya)
+  const currentModulList = useMemo(() => currentPeriodData.items || [], [currentPeriodData]);
+  const statusPeriode = currentPeriodData.statusPeriode || 'Belum Diinput';
+  const isPeriodDitolak = statusPeriode === 'Ditolak' || currentModulList.some((it) => it.status === 'Ditolak');
+  const isPeriodMenunggu = statusPeriode === 'Menunggu Verifikasi' || (!isPeriodDitolak && currentModulList.every((it) => it.status === 'Menunggu Verifikasi'));
+  const isPeriodDisetujui = statusPeriode === 'Disetujui' || (!isPeriodDitolak && !isPeriodMenunggu && currentModulList.every((it) => it.status === 'Disetujui'));
+
+  // Handler Perubahan Input Fisik (jika modul ditolak)
   const handleFisikChange = (id, val) => {
-    if (isPastMonth) return;
     const numericVal = val === '' ? '' : parseInt(val, 10);
     if (numericVal !== '' && isNaN(numericVal)) return;
 
     setMonthlyData((prev) => {
-      const currentList = prev[selectedMonthKey] || createDefaultModulData('Belum Diinput');
-      return {
-        ...prev,
-        [selectedMonthKey]: currentList.map((item) =>
-          item.id === id
-            ? {
-                ...item,
-                inputFisik: numericVal,
-                status: numericVal === '' && item.status === 'Draf' ? 'Belum Diinput' : item.status
-              }
-            : item
-        )
+      const existing = prev[selectedMonthKey] || {
+        statusPeriode: 'Belum Diinput',
+        catatanPenolakan: '',
+        tanggalVerifikasi: null,
+        items: createDefaultModulData('Belum Diinput')
       };
+      const itemsList = Array.isArray(existing) ? existing : existing.items;
+
+      const updatedItems = itemsList.map((item) => {
+        if (item.id === id) {
+          // Modul yang terkunci / sudah disetujui / sedang menunggu verifikasi
+          if (item.isLocked || item.status === 'Disetujui' || item.status === 'Menunggu Verifikasi') {
+            return item;
+          }
+          return {
+            ...item,
+            inputFisik: numericVal,
+            status: numericVal === '' && item.status === 'Draf' ? 'Belum Diinput' : item.status
+          };
+        }
+        return item;
+      });
+
+      const nextData = {
+        ...prev,
+        [selectedMonthKey]: Array.isArray(existing)
+          ? updatedItems
+          : { ...existing, items: updatedItems }
+      };
+
+      try {
+        localStorage.setItem('rsq_stok_opname_shared', JSON.stringify(nextData));
+      } catch (e) {
+        console.error(e);
+      }
+
+      return nextData;
     });
   };
 
-  // Handler Perubahan Catatan (jika bukan bulan sebelumnya)
+  // Handler Perubahan Catatan
   const _handleCatatanChange = (id, val) => {
-    if (isPastMonth) return;
     setMonthlyData((prev) => {
-      const currentList = prev[selectedMonthKey] || createDefaultModulData('Belum Diinput');
-      return {
-        ...prev,
-        [selectedMonthKey]: currentList.map((item) =>
-          item.id === id
-            ? {
-                ...item,
-                catatan: val,
-                status: item.status === 'Belum Diinput' ? 'Draf' : item.status
-              }
-            : item
-        )
+      const existing = prev[selectedMonthKey] || {
+        statusPeriode: 'Belum Diinput',
+        catatanPenolakan: '',
+        tanggalVerifikasi: null,
+        items: createDefaultModulData('Belum Diinput')
       };
+      const itemsList = Array.isArray(existing) ? existing : existing.items;
+
+      const updatedItems = itemsList.map((item) => {
+        if (item.id === id) {
+          return {
+            ...item,
+            catatan: val,
+            status: item.status === 'Belum Diinput' ? 'Draf' : item.status
+          };
+        }
+        return item;
+      });
+
+      const nextData = {
+        ...prev,
+        [selectedMonthKey]: Array.isArray(existing)
+          ? updatedItems
+          : { ...existing, items: updatedItems }
+      };
+
+      try {
+        localStorage.setItem('rsq_stok_opname_shared', JSON.stringify(nextData));
+      } catch (e) {
+        console.error(e);
+      }
+
+      return nextData;
     });
   };
 
@@ -603,9 +712,8 @@ export default function StokOpname() {
 
   // Simpan Draf (bisa untuk 1 modul atau beberapa modul)
   const handleSimpanDraf = () => {
-    if (isPastMonth) return;
-    const currentList = monthlyData[selectedMonthKey] || createDefaultModulData('Belum Diinput');
-    const filledCount = currentList.filter((item) => item.inputFisik !== '').length;
+    if (isPeriodDisetujui || isPeriodMenunggu) return;
+    const filledCount = currentModulList.filter((item) => item.inputFisik !== '').length;
 
     if (filledCount === 0) {
       showToast('Belum ada stok fisik modul yang diisi untuk disimpan sebagai draf.', 'error');
@@ -613,43 +721,95 @@ export default function StokOpname() {
     }
 
     setMonthlyData((prev) => {
-      const list = prev[selectedMonthKey] || createDefaultModulData('Belum Diinput');
-      return {
-        ...prev,
-        [selectedMonthKey]: list.map((item) => ({
-          ...item,
-          status: item.inputFisik !== ''
-            ? (item.status === 'Menunggu Verifikasi' || item.status === 'Disetujui' ? item.status : 'Draf')
-            : 'Belum Diinput'
-        }))
+      const existing = prev[selectedMonthKey] || {
+        statusPeriode: 'Belum Diinput',
+        catatanPenolakan: '',
+        tanggalVerifikasi: null,
+        items: createDefaultModulData('Belum Diinput')
       };
+      const itemsList = Array.isArray(existing) ? existing : existing.items;
+
+      const updatedList = itemsList.map((item) => {
+        if (item.isLocked || item.status === 'Disetujui' || item.status === 'Menunggu Verifikasi') {
+          return item;
+        }
+        return {
+          ...item,
+          status: item.inputFisik !== '' ? 'Draf' : 'Belum Diinput'
+        };
+      });
+
+      const nextData = {
+        ...prev,
+        [selectedMonthKey]: Array.isArray(existing)
+          ? updatedList
+          : { ...existing, items: updatedList }
+      };
+
+      try {
+        localStorage.setItem('rsq_stok_opname_shared', JSON.stringify(nextData));
+      } catch (e) {
+        console.error(e);
+      }
+
+      return nextData;
     });
     showToast('Draf berhasil disimpan', 'success');
   };
 
-  // Ajukan Verifikasi
+  // Ajukan Verifikasi / Ajukan Verifikasi Ulang
   const handleAjukanVerifikasi = () => {
-    if (isPastMonth) return;
-    const currentList = monthlyData[selectedMonthKey] || createDefaultModulData('Belum Diinput');
-    const uncompletedItems = currentList.filter((item) => item.inputFisik === '');
+    if (isPeriodDisetujui || isPeriodMenunggu) return;
+    const uncompletedItems = currentModulList.filter((item) => item.inputFisik === '');
 
     if (uncompletedItems.length > 0) {
       showToast('Semua modul wajib diisi sebelum mengajukan verifikasi.', 'error');
       return;
     }
 
-    // Jika seluruh modul lengkap terisi
     setMonthlyData((prev) => {
-      const list = prev[selectedMonthKey] || createDefaultModulData('Belum Diinput');
-      return {
-        ...prev,
-        [selectedMonthKey]: list.map((item) => ({
+      const existing = prev[selectedMonthKey] || {
+        statusPeriode: 'Belum Diinput',
+        catatanPenolakan: '',
+        tanggalVerifikasi: null,
+        items: createDefaultModulData('Belum Diinput')
+      };
+      const itemsList = Array.isArray(existing) ? existing : existing.items;
+
+      const updatedList = itemsList.map((item) => {
+        if (item.status === 'Disetujui') {
+          return { ...item, isLocked: true };
+        }
+        return {
           ...item,
           status: 'Menunggu Verifikasi'
-        }))
+        };
+      });
+
+      const nextData = {
+        ...prev,
+        [selectedMonthKey]: {
+          ...(Array.isArray(existing) ? {} : existing),
+          statusPeriode: 'Menunggu Verifikasi',
+          catatanPenolakan: '',
+          items: updatedList
+        }
       };
+
+      try {
+        localStorage.setItem('rsq_stok_opname_shared', JSON.stringify(nextData));
+      } catch (e) {
+        console.error(e);
+      }
+
+      return nextData;
     });
-    showToast(`Pengajuan verifikasi stok opname periode ${effectiveBulan} ${effectiveYear} berhasil diajukan! Status diubah menjadi Menunggu Verifikasi.`, 'success');
+
+    if (isPeriodDitolak) {
+      showToast('Revisi stok opname berhasil diajukan ulang ke Super Admin!', 'success');
+    } else {
+      showToast('Pengajuan verifikasi stok opname berhasil diajukan! Status diubah menjadi Menunggu Verifikasi.', 'success');
+    }
   };
 
   // Render Status
@@ -760,54 +920,86 @@ export default function StokOpname() {
             {/* Tombol Simpan Draf dan Ajukan Verifikasi */}
             <div className="bottom-actions-responsive" style={styles.bottomActions}>
               <button
-                disabled={isPastMonth}
+                disabled={isPeriodDisetujui || isPeriodMenunggu || (isPastMonth && !isPeriodDitolak)}
                 onClick={handleSimpanDraf}
                 style={{
                   ...styles.btnDraf,
-                  ...(isPastMonth ? styles.btnActionDisabled : {})
+                  ...(isPeriodDisetujui || isPeriodMenunggu || (isPastMonth && !isPeriodDitolak) ? styles.btnActionDisabled : {})
                 }}
-                title={isPastMonth ? 'Data bulan sebelumnya tidak dapat diubah' : 'Simpan Draf'}
               >
                 <SaveOutlinedIcon sx={{ fontSize: 18 }} />
                 <span>Simpan Draf</span>
               </button>
               <button
-                disabled={isPastMonth}
+                disabled={isPeriodDisetujui || isPeriodMenunggu || (isPastMonth && !isPeriodDitolak)}
                 onClick={handleAjukanVerifikasi}
                 style={{
                   ...styles.btnAjukan,
-                  ...(isPastMonth ? styles.btnActionDisabled : {})
+                  ...(isPeriodDisetujui || isPeriodMenunggu || (isPastMonth && !isPeriodDitolak) ? styles.btnActionDisabled : {}),
+                  ...(isPeriodDitolak ? { backgroundColor: '#23573c', color: '#ffffff' } : {})
                 }}
-                title={isPastMonth ? 'Data bulan sebelumnya tidak dapat diubah' : 'Ajukan Verifikasi'}
               >
                 <SendOutlinedIcon sx={{ fontSize: 16 }} />
-                <span>Ajukan Verifikasi</span>
+                <span>
+                  {isPeriodDitolak
+                    ? 'Ajukan Verifikasi Ulang'
+                    : isPeriodMenunggu
+                    ? 'Menunggu Verifikasi'
+                    : isPeriodDisetujui
+                    ? 'Telah Disetujui'
+                    : 'Ajukan Verifikasi'}
+                </span>
               </button>
             </div>
           </div>
+
+          {/* Rejection Alert Banner (Hanya muncul jika periode Ditolak / Perlu Revisi) */}
+          {isPeriodDitolak && (
+            <div style={styles.rejectionBanner}>
+              <div style={styles.rejectionBannerHeader}>
+                <div style={styles.rejectionBannerTitleWrapper}>
+                  <div>
+                    <h3 style={styles.rejectionBannerTitle}>
+                      Pengajuan Stok Opname Ditolak oleh Super Admin
+                    </h3>
+                  </div>
+                </div>
+              </div>
+
+              {/* Isi Catatan Super Admin */}
+              <div style={styles.rejectionNoteBox}>
+                <div style={styles.rejectionNoteLabel}>
+                  <span>Catatan Super Admin:</span>
+                </div>
+                <p style={styles.rejectionNoteText}>
+                  {currentPeriodData.catatanPenolakan || 'Mohon hitung ulang fisik modul Asasi karena ada selisih 8 modul.'}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Table Card */}
           <div style={styles.card}>
             <div style={styles.tableResponsive}>
               <table style={styles.table}>
                 <colgroup>
-                  <col style={{ width: '55px' }} />
-                  <col style={{ width: '32%' }} />
-                  <col style={{ width: '16%' }} />
-                  <col style={{ width: '12%' }} />
-                  <col style={{ width: '12%' }} />
-                  <col style={{ width: '10%' }} />
-                  <col style={{ width: '18%' }} />
+                  <col style={{ width: '50px' }} />
+                  <col style={{ width: '270px' }} />
+                  <col style={{ width: '160px' }} />
+                  <col style={{ width: '105px' }} />
+                  <col style={{ width: '105px' }} />
+                  <col style={{ width: '85px' }} />
+                  <col style={{ width: '200px' }} />
                 </colgroup>
                 <thead>
                   <tr style={styles.thRow}>
-                    <th style={{ ...styles.th, textAlign: 'center' }}>NO</th>
-                    <th style={{ ...styles.th, paddingLeft: '16px' }}>JUDUL MODUL</th>
-                    <th style={styles.th}>JENIS</th>
-                    <th style={{ ...styles.th, textAlign: 'center' }}>STOK SISTEM</th>
-                    <th style={{ ...styles.th, textAlign: 'center' }}>INPUT FISIK</th>
-                    <th style={{ ...styles.th, textAlign: 'center' }}>SELISIH</th>
-                    <th style={{ ...styles.th, textAlign: 'center' }}>STATUS</th>
+                    <th style={{ ...styles.th, width: '50px', textAlign: 'center' }}>NO</th>
+                    <th style={{ ...styles.th, width: '270px', paddingLeft: '16px' }}>JUDUL MODUL</th>
+                    <th style={{ ...styles.th, width: '160px' }}>JENIS</th>
+                    <th style={{ ...styles.th, width: '105px', textAlign: 'center' }}>STOK SISTEM</th>
+                    <th style={{ ...styles.th, width: '105px', textAlign: 'center' }}>INPUT FISIK</th>
+                    <th style={{ ...styles.th, width: '85px', textAlign: 'center' }}>SELISIH</th>
+                    <th style={{ ...styles.th, width: '200px', textAlign: 'center', paddingRight: '20px' }}>STATUS</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -825,7 +1017,14 @@ export default function StokOpname() {
                           key={item.id}
                           style={{
                             ...styles.tr,
-                            backgroundColor: isInputted && !isMatch ? '#fffdf7' : 'transparent'
+                            backgroundColor:
+                              item.status === 'Ditolak'
+                                ? '#fffaf8'
+                                : item.status === 'Disetujui'
+                                ? '#fafcfb'
+                                : isInputted && !isMatch
+                                ? '#fffdf7'
+                                : 'transparent'
                           }}
                         >
                           {/* NO */}
@@ -850,25 +1049,41 @@ export default function StokOpname() {
 
                           {/* INPUT FISIK */}
                           <td style={{ ...styles.td, textAlign: 'center' }}>
-                            <input
-                              type="number"
-                              min="0"
-                              disabled={isPastMonth}
-                              value={inputVal}
-                              onChange={(e) => handleFisikChange(item.id, e.target.value)}
-                              placeholder="0"
-                              style={{
-                                ...styles.inputFisik,
-                                borderColor: isPastMonth
-                                  ? '#dce4de'
-                                  : (isInputted && !isMatch ? '#f59e0b' : '#c7d9cd'),
-                                backgroundColor: isPastMonth
-                                  ? '#f8fafc'
-                                  : (isInputted && !isMatch ? '#fffbeb' : '#ffffff'),
-                                color: isPastMonth ? '#64748b' : '#1a3e2b',
-                                cursor: isPastMonth ? 'not-allowed' : 'text'
-                              }}
-                            />
+                            {(() => {
+                              const isLocked = item.isLocked || item.status === 'Disetujui';
+                              const isWaiting = item.status === 'Menunggu Verifikasi';
+                              const isRejected = item.status === 'Ditolak';
+                              const isDisabled = isLocked || isWaiting || (isPastMonth && !isRejected);
+
+                              return (
+                                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    disabled={isDisabled}
+                                    value={inputVal}
+                                    onChange={(e) => handleFisikChange(item.id, e.target.value)}
+                                    placeholder="0"
+                                    style={{
+                                      ...styles.inputFisik,
+                                      borderColor: isRejected
+                                        ? '#ef4444'
+                                        : isDisabled
+                                        ? '#dce4de'
+                                        : (isInputted && !isMatch ? '#f59e0b' : '#c7d9cd'),
+                                      backgroundColor: isRejected
+                                        ? '#fff5f5'
+                                        : isDisabled
+                                        ? '#f8fafc'
+                                        : (isInputted && !isMatch ? '#fffbeb' : '#ffffff'),
+                                      color: isDisabled ? '#64748b' : (isRejected ? '#991b1b' : '#1a3e2b'),
+                                      cursor: isDisabled ? 'not-allowed' : 'text',
+                                      boxShadow: isRejected ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : 'none'
+                                    }}
+                                  />
+                                </div>
+                              );
+                            })()}
                           </td>
 
                           {/* SELISIH */}
@@ -891,7 +1106,7 @@ export default function StokOpname() {
                           </td>
 
                           {/* STATUS */}
-                          <td style={{ ...styles.td, textAlign: 'center' }}>
+                          <td style={{ ...styles.td, textAlign: 'center', paddingRight: '20px' }}>
                             {renderStatusBadge(item.status)}
                           </td>
                         </tr>
@@ -1090,12 +1305,13 @@ const styles = {
     pointerEvents: 'none'
   },
   tableResponsive: {
+    width: '100%',
     overflowX: 'auto',
     WebkitOverflowScrolling: 'touch'
   },
   table: {
     width: '100%',
-    minWidth: '820px',
+    minWidth: '975px',
     tableLayout: 'fixed',
     borderCollapse: 'collapse',
     textAlign: 'left'
@@ -1318,5 +1534,62 @@ const styles = {
     border: '1px solid #94a3b8',
     whiteSpace: 'nowrap',
     boxSizing: 'border-box'
+  },
+
+  rejectionBanner: {
+    backgroundColor: '#fff8f6',
+    borderRadius: '14px',
+    border: '1px solid #fed7aa',
+    borderLeft: '5px solid #dc2626',
+    padding: '16px 20px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+    boxShadow: '0 4px 16px rgba(220, 38, 38, 0.06)'
+  },
+  rejectionBannerHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: '10px'
+  },
+  rejectionBannerTitleWrapper: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px'
+  },
+  rejectionBannerTitle: {
+    fontSize: '15px',
+    fontWeight: '700',
+    color: '#991b1b',
+    margin: 0,
+    letterSpacing: '-0.2px'
+  },
+  rejectionNoteBox: {
+    backgroundColor: '#ffffff',
+    borderRadius: '10px',
+    padding: '12px 16px',
+    border: '1px solid #fecaca',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px'
+  },
+  rejectionNoteLabel: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    fontSize: '12px',
+    fontWeight: '700',
+    color: '#475569',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px'
+  },
+  rejectionNoteText: {
+    fontSize: '13.5px',
+    color: '#1e293b',
+    lineHeight: '1.5',
+    margin: 0,
+    fontStyle: 'normal'
   }
 };

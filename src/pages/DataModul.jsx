@@ -327,8 +327,6 @@ export default function DataModul() {
       hpp: modul.hpp ? formatNumberDots(modul.hpp) : '',
       hargaJual: modul.hargaJual ? formatNumberDots(modul.hargaJual) : '',
       stok: modul.stok !== undefined ? modul.stok : '',
-      minRestock: modul.minRestock || 50,
-      deskripsi: modul.deskripsi || '',
       cover: modul.cover || coverModul
     });
     setIsModalOpen(true);
@@ -393,17 +391,17 @@ export default function DataModul() {
     const hppNum = parseNumberOnly(formData.hpp);
     const hargaNum = parseNumberOnly(formData.hargaJual);
     const stokNum = Number(formData.stok);
-    const minRestockNum = Number(formData.minRestock) || 50;
 
+    // Penentuan Status Habis, Stok Menipis, Tersedia
     let status = 'Tersedia';
-    if (stokNum === 0) status = 'Habis';
-    else if (stokNum <= minRestockNum) status = 'Stok Menipis';
+    if (stokNum <= 0) status = 'Habis';
+    else if (stokNum <= 5) status = 'Stok Menipis';
 
     if (editingModul) {
       setModulList(prev =>
         prev.map(item =>
           item.id === editingModul.id
-            ? { ...formData, hpp: hppNum, hargaJual: hargaNum, stok: stokNum, minRestock: minRestockNum, status }
+            ? { ...formData, hpp: hppNum, hargaJual: hargaNum, stok: stokNum, status }
             : item
         )
       );
@@ -415,7 +413,6 @@ export default function DataModul() {
         hpp: hppNum,
         hargaJual: hargaNum,
         stok: stokNum,
-        minRestock: minRestockNum,
         status
       };
       setModulList(prev => [newItem, ...prev]);
