@@ -7,7 +7,9 @@
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   width: 100%;
   min-height: 100vh;
   margin: 0;
@@ -99,8 +101,13 @@ select option:active {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* Mobile & Tablet */
@@ -207,7 +214,7 @@ select option:active {
     box-sizing: border-box !important;
   }
 
-  .bottom-actions-responsive > button {
+  .bottom-actions-responsive>button {
     flex: 1 !important;
     justify-content: center !important;
     padding: 10px 8px !important;
@@ -255,7 +262,7 @@ select option:active {
     gap: 12px !important;
   }
 
-  .modal-form-grid2 > * {
+  .modal-form-grid2>* {
     grid-column: span 1 !important;
   }
 
@@ -364,7 +371,7 @@ select option:active {
     gap: 10px !important;
   }
 
-  .action-buttons-responsive > button {
+  .action-buttons-responsive>button {
     width: 100% !important;
     justify-content: center !important;
   }
@@ -492,6 +499,7 @@ select option:active {
   .rincian-modul-desktop {
     display: none !important;
   }
+
   .rincian-modul-mobile {
     display: flex !important;
     flex-direction: column !important;

@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 
 // Icons
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
+import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import ArchiveOutlinedIcon from '@mui/icons-material/ArchiveOutlined';
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
@@ -99,7 +100,11 @@ function CustomDropdown({
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
   }, []);
 
   useEffect(() => {
@@ -297,15 +302,27 @@ export default function ModulMasuk() {
   const [errors, setErrors] = useState({});
   const [itemErrors, setItemErrors] = useState({});
 
-  // Toast
+  // Toast Notification
   const [notification, setNotification] = useState(null);
+  const toastTimeoutRef = useRef(null);
 
   const showToast = (message, type = 'success') => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
     setNotification({ message, type });
-    setTimeout(() => {
+    toastTimeoutRef.current = setTimeout(() => {
       setNotification(null);
-    }, 3500);
+    }, 4000);
   };
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Tambah Baris
   const handleTambahBaris = () => {
@@ -377,6 +394,7 @@ export default function ModulMasuk() {
           ...prev,
           [id]: { ...prev[id], judulModul: 'Judul modul sudah dipilih di baris lain' }
         }));
+        showToast('Judul modul sudah dipilih di baris lain.', 'error');
         return;
       }
     }
@@ -435,6 +453,7 @@ export default function ModulMasuk() {
     if (Object.keys(err).length > 0 || hasRowErr) {
       setErrors(err);
       setItemErrors(rowErrs);
+      showToast('Mohon lengkapi seluruh formulir', 'error');
       return;
     }
 
@@ -472,15 +491,20 @@ export default function ModulMasuk() {
 
         {/* Content */}
         <main style={styles.contentBody} className="content-body-responsive">
-          {/* Toast */}
+          {/* Toast Notification */}
           {notification && (
             <div
+              className="toast-responsive"
               style={{
                 ...styles.toast,
-                backgroundColor: notification.type === 'success' ? '#23573c' : '#0284c7'
+                backgroundColor: notification.type === 'success' ? '#23573c' : '#dc2626'
               }}
             >
-              <CheckCircleOutlinedIcon sx={{ fontSize: 20 }} />
+              {notification.type === 'success' ? (
+                <CheckCircleOutlinedIcon sx={{ fontSize: 20 }} />
+              ) : (
+                <ErrorOutlineOutlinedIcon sx={{ fontSize: 20 }} />
+              )}
               <span>{notification.message}</span>
             </div>
           )}
@@ -832,16 +856,21 @@ const styles = {
     gap: '24px'
   },
   toast: {
+    position: 'fixed',
+    top: '24px',
+    right: '24px',
+    zIndex: 99999,
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
-    padding: '12px 20px',
+    padding: '14px 22px',
     borderRadius: '10px',
     color: '#ffffff',
     fontSize: '14px',
-    fontWeight: '500',
-    boxShadow: '0 4px 14px rgba(0,0,0,0.12)',
-    animation: 'fadeIn 0.2s ease'
+    fontWeight: '600',
+    boxShadow: '0 8px 28px rgba(0, 0, 0, 0.22)',
+    animation: 'fadeIn 0.25s ease',
+    maxWidth: 'calc(100vw - 48px)'
   },
   // Card Total
   statCard: {
