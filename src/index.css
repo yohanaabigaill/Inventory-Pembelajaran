@@ -7,6 +7,12 @@
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
+/* Sembunyikan icon mata pada password */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none !important;
+}
+
 html,
 body,
 #root {

@@ -138,12 +138,22 @@ export default function Sidebar({
 
         {/* Profil & Logout */}
         <div style={styles.sidebarFooter}>
-          <div style={styles.footerItem} onClick={() => navigate('/profil')}>
-            <PersonOutlineOutlinedIcon sx={{ fontSize: 20, color: '#3d5246' }} />
+          <div
+            style={{
+              ...styles.footerItem,
+              ...(activeMenu === 'Profil Saya' ? styles.footerItemActive : {})
+            }}
+            onClick={() => navigate('/profil')}
+          >
+            <span style={activeMenu === 'Profil Saya' ? styles.navIconActive : styles.navIcon}>
+              <PersonOutlineOutlinedIcon sx={{ fontSize: 20 }} />
+            </span>
             <span style={styles.footerLabel}>Profil Saya</span>
           </div>
           <div style={{ ...styles.footerItem, color: '#c62828' }} onClick={() => navigate('/login')}>
-            <LogoutOutlinedIcon sx={{ fontSize: 20, color: '#c62828' }} />
+            <span style={{ display: 'flex', alignItems: 'center', color: '#c62828' }}>
+              <LogoutOutlinedIcon sx={{ fontSize: 20 }} />
+            </span>
             <span style={{ ...styles.footerLabel, color: '#c62828' }}>Keluar</span>
           </div>
         </div>
@@ -243,9 +253,8 @@ const styles = {
   },
   sidebarFooter: {
     marginTop: 'auto',
-    height: '97px',
     borderTop: '1px solid #edf2ef',
-    padding: '10px 18px 18px',
+    padding: '12px 16px 16px',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
@@ -255,17 +264,25 @@ const styles = {
   footerItem: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
-    padding: '6px 10px',
-    borderRadius: '8px',
-    fontSize: '13.5px',
+    gap: '14px',
+    padding: '11px 16px',
+    borderRadius: '12px',
+    fontSize: '14px',
     fontWeight: '500',
     color: '#3d5246',
     cursor: 'pointer',
-    transition: 'background 0.2s'
+    transition: 'all 0.2s ease',
+    marginBottom: '4px',
+    boxSizing: 'border-box'
+  },
+  footerItemActive: {
+    backgroundColor: '#23573c',
+    color: '#ffffff',
+    fontWeight: '600',
+    boxShadow: '0 4px 14px rgba(35, 87, 60, 0.28)'
   },
   footerLabel: {
-    fontSize: '13.5px',
-    fontWeight: '500'
+    fontSize: '14px',
+    fontWeight: 'inherit'
   }
 };
