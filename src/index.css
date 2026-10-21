@@ -313,12 +313,6 @@ select option:active {
   }
 
   /* Modul Masuk Mobile Responsive */
-  .stat-card-responsive-modul {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
-  }
 
   .tanggal-masuk-wrapper-responsive {
     max-width: 100% !important;
