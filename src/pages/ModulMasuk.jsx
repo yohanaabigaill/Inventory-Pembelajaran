@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 
@@ -6,7 +6,6 @@ import Navbar from '../components/Navbar';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
-import ArchiveOutlinedIcon from '@mui/icons-material/ArchiveOutlined';
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 
@@ -287,9 +286,6 @@ function CustomDropdown({
 export default function ModulMasuk() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-  // State Total
-  const [totalModulMasukBulanIni, setTotalModulMasukBulanIni] = useState(2800);
-
   // Form State
   const [tanggalMasuk, setTanggalMasuk] = useState('');
 
@@ -457,9 +453,6 @@ export default function ModulMasuk() {
       return;
     }
 
-    const addedTotal = modulItems.reduce((sum, it) => sum + Number(it.jumlahDiterima), 0);
-    setTotalModulMasukBulanIni((prev) => prev + addedTotal);
-
     // Reset
     setTanggalMasuk('');
     setModulItems([{ id: Date.now(), jenisModul: 'Semua Jenis', judulModul: '', jumlahDiterima: '' }]);
@@ -508,19 +501,6 @@ export default function ModulMasuk() {
               <span>{notification.message}</span>
             </div>
           )}
-
-          {/* Card Total */}
-          <div style={styles.statCard} className="stat-card-responsive-modul">
-            <div style={styles.statLeft}>
-              <div style={styles.statLabel}>TOTAL MODUL MASUK BULAN INI</div>
-              <div style={styles.statValue}>
-                {totalModulMasukBulanIni.toLocaleString('id-ID')}
-              </div>
-            </div>
-            <div style={styles.statIconBox}>
-              <ArchiveOutlinedIcon sx={{ fontSize: 24, color: '#3d5246' }} />
-            </div>
-          </div>
 
           {/* Card Form */}
           <div style={styles.card}>
@@ -871,49 +851,6 @@ const styles = {
     boxShadow: '0 8px 28px rgba(0, 0, 0, 0.22)',
     animation: 'fadeIn 0.25s ease',
     maxWidth: 'calc(100vw - 48px)'
-  },
-  // Card Total
-  statCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: '12px',
-    border: '1px solid #eef2ef',
-    borderLeft: '4px solid #23573c',
-    padding: '16px 20px',
-    width: 'fit-content',
-    minWidth: '260px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: '24px',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
-  },
-  statLeft: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px'
-  },
-  statLabel: {
-    fontSize: '11px',
-    fontWeight: '700',
-    color: '#64748b',
-    letterSpacing: '0.5px',
-    textTransform: 'uppercase'
-  },
-  statValue: {
-    fontSize: '26px',
-    fontWeight: '800',
-    color: '#1a3e2b',
-    lineHeight: 1.1
-  },
-  statIconBox: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '10px',
-    backgroundColor: '#dcfce7',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0
   },
   // Card
   card: {
