@@ -316,6 +316,8 @@ export default function VerifikasiPembayaran() {
 
   // Toast Notifikasi
   const toastTimeoutRef = useRef(null);
+  const autoCloseModalTimeoutRef = useRef(null);
+
   const showToast = (message, type = 'success') => {
     if (toastTimeoutRef.current) {
       clearTimeout(toastTimeoutRef.current);
@@ -326,10 +328,20 @@ export default function VerifikasiPembayaran() {
     }, 4000);
   };
 
+  const handleCloseDetailModal = () => {
+    if (autoCloseModalTimeoutRef.current) {
+      clearTimeout(autoCloseModalTimeoutRef.current);
+    }
+    setSelectedDetail(null);
+  };
+
   useEffect(() => {
     return () => {
       if (toastTimeoutRef.current) {
         clearTimeout(toastTimeoutRef.current);
+      }
+      if (autoCloseModalTimeoutRef.current) {
+        clearTimeout(autoCloseModalTimeoutRef.current);
       }
     };
   }, []);
@@ -427,10 +439,16 @@ export default function VerifikasiPembayaran() {
     setPesananList((prev) =>
       prev.map((item) => (item.id === order.id ? { ...item, status: 'Disetujui', alasanPenolakan: '' } : item))
     );
+    setApprovingOrder(null);
+    showToast('Pembayaran berhasil disetujui!', 'success');
+
     if (selectedDetail && selectedDetail.id === order.id) {
       setSelectedDetail((prev) => ({ ...prev, status: 'Disetujui', alasanPenolakan: '' }));
+      if (autoCloseModalTimeoutRef.current) clearTimeout(autoCloseModalTimeoutRef.current);
+      autoCloseModalTimeoutRef.current = setTimeout(() => {
+        setSelectedDetail(null);
+      }, 1500);
     }
-    showToast('Pembayaran berhasil disetujui!', 'success');
   };
 
   // Buka Modal Tolak
@@ -446,17 +464,25 @@ export default function VerifikasiPembayaran() {
       setAlasanError('Alasan penolakan harus diisi');
       return;
     }
+    const orderId = rejectingOrder.id;
+    const alasan = alasanTolak.trim();
     setPesananList((prev) =>
       prev.map((item) =>
-        item.id === rejectingOrder.id ? { ...item, status: 'Ditolak', alasanPenolakan: alasanTolak.trim() } : item
+        item.id === orderId ? { ...item, status: 'Ditolak', alasanPenolakan: alasan } : item
       )
     );
-    const orderId = rejectingOrder.id;
-    if (selectedDetail && selectedDetail.id === orderId) {
-      setSelectedDetail((prev) => ({ ...prev, status: 'Ditolak', alasanPenolakan: alasanTolak.trim() }));
-    }
     setRejectingOrder(null);
+    setAlasanTolak('');
+    setAlasanError('');
     showToast('Pembayaran telah ditolak', 'error');
+
+    if (selectedDetail && selectedDetail.id === orderId) {
+      setSelectedDetail((prev) => ({ ...prev, status: 'Ditolak', alasanPenolakan: alasan }));
+      if (autoCloseModalTimeoutRef.current) clearTimeout(autoCloseModalTimeoutRef.current);
+      autoCloseModalTimeoutRef.current = setTimeout(() => {
+        setSelectedDetail(null);
+      }, 1500);
+    }
   };
 
   return (
@@ -955,13 +981,13 @@ export default function VerifikasiPembayaran() {
 
       {/* Modal Detail */}
       {selectedDetail && (
-        <div style={styles.modalOverlay} onClick={() => setSelectedDetail(null)}>
+        <div style={styles.modalOverlay} onClick={handleCloseDetailModal}>
           <div style={styles.modalContentDetail} className="modal-detail-responsive" onClick={(e) => e.stopPropagation()}>
             <div style={styles.modalHeader}>
               <h3 style={styles.modalTitle}>Detail Pesanan</h3>
               <button
                 type="button"
-                onClick={() => setSelectedDetail(null)}
+                onClick={handleCloseDetailModal}
                 style={styles.modalCloseBtn}
               >
                 <CloseOutlinedIcon sx={{ fontSize: 20 }} />
@@ -1102,7 +1128,7 @@ export default function VerifikasiPembayaran() {
             <div style={styles.modalActions}>
               <button
                 type="button"
-                onClick={() => setSelectedDetail(null)}
+                onClick={handleCloseDetailModal}
                 style={styles.btnModalClose}
               >
                 {selectedDetail.status === 'Menunggu Verifikasi' ? 'Batal' : 'Tutup'}
