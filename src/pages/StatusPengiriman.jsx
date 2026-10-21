@@ -10,6 +10,7 @@ import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
+import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
@@ -1475,12 +1476,17 @@ export default function StatusPengiriman() {
           {/* Toast Notifikasi */}
           {notification && (
             <div
+              className="toast-responsive"
               style={{
                 ...styles.toast,
-                backgroundColor: notification.type === 'success' ? '#166534' : '#991b1b'
+                backgroundColor: notification.type === 'success' ? '#23573c' : '#dc2626'
               }}
             >
-              <CheckCircleOutlinedIcon sx={{ fontSize: 20 }} />
+              {notification.type === 'success' ? (
+                <CheckCircleOutlinedIcon sx={{ fontSize: 20 }} />
+              ) : (
+                <ErrorOutlineOutlinedIcon sx={{ fontSize: 20 }} />
+              )}
               <span>{notification.message}</span>
             </div>
           )}
@@ -1780,16 +1786,21 @@ const styles = {
     margin: '0 auto'
   },
   toast: {
+    position: 'fixed',
+    top: '24px',
+    right: '24px',
+    zIndex: 99999,
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
-    color: '#ffffff',
-    padding: '12px 20px',
+    padding: '14px 22px',
     borderRadius: '10px',
-    marginBottom: '20px',
+    color: '#ffffff',
     fontSize: '14px',
-    fontWeight: '500',
-    boxShadow: '0 4px 14px rgba(0,0,0,0.12)'
+    fontWeight: '600',
+    boxShadow: '0 8px 28px rgba(0, 0, 0, 0.22)',
+    animation: 'fadeIn 0.25s ease',
+    maxWidth: 'calc(100vw - 48px)'
   },
   tabContainer: {
     display: 'flex',
