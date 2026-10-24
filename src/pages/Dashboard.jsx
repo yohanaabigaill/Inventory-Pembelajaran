@@ -34,6 +34,13 @@ const INITIAL_DASHBOARD_MODULS = [
   { id: 16, nama: 'Mushaf Al Kamil A5 Terjemah', kategori: 'Al Quran', stok: 210 }
 ];
 
+//penentuan warna bar stok kategori
+const getCategoryBarColor = (stok) => {
+  if (stok === 0) return '#dc2626'; // Merah (Habis)
+  if (stok <= 5) return '#d97706'; // Oranye (Stok Menipis)
+  return '#16a34a'; // Hijau (Tersedia)
+};
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -262,8 +269,8 @@ export default function Dashboard() {
                 </div>
 
                 <div style={styles.categoryList}>
-                  {categoryStats.map((cat, idx) => (
-                    <div key={idx} style={styles.categoryItem}>
+                  {categoryStats.map((cat) => (
+                    <div key={cat.kategori} style={styles.categoryItem}>
                       <div style={styles.categoryHeader}>
                         <span style={styles.namaModulOnly}>{cat.kategori}</span>
                         <span style={styles.stokValue}>
@@ -275,7 +282,7 @@ export default function Dashboard() {
                           style={{
                             ...styles.progressBarFill,
                             width: `${Math.max(cat.persen, 4)}%`,
-                            backgroundColor: idx === 0 ? '#23573c' : idx === 1 ? '#0284c7' : idx === 2 ? '#16a34a' : '#d97706'
+                            backgroundColor: getCategoryBarColor(cat.stok)
                           }}
                         />
                       </div>
