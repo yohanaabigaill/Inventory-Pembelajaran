@@ -101,8 +101,8 @@ function CustomDropdown({
             isOpen && !disabled
               ? '0 0 0 3px rgba(35, 87, 60, 0.15)'
               : isHovered && !disabled
-              ? '0 0 0 3px rgba(35, 87, 60, 0.1)'
-              : 'none',
+                ? '0 0 0 3px rgba(35, 87, 60, 0.1)'
+                : 'none',
           ...selectStyle
         }}
       >
@@ -187,6 +187,9 @@ function CustomDropdown({
   );
 }
 
+// Konstanta
+const ONGKIR_FLAT_KURIR = 10000;
+
 // Data Awal
 const INITIAL_PESANAN = [
   {
@@ -194,12 +197,14 @@ const INITIAL_PESANAN = [
     tanggal: '2026-10-12',
     namaPembeli: 'Yohana Abigail',
     noHp: '0812-3456-7890',
-    alamat: 'Jl. Pesantren No. 14, RT 02/05, Bandung',
+    alamat: 'Jl. Hang Kesturi, Nongsa',
+    metodePengiriman: 'Via Kurir',
+    ongkirFlat: ONGKIR_FLAT_KURIR,
     itemModul: [
       { nama: 'Tilawah Asasi', qty: 5, harga: 25000 },
       { nama: 'Tajwidi', qty: 3, harga: 30000 }
     ],
-    totalBayar: 215000,
+    totalBayar: 225000,
     metodeBayar: 'Transfer Bank',
     status: 'Menunggu Verifikasi',
     alasanPenolakan: ''
@@ -209,7 +214,9 @@ const INITIAL_PESANAN = [
     tanggal: '2026-10-12',
     namaPembeli: 'Ririn Anisa',
     noHp: '0857-9876-5432',
-    alamat: 'Komplek Griya Indah Blok C3, Cimahi',
+    alamat: 'Komplek Griya Indah Blok C3',
+    metodePengiriman: 'Ambil di RSQ Pusat',
+    ongkirFlat: 0,
     itemModul: [
       { nama: 'Buku Prestasi Anak', qty: 10, harga: 15000 },
       { nama: 'Anak 1', qty: 10, harga: 20000 }
@@ -224,7 +231,10 @@ const INITIAL_PESANAN = [
     tanggal: '2026-10-11',
     namaPembeli: 'Hendra Pratama',
     noHp: '0821-5566-7788',
-    alamat: 'Jl. Cihampelas No. 45, Kota Bandung',
+    alamat: 'Kavling Baru, Batu Aji',
+    metodePengiriman: 'Titip ke Ustazah',
+    ongkirFlat: 0,
+    ustazahNama: 'Ustazah Fatimah Azzahra',
     itemModul: [
       { nama: 'Tahmidi', qty: 4, harga: 28000 }
     ],
@@ -238,12 +248,14 @@ const INITIAL_PESANAN = [
     tanggal: '2026-10-10',
     namaPembeli: 'Ust. Ridwan Kamil',
     noHp: '0813-1122-3344',
-    alamat: 'Pondok Pesantren Al-Hidayah, Kab. Sumedang',
+    alamat: 'Perumhan Taman Raya Blok B',
+    metodePengiriman: 'Via Kurir',
+    ongkirFlat: ONGKIR_FLAT_KURIR,
     itemModul: [
       { nama: 'Mushaf Ash Shahib A5 Terjemah', qty: 8, harga: 75000 },
       { nama: 'Panduan Guru', qty: 2, harga: 40000 }
     ],
-    totalBayar: 680000,
+    totalBayar: 690000,
     metodeBayar: 'Transfer Bank',
     status: 'Disetujui',
     alasanPenolakan: ''
@@ -253,7 +265,9 @@ const INITIAL_PESANAN = [
     tanggal: '2026-10-09',
     namaPembeli: 'Budi Santoso',
     noHp: '0878-4455-6677',
-    alamat: 'Jl. Riau No. 88, Kota Bandung',
+    alamat: 'Perumahan Green Vienna Blok D',
+    metodePengiriman: 'Ambil di RSQ Pusat',
+    ongkirFlat: 0,
     itemModul: [
       { nama: 'Khat', qty: 4, harga: 22000 }
     ],
@@ -267,7 +281,10 @@ const INITIAL_PESANAN = [
     tanggal: '2026-10-08',
     namaPembeli: 'Farhan Ramadhan',
     noHp: '0812-7788-9900',
-    alamat: 'Jl. Sukajadi No. 102, Sukasari, Bandung',
+    alamat: 'Jl. Sukajadi No. 102, Sukasari',
+    metodePengiriman: 'Titip ke Ustazah',
+    ongkirFlat: 0,
+    ustazahNama: 'Ustazah Maryam S.Pd.I',
     itemModul: [
       { nama: 'Tahsin Dewasa', qty: 3, harga: 35000 },
       { nama: 'Tajwidi', qty: 1, harga: 30000 }
@@ -275,6 +292,39 @@ const INITIAL_PESANAN = [
     totalBayar: 135000,
     metodeBayar: 'Transfer Bank',
     status: 'Belum Bayar',
+    alasanPenolakan: ''
+  },
+  {
+    id: 'ORD-2026-007',
+    tanggal: '2026-10-07',
+    namaPembeli: 'Dewi Lestari',
+    noHp: '0852-3344-5566',
+    alamat: 'Jl. Antapani Raya No. 15',
+    metodePengiriman: 'Via Kurir',
+    ongkirFlat: ONGKIR_FLAT_KURIR,
+    itemModul: [
+      { nama: 'Buku Prestasi Anak', qty: 5, harga: 15000 }
+    ],
+    totalBayar: 85000,
+    metodeBayar: 'Transfer Bank',
+    status: 'Disetujui',
+    alasanPenolakan: ''
+  },
+  {
+    id: 'ORD-2026-008',
+    tanggal: '2026-10-06',
+    namaPembeli: 'Rian Hidayat',
+    noHp: '0877-6655-4433',
+    alamat: 'Komp. Margahayu Kencana Blok B2',
+    metodePengiriman: 'Ambil di RSQ Pusat',
+    ongkirFlat: 0,
+    itemModul: [
+      { nama: 'Tilawah Asasi', qty: 4, harga: 25000 },
+      { nama: 'Khat', qty: 2, harga: 22000 }
+    ],
+    totalBayar: 144000,
+    metodeBayar: 'Transfer Bank',
+    status: 'Disetujui',
     alasanPenolakan: ''
   }
 ];
@@ -291,7 +341,7 @@ export default function VerifikasiPembayaran() {
   const navigate = useNavigate();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('verifikasi');
-  
+
   // Data State
   const [pesananList, setPesananList] = useState(INITIAL_PESANAN);
   const [searchQuery, setSearchQuery] = useState('');
@@ -586,8 +636,8 @@ export default function VerifikasiPembayaran() {
                     boxShadow: isSearchFocused
                       ? '0 0 0 3px rgba(35, 87, 60, 0.15)'
                       : isSearchHovered
-                      ? '0 0 0 3px rgba(35, 87, 60, 0.1)'
-                      : 'none',
+                        ? '0 0 0 3px rgba(35, 87, 60, 0.1)'
+                        : 'none',
                     borderColor: '#23573c'
                   }}
                   onMouseEnter={() => setIsSearchHovered(true)}
@@ -621,8 +671,8 @@ export default function VerifikasiPembayaran() {
                     boxShadow: isDateFocused
                       ? '0 0 0 3px rgba(35, 87, 60, 0.15)'
                       : isDateHovered
-                      ? '0 0 0 3px rgba(35, 87, 60, 0.1)'
-                      : 'none',
+                        ? '0 0 0 3px rgba(35, 87, 60, 0.1)'
+                        : 'none',
                     borderColor: '#23573c'
                   }}
                   onMouseEnter={() => setIsDateHovered(true)}
@@ -645,7 +695,7 @@ export default function VerifikasiPembayaran() {
                       setCurrentPage(1);
                     }}
                     onClick={(e) => {
-                      try { e.target.showPicker?.(); } catch {}
+                      try { e.target.showPicker?.(); } catch { }
                     }}
                     style={styles.dateInput}
                     className="date-input-clean"
@@ -660,7 +710,7 @@ export default function VerifikasiPembayaran() {
                       setCurrentPage(1);
                     }}
                     onClick={(e) => {
-                      try { e.target.showPicker?.(); } catch {}
+                      try { e.target.showPicker?.(); } catch { }
                     }}
                     style={styles.dateInput}
                     className="date-input-clean"
@@ -1029,17 +1079,37 @@ export default function VerifikasiPembayaran() {
                     <span style={styles.detailFieldLabel}>NO.HP</span>
                     <div style={styles.detailFieldValue}>{selectedDetail.noHp}</div>
                   </div>
-                  <div style={{ gridColumn: 'span 2' }}>
-                    <span style={styles.detailFieldLabel}>ALAMAT PENGIRIMAN</span>
-                    <div style={styles.detailFieldValue}>{selectedDetail.alamat}</div>
-                  </div>
+                  {selectedDetail.metodePengiriman && (
+                    <div style={{ gridColumn: 'span 2' }}>
+                      <span style={styles.detailFieldLabel}>METODE PENGIRIMAN</span>
+                      <div style={styles.detailFieldValue}>{selectedDetail.metodePengiriman}</div>
+                    </div>
+                  )}
+                  {selectedDetail.metodePengiriman === 'Titip ke Ustazah' && selectedDetail.ustazahNama && (
+                    <div style={{ gridColumn: 'span 2' }}>
+                      <span style={styles.detailFieldLabel}>NAMA USTAZAH</span>
+                      <div style={styles.detailFieldValue}>{selectedDetail.ustazahNama}</div>
+                    </div>
+                  )}
+                  {selectedDetail.metodePengiriman === 'Ambil di RSQ Pusat' && (
+                    <div style={{ gridColumn: 'span 2' }}>
+                      <span style={styles.detailFieldLabel}>LOKASI PENGAMBILAN</span>
+                      <div style={styles.detailFieldValue}>Kantor RSQ Pusat</div>
+                    </div>
+                  )}
+                  {(!selectedDetail.metodePengiriman || selectedDetail.metodePengiriman === 'Via Kurir') && (
+                    <div style={{ gridColumn: 'span 2' }}>
+                      <span style={styles.detailFieldLabel}>ALAMAT PENGIRIMAN</span>
+                      <div style={styles.detailFieldValue}>{selectedDetail.alamat}</div>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Rincian Modul */}
               <div style={styles.detailSection}>
                 <div style={styles.detailSectionTitle}>Rincian Modul</div>
-                
+
                 {/* Desktop */}
                 <div className="rincian-modul-desktop" style={{ overflowX: 'auto', width: '100%', WebkitOverflowScrolling: 'touch' }}>
                   <table style={styles.detailItemTable}>
@@ -1062,6 +1132,16 @@ export default function VerifikasiPembayaran() {
                           </td>
                         </tr>
                       ))}
+                      {selectedDetail.metodePengiriman === 'Via Kurir' ? (
+                        <tr>
+                          <td style={styles.detailTd}>Biaya Kurir</td>
+                          <td style={{ ...styles.detailTd, textAlign: 'center' }}>-</td>
+                          <td style={{ ...styles.detailTd, textAlign: 'right' }}>{formatRupiah(ONGKIR_FLAT_KURIR)}</td>
+                          <td style={{ ...styles.detailTd, textAlign: 'right', fontWeight: '600' }}>
+                            {formatRupiah(ONGKIR_FLAT_KURIR)}
+                          </td>
+                        </tr>
+                      ) : null}
                       <tr>
                         <td colSpan={3} style={{ ...styles.detailTd, textAlign: 'right', fontWeight: '700' }}>
                           Total:
@@ -1089,6 +1169,17 @@ export default function VerifikasiPembayaran() {
                       </div>
                     </div>
                   ))}
+                  {selectedDetail.metodePengiriman === 'Via Kurir' ? (
+                    <div style={styles.mobileItemCard}>
+                      <div style={styles.mobileItemName}>Biaya Kurir</div>
+                      <div style={styles.mobileItemBottom}>
+                        <span style={styles.mobileItemQtyPrice}>Ongkir Flat</span>
+                        <span style={styles.mobileItemSubtotal}>
+                          {formatRupiah(ONGKIR_FLAT_KURIR)}
+                        </span>
+                      </div>
+                    </div>
+                  ) : null}
                   <div style={styles.mobileTotalRow}>
                     <span style={styles.mobileTotalLabel}>Total:</span>
                     <span style={styles.mobileTotalValue}>
