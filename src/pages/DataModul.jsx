@@ -1,8 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
-import coverModul from '../assets/fotomodul.jpg';
+import coverAsasi from '../assets/asasi.jpg';
+import coverTahmidi from '../assets/tahmidi.jpg';
+import coverAlHisan1 from '../assets/alhisan1.jpg';
+import coverBukuDoa from '../assets/bukudoa.jpg';
+import coverMushafAshShahibA5 from '../assets/mushaf_ash_shahib_a5.jpg';
+import coverMushafAlKamilA5 from '../assets/mushaf_al_kamil_a5.jpg';
+import coverMushafAshShahibA6 from '../assets/mushaf_ash_shahib_a6.jpg';
+import coverUtsmani1 from '../assets/utsmani1.jpg';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
+import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 
 //Dropdown
 function CustomDropdown({
@@ -140,7 +148,6 @@ const KATEGORI_OPTIONS = [
 
 // Kategori untuk Modal
 const MODAL_KATEGORI_OPTIONS = KATEGORI_OPTIONS.filter(opt => opt !== 'Semua Jenis');
-
 const STATUS_OPTIONS = [
   'Semua Status',
   'Tersedia',
@@ -148,7 +155,7 @@ const STATUS_OPTIONS = [
   'Habis'
 ];
 
-// Nilai awal form data & form errors
+// Nilai awal form data
 const INITIAL_FORM_DATA = {
   nama: '',
   kategori: 'Al Haqq',
@@ -176,10 +183,11 @@ export default function DataModul() {
       sku: 'HQ-AS-01',
       nama: 'Asasi',
       kategori: 'Al Haqq',
-      hpp: 35000,
-      hargaJual: 50000,
+      hpp: 40000,
+      hargaJual: 40000,
       stok: 240,
-      status: 'Tersedia'
+      status: 'Tersedia',
+      cover: coverAsasi
     },
     {
       id: 2,
@@ -187,39 +195,76 @@ export default function DataModul() {
       nama: 'Tahmidi',
       kategori: 'Al Haqq',
       hpp: 40000,
-      hargaJual: 60000,
+      hargaJual: 40000,
       stok: 5,
-      status: 'Stok Menipis'
+      status: 'Stok Menipis',
+      cover: coverTahmidi
     },
     {
       id: 3,
       sku: 'HS-01-01',
       nama: 'Al Hisan 1',
       kategori: 'Al Hisan',
-      hpp: 45000,
-      hargaJual: 65000,
+      hpp: 25000,
+      hargaJual: 25000,
       stok: 150,
-      status: 'Tersedia'
+      status: 'Tersedia',
+      cover: coverAlHisan1
     },
     {
       id: 4,
       sku: 'US-UT-01',
       nama: 'Utsmani 1',
       kategori: 'Tahsin Usmani',
-      hpp: 50000,
-      hargaJual: 75000,
+      hpp: 25000,
+      hargaJual: 25000,
       stok: 0,
-      status: 'Habis'
+      status: 'Habis',
+      cover: coverUtsmani1
     },
     {
       id: 5,
       sku: 'RK-BD-01',
       nama: 'Buku Doa',
       kategori: 'RSQ Kids',
-      hpp: 25000,
-      hargaJual: 40000,
-      stok: 180,
-      status: 'Tersedia'
+      hpp: 15000,
+      hargaJual: 15000,
+      stok: 4,
+      status: 'Stok Menipis',
+      cover: coverBukuDoa
+    },
+    {
+      id: 6,
+      sku: 'QW-SA5-01',
+      nama: 'Mushaf Ash Shahib A5 Terjemah',
+      kategori: 'Al Quran Wakaf',
+      hpp: 115000,
+      hargaJual: 115000,
+      stok: 220,
+      status: 'Tersedia',
+      cover: coverMushafAshShahibA5
+    },
+    {
+      id: 7,
+      sku: 'AQ-KA5-01',
+      nama: 'Mushaf Al Kamil A5 Terjemah',
+      kategori: 'Al Quran',
+      hpp: 115000,
+      hargaJual: 115000,
+      stok: 115,
+      status: 'Tersedia',
+      cover: coverMushafAlKamilA5
+    },
+    {
+      id: 8,
+      sku: 'AQ-SA6-01',
+      nama: 'Mushaf Ash Shahib A6 Terjemah',
+      kategori: 'Al Quran',
+      hpp: 80000,
+      hargaJual: 80000,
+      stok: 95,
+      status: 'Tersedia',
+      cover: coverMushafAshShahibA6
     }
   ]);
 
@@ -227,6 +272,12 @@ export default function DataModul() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedKategori, setSelectedKategori] = useState('Semua Jenis');
   const [selectedStatus, setSelectedStatus] = useState('Semua Status');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedKategori, selectedStatus]);
 
   // Modal Tambah dan Edit
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -274,10 +325,33 @@ export default function DataModul() {
     fileInputRef.current?.click();
   };
 
-  // Unggah file foto dan URL preview
+  // Unggah file foto modul
   const handleFileChange = (e) => {
     const file = e.target.files && e.target.files[0];
     if (file) {
+      // Validasi format file
+      const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+      if (!validTypes.includes(file.type)) {
+        setFormErrors(prev => ({
+          ...prev,
+          cover: 'Format file harus JPG, JPEG, atau PNG'
+        }));
+        showNotification('Format file harus JPG, JPEG, atau PNG', 'error');
+        e.target.value = '';
+        return;
+      }
+
+      // Validasi ukuran maksimal 2MB
+      if (file.size > 2 * 1024 * 1024) {
+        setFormErrors(prev => ({
+          ...prev,
+          cover: 'Ukuran foto maksimal 2MB'
+        }));
+        showNotification('Ukuran foto maksimal 2MB', 'error');
+        e.target.value = '';
+        return;
+      }
+
       const imageUrl = URL.createObjectURL(file);
       setFormData(prev => ({
         ...prev,
@@ -327,7 +401,9 @@ export default function DataModul() {
       hpp: modul.hpp ? formatNumberDots(modul.hpp) : '',
       hargaJual: modul.hargaJual ? formatNumberDots(modul.hargaJual) : '',
       stok: modul.stok !== undefined ? modul.stok : '',
-      cover: modul.cover || coverModul
+      minRestock: modul.minRestock || 50,
+      deskripsi: modul.deskripsi || '',
+      cover: modul.cover || null
     });
     setIsModalOpen(true);
   };
@@ -391,17 +467,17 @@ export default function DataModul() {
     const hppNum = parseNumberOnly(formData.hpp);
     const hargaNum = parseNumberOnly(formData.hargaJual);
     const stokNum = Number(formData.stok);
+    const minRestockNum = Number(formData.minRestock) || 50;
 
-    // Penentuan Status Habis, Stok Menipis, Tersedia
     let status = 'Tersedia';
-    if (stokNum <= 0) status = 'Habis';
-    else if (stokNum <= 5) status = 'Stok Menipis';
+    if (stokNum === 0) status = 'Habis';
+    else if (stokNum <= minRestockNum) status = 'Stok Menipis';
 
     if (editingModul) {
       setModulList(prev =>
         prev.map(item =>
           item.id === editingModul.id
-            ? { ...formData, hpp: hppNum, hargaJual: hargaNum, stok: stokNum, status }
+            ? { ...formData, hpp: hppNum, hargaJual: hargaNum, stok: stokNum, minRestock: minRestockNum, status }
             : item
         )
       );
@@ -413,6 +489,7 @@ export default function DataModul() {
         hpp: hppNum,
         hargaJual: hargaNum,
         stok: stokNum,
+        minRestock: minRestockNum,
         status
       };
       setModulList(prev => [newItem, ...prev]);
@@ -432,6 +509,17 @@ export default function DataModul() {
     const matchStatus = selectedStatus === 'Semua Status' || item.status === selectedStatus;
     return matchSearch && matchKategori && matchStatus;
   });
+
+  // Pagination (1-10)
+  const totalPages = Math.ceil(filteredList.length / itemsPerPage) || 1;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedList = filteredList.slice(startIndex, startIndex + itemsPerPage);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [filteredList.length, totalPages, currentPage]);
 
   // Validasi Format Rupiah
   const formatRupiah = (number) => {
@@ -458,12 +546,17 @@ export default function DataModul() {
           {/* Notifikasi */}
           {notification && (
             <div
+              className="toast-responsive"
               style={{
                 ...styles.toast,
                 backgroundColor: notification.type === 'success' ? '#23573c' : '#dc2626'
               }}
             >
-              <CheckCircleOutlinedIcon sx={{ fontSize: 20 }} />
+              {notification.type === 'success' ? (
+                <CheckCircleOutlinedIcon sx={{ fontSize: 20 }} />
+              ) : (
+                <ErrorOutlineOutlinedIcon sx={{ fontSize: 20 }} />
+              )}
               <span>{notification.message}</span>
             </div>
           )}
@@ -537,18 +630,19 @@ export default function DataModul() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredList.map((item, index) => {
+                  {paginatedList.map((item, index) => {
+                    const rowNumber = startIndex + index + 1;
                     return (
                       <tr key={item.id} style={styles.tr}>
                         {/* NO */}
                         <td style={{ ...styles.td, textAlign: 'center', fontWeight: '600', color: '#64748b' }}>
-                          {index + 1}
+                          {rowNumber}
                         </td>
 
                         {/* FOTO */}
                         <td style={{ ...styles.td, textAlign: 'center' }}>
                           <img
-                            src={item.cover || coverModul}
+                            src={item.cover}
                             alt={item.nama || "Cover Modul"}
                             style={styles.coverThumb}
                           />
@@ -635,12 +729,40 @@ export default function DataModul() {
             {/* Pagination */}
             <div className="pagination-responsive" style={styles.paginationRow}>
               <div style={styles.pageInfoPlain}>
-                1 - {filteredList.length} dari {modulList.length}
+                {filteredList.length > 0 ? startIndex + 1 : 0} - {Math.min(startIndex + itemsPerPage, filteredList.length)} dari {filteredList.length}
               </div>
               <div style={styles.pageButtons}>
-                <button style={styles.btnPageArrowWhite}>&lt;</button>
-                <button style={styles.btnPageNumGreen}>1</button>
-                <button style={styles.btnPageArrowWhite}>&gt;</button>
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  style={{
+                    ...styles.btnPageArrowWhite,
+                    opacity: currentPage === 1 ? 0.4 : 1,
+                    cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  &lt;
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+                  <button
+                    key={num}
+                    onClick={() => setCurrentPage(num)}
+                    style={currentPage === num ? styles.btnPageNumGreen : styles.btnPageNumWhite}
+                  >
+                    {num}
+                  </button>
+                ))}
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  style={{
+                    ...styles.btnPageArrowWhite,
+                    opacity: currentPage === totalPages ? 0.4 : 1,
+                    cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  &gt;
+                </button>
               </div>
             </div>
           </div>
@@ -701,7 +823,7 @@ export default function DataModul() {
                 {/* HPP and Harga Jual */}
                 <div className="modal-form-grid2" style={styles.formGrid2}>
                   <div style={styles.formGroup}>
-                    <label style={styles.label}>HPP (Harga Pokok Produksi)</label>
+                    <label style={styles.label}>HPP (Harga Pokok Penjualan)</label>
                     <input
                       type="text"
                       value={formData.hpp}
@@ -1106,6 +1228,20 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center'
   },
+  btnPageNumWhite: {
+    width: '32px',
+    height: '32px',
+    borderRadius: '8px',
+    border: '1px solid #dce4de',
+    backgroundColor: '#ffffff',
+    color: '#3d5246',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
 
   modalOverlay: {
     position: 'fixed',
@@ -1210,7 +1346,7 @@ const styles = {
   },
   uploadDropzone: {
     backgroundColor: '#ffffff',
-    border: '1px dashed #23573c',
+    border: '1px solid #23573c',
     borderRadius: '10px',
     padding: '18px',
     display: 'flex',
@@ -1322,15 +1458,20 @@ const styles = {
     cursor: 'pointer'
   },
   toast: {
+    position: 'fixed',
+    top: '24px',
+    right: '24px',
+    zIndex: 99999,
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
-    padding: '12px 20px',
+    padding: '14px 22px',
     borderRadius: '10px',
     color: '#ffffff',
     fontSize: '14px',
-    fontWeight: '500',
-    boxShadow: '0 4px 14px rgba(0,0,0,0.12)',
-    animation: 'fadeIn 0.2s ease'
+    fontWeight: '600',
+    boxShadow: '0 8px 28px rgba(0, 0, 0, 0.22)',
+    animation: 'fadeIn 0.25s ease',
+    maxWidth: 'calc(100vw - 48px)'
   }
 };
