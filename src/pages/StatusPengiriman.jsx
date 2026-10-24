@@ -93,7 +93,7 @@ const INITIAL_PENGIRIMAN = [
     noHp: '0821-5566-7788',
     metode: 'Titip ke Ustazah',
     ongkirFlat: 0,
-    alamat: 'Kavling Baru, Batu Aji ',
+    alamat: 'Kavling Baru, Batu Aji',
     noKwitansi: '',
     ustazahNama: 'Ustazah Fatimah Azzahra',
     lokasiAmbil: '',
@@ -268,17 +268,17 @@ function CustomDropdown({
             isOpen && !disabled
               ? '0 0 0 3px rgba(35, 87, 60, 0.15)'
               : isHovered && !disabled
-              ? '0 0 0 3px rgba(35, 87, 60, 0.1)'
-              : 'none',
+                ? '0 0 0 3px rgba(35, 87, 60, 0.1)'
+                : 'none',
           ...selectStyle,
           ...(disabled
             ? {
-                cursor: 'not-allowed',
-                backgroundColor: '#f1f5f9',
-                borderColor: '#cbd5e1',
-                color: '#64748b',
-                boxShadow: 'none'
-              }
+              cursor: 'not-allowed',
+              backgroundColor: '#f1f5f9',
+              borderColor: '#cbd5e1',
+              color: '#64748b',
+              boxShadow: 'none'
+            }
             : {})
         }}
       >
@@ -598,8 +598,8 @@ function CustomDatePicker({
             isOpen && !disabled
               ? '0 0 0 3px rgba(35, 87, 60, 0.15)'
               : isHovered && !disabled
-              ? '0 0 0 3px rgba(35, 87, 60, 0.1)'
-              : 'none'
+                ? '0 0 0 3px rgba(35, 87, 60, 0.1)'
+                : 'none'
         }}
       >
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -1081,7 +1081,7 @@ function DetailPengirimanModal({
         document.execCommand('copy');
         document.body.removeChild(tempInput);
         success = true;
-      } catch {}
+      } catch { }
     }
 
     if (success) {
@@ -1256,7 +1256,7 @@ function DetailPengirimanModal({
           {/* Rincian Modul & Total Harga */}
           <div style={styles.detailSection}>
             <div style={styles.detailSectionTitle}>Rincian Modul</div>
-            
+
             {/* Desktop Table */}
             <div className="rincian-modul-desktop" style={{ overflowX: 'auto', width: '100%', WebkitOverflowScrolling: 'touch' }}>
               <table style={styles.detailItemTable}>
