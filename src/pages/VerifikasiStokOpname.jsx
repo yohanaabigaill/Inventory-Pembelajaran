@@ -6,10 +6,9 @@ import Navbar from '../components/Navbar';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import HighlightOffOutlinedIcon from '@mui/icons-material/HighlightOffOutlined';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
-import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
-import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
+import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 
 const MONTH_NAMES = [
   'Januari',
@@ -724,7 +723,7 @@ export default function VerifikasiStokOpname() {
     setIsModalKirimVerifikasiOpen(false);
     setAlasanPenolakan('');
     setErrorAlasan('');
-    showToast('Hasil verifikasi stok opname berhasil dikirim ke Admin.', 'success');
+    showToast('Hasil verifikasi stok opname berhasil dikirim!', 'success');
   };
 
   // Render Badge Status Periode
@@ -1302,7 +1301,7 @@ export default function VerifikasiStokOpname() {
                   } : {})
                 }}
               >
-                <CheckCircleOutlinedIcon sx={{ fontSize: 18 }} />
+                <SendOutlinedIcon sx={{ fontSize: 18 }} />
                 <span>Kirim Verifikasi</span>
               </button>
             </div>
@@ -1424,7 +1423,7 @@ export default function VerifikasiStokOpname() {
                 onClick={handleKirimVerifikasiFinal}
                 style={styles.btnModalConfirmSetujui}
               >
-                <CheckCircleOutlinedIcon sx={{ fontSize: 18 }} />
+                <SendOutlinedIcon sx={{ fontSize: 18 }} />
                 <span>Kirim Sekarang</span>
               </button>
             </div>
@@ -1836,12 +1835,13 @@ const styles = {
     height: '38px',
     padding: '0 16px',
     backgroundColor: '#ffffff',
-    color: '#64748b',
-    border: '1px solid #cbd5e1',
+    color: '#23573c',
+    border: '1.5px solid #23573c',
     borderRadius: '8px',
     fontSize: '13px',
     fontWeight: '600',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    transition: 'all 0.15s ease'
   },
   btnModalConfirmSetujui: {
     height: '38px',
