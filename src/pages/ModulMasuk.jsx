@@ -804,7 +804,7 @@ export default function ModulMasuk() {
                   className="btn-simpan-responsive"
                 >
                   <SaveOutlinedIcon sx={{ fontSize: 18 }} />
-                  <span>Simpan & Update Stok Fisik</span>
+                  <span>Simpan</span>
                 </button>
               </div>
             </form>
@@ -986,13 +986,14 @@ const styles = {
   },
   btnBatal: {
     backgroundColor: '#ffffff',
-    color: '#3d5246',
-    border: '1px solid #dce4de',
+    color: '#23573c',
+    border: '1.5px solid #23573c',
     padding: '10px 20px',
     borderRadius: '8px',
     fontSize: '13.5px',
     fontWeight: '600',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    transition: 'all 0.15s ease'
   },
   btnSimpan: {
     backgroundColor: '#23573c',
