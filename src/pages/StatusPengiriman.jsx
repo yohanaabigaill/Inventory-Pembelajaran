@@ -211,6 +211,7 @@ function CustomDropdown({
   disabled = false
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -244,6 +245,8 @@ function CustomDropdown({
         onClick={() => {
           if (!disabled) setIsOpen(!isOpen);
         }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         title={disabled ? 'Status sudah selesai (tidak dapat diubah lagi)' : undefined}
         style={{
           display: 'flex',
@@ -251,17 +254,22 @@ function CustomDropdown({
           justifyContent: 'space-between',
           cursor: disabled ? 'not-allowed' : 'pointer',
           boxSizing: 'border-box',
-          padding: '10px 14px',
+          padding: '8px 14px',
           minHeight: '38px',
-          fontSize: '13px',
-          fontWeight: '500',
-          border: '1px solid #c7d9cd',
+          fontSize: '13.5px',
+          fontWeight: '600',
+          border: '1px solid #23573c',
           borderRadius: '10px',
           backgroundColor: '#f6faf7',
           color: '#1a3e2b',
           transition: 'all 0.2s ease',
-          borderColor: isOpen && !disabled ? '#23573c' : (selectStyle.borderColor || '#c7d9cd'),
-          boxShadow: isOpen && !disabled ? '0 0 0 3px rgba(35, 87, 60, 0.15)' : 'none',
+          borderColor: isOpen && !disabled ? '#23573c' : (selectStyle.borderColor || '#23573c'),
+          boxShadow:
+            isOpen && !disabled
+              ? '0 0 0 3px rgba(35, 87, 60, 0.15)'
+              : isHovered && !disabled
+              ? '0 0 0 3px rgba(35, 87, 60, 0.1)'
+              : 'none',
           ...selectStyle,
           ...(disabled
             ? {
@@ -354,10 +362,10 @@ function CustomDatePicker({
   value,
   onChange,
   disabled = false,
-  title = 'Pilih tanggal pengiriman',
   style = {}
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const [isMonthYearOpen, setIsMonthYearOpen] = useState(false);
   const [alignRight, setAlignRight] = useState(false);
   const containerRef = useRef(null);
@@ -569,7 +577,8 @@ function CustomDatePicker({
             setIsMonthYearOpen(false);
           }
         }}
-        title={title}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -580,12 +589,17 @@ function CustomDatePicker({
           minHeight: '34px',
           fontSize: '12.5px',
           fontWeight: '600',
-          border: '1px solid #cbd5e1',
+          border: disabled ? '1px solid #cbd5e1' : '1px solid #23573c',
           borderRadius: '10px',
-          backgroundColor: disabled ? '#f1f5f9' : '#ffffff',
+          backgroundColor: disabled ? '#f1f5f9' : '#f6faf7',
           color: disabled ? '#64748b' : value ? '#1e293b' : '#94a3b8',
           transition: 'all 0.2s ease',
-          boxShadow: isOpen && !disabled ? '0 0 0 3px rgba(35, 87, 60, 0.15)' : 'none'
+          boxShadow:
+            isOpen && !disabled
+              ? '0 0 0 3px rgba(35, 87, 60, 0.15)'
+              : isHovered && !disabled
+              ? '0 0 0 3px rgba(35, 87, 60, 0.1)'
+              : 'none'
         }}
       >
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -1137,11 +1151,6 @@ function DetailPengirimanModal({
                     setSelectedDetail((prev) => ({ ...prev, tanggalKirim: newDate }))
                   }
                   disabled={selectedDetail.status === 'Selesai'}
-                  title={
-                    selectedDetail.status === 'Selesai'
-                      ? 'Status sudah selesai (tanggal tidak dapat diubah)'
-                      : 'Pilih atau ubah tanggal pengiriman'
-                  }
                 />
               </div>
             </div>
@@ -1224,7 +1233,6 @@ function DetailPengirimanModal({
                           handleCopyKwitansi(selectedDetail.noKwitansi);
                         }}
                         style={isCopied ? styles.btnCopySuccess : styles.btnCopyResiSimple}
-                        title={isCopied ? 'Nomor kwitansi tersalin!' : 'Salin No. Kwitansi'}
                       >
                         {isCopied ? (
                           <>
@@ -1336,7 +1344,6 @@ function DetailPengirimanModal({
                   alt="Foto Bukti Diterima"
                   style={{ ...styles.detailReceiptImg, cursor: 'pointer' }}
                   onClick={() => onPreviewProof(selectedDetail.buktiSampai?.fotoUrl || buktiSampaiImg)}
-                  title="Klik untuk memperbesar foto bukti"
                 />
               </div>
             </div>
@@ -1349,6 +1356,8 @@ function DetailPengirimanModal({
             type="button"
             onClick={onClose}
             style={styles.btnModalClose}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f5f3')}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ffffff')}
           >
             Batal
           </button>
@@ -1377,6 +1386,7 @@ export default function StatusPengiriman() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
   const [notification, setNotification] = useState(null);
+  const toastTimeoutRef = useRef(null);
 
   // Modal State
   const [selectedDetail, setSelectedDetail] = useState(null);
@@ -1384,9 +1394,22 @@ export default function StatusPengiriman() {
 
   // Notifikasi
   const showToast = (message, type = 'success') => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
     setNotification({ message, type });
-    setTimeout(() => setNotification(null), 4000);
+    toastTimeoutRef.current = setTimeout(() => {
+      setNotification(null);
+    }, 4000);
   };
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Filter Data
   const filteredPengiriman = useMemo(() => {
@@ -1436,7 +1459,7 @@ export default function StatusPengiriman() {
     setPengirimanList((prevList) =>
       prevList.map((item) => (item.id === updatedDetail.id ? { ...updatedDetail } : item))
     );
-    showToast('Perubahan data pengiriman berhasil disimpan!', 'success');
+    showToast('Status pengiriman berhasil diperbarui!', 'success');
     setSelectedDetail(null);
   };
 
@@ -1473,7 +1496,7 @@ export default function StatusPengiriman() {
         />
 
         <main style={styles.contentBody} className="content-body-responsive">
-          {/* Toast Notifikasi */}
+          {/* Toast Notification */}
           {notification && (
             <div
               className="toast-responsive"
@@ -2370,9 +2393,9 @@ const styles = {
     flexWrap: 'wrap'
   },
   btnModalClose: {
-    padding: '8px 20px',
+    padding: '9px 20px',
     borderRadius: '8px',
-    border: '1.5px solid #23573c',
+    border: '1px solid #23573c',
     backgroundColor: '#ffffff',
     color: '#23573c',
     fontSize: '13px',
