@@ -5,6 +5,7 @@ import Navbar from '../components/Navbar';
 // Icons
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
+import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 
 // Jenis Modul
 const INITIAL_JENIS = [
@@ -112,7 +113,7 @@ export default function JenisModul() {
         nama: trimmedNama
       };
       setJenisList((prev) => [newItem, ...prev]);
-      showToast(`Jenis modul "${newItem.nama}" berhasil ditambahkan!`, 'success');
+      showToast('Jenis modul berhasil ditambahkan!', 'success');
     } else {
       setJenisList((prev) =>
         prev.map((item) =>
@@ -121,7 +122,7 @@ export default function JenisModul() {
             : item
         )
       );
-      showToast(`Jenis modul "${trimmedNama}" berhasil diperbarui!`, 'success');
+      showToast('Jenis modul berhasil diperbarui!', 'success');
     }
 
     setIsModalOpen(false);
@@ -137,7 +138,7 @@ export default function JenisModul() {
   const handleConfirmDelete = () => {
     if (!itemToDelete) return;
     setJenisList((prev) => prev.filter((item) => item.id !== itemToDelete.id));
-    showToast(`Jenis modul "${itemToDelete.nama}" berhasil dihapus.`, 'success');
+    showToast('Jenis modul berhasil dihapus!', 'success');
     setIsDeleteModalOpen(false);
     setItemToDelete(null);
   };
@@ -164,12 +165,17 @@ export default function JenisModul() {
           {/* Notifikasi */}
           {notification && (
             <div
+              className="toast-responsive"
               style={{
                 ...styles.toast,
                 backgroundColor: notification.type === 'success' ? '#23573c' : '#dc2626'
               }}
             >
-              <CheckCircleOutlinedIcon sx={{ fontSize: 20 }} />
+              {notification.type === 'success' ? (
+                <CheckCircleOutlinedIcon sx={{ fontSize: 20 }} />
+              ) : (
+                <ErrorOutlineOutlinedIcon sx={{ fontSize: 20 }} />
+              )}
               <span>{notification.message}</span>
             </div>
           )}
@@ -315,8 +321,8 @@ export default function JenisModul() {
 
       {/* MODAL TAMBAH DAN EDIT */}
       {isModalOpen && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalContent}>
+        <div style={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
+          <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div style={styles.modalHeader}>
               <h2 style={styles.modalTitle}>
@@ -370,8 +376,14 @@ export default function JenisModul() {
 
       {/* MODAL KONFIRMASI HAPUS */}
       {isDeleteModalOpen && itemToDelete && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.deleteModalContent}>
+        <div
+          style={styles.modalOverlay}
+          onClick={() => {
+            setIsDeleteModalOpen(false);
+            setItemToDelete(null);
+          }}
+        >
+          <div style={styles.deleteModalContent} onClick={(e) => e.stopPropagation()}>
             <div style={styles.deleteIconWrapper}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2">
                 <polyline points="3 6 5 6 21 6" />
@@ -431,16 +443,21 @@ const styles = {
     gap: '20px'
   },
   toast: {
+    position: 'fixed',
+    top: '24px',
+    right: '24px',
+    zIndex: 99999,
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
-    padding: '12px 20px',
+    padding: '14px 22px',
     borderRadius: '10px',
     color: '#ffffff',
     fontSize: '14px',
-    fontWeight: '500',
-    boxShadow: '0 4px 14px rgba(0,0,0,0.12)',
-    animation: 'fadeIn 0.2s ease'
+    fontWeight: '600',
+    boxShadow: '0 8px 28px rgba(0, 0, 0, 0.22)',
+    animation: 'fadeIn 0.25s ease',
+    maxWidth: 'calc(100vw - 48px)'
   },
   filterCard: {
     backgroundColor: '#ffffff',
