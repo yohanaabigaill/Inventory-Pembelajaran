@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -7,13 +8,66 @@ import {
   Paper,
   Link,
   InputAdornment,
-  IconButton
+  IconButton,
+  Snackbar,
+  Alert
 } from "@mui/material";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
+import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 import Logo from "../components/Logo";
 
 export default function Register() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [namaLengkap, setNamaLengkap] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [errors, setErrors] = useState({});
+  const [toast, setToast] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const newErrors = {};
+
+    if (!namaLengkap.trim()) {
+      newErrors.namaLengkap = "Nama lengkap wajib diisi";
+    }
+    if (!email.trim()) {
+      newErrors.email = "Email wajib diisi";
+    }
+    if (!password) {
+      newErrors.password = "Password wajib diisi";
+    } else if (password.length < 8) {
+      newErrors.password = "Password minimal 8 karakter";
+    }
+    if (!confirmPassword) {
+      newErrors.confirmPassword = "Konfirmasi password wajib diisi";
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = "Konfirmasi password tidak cocok";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
+    setToast("Pendaftaran akun berhasil!");
+    setTimeout(() => {
+      navigate("/login");
+    }, 2000);
+  };
+
+  const handleEmailChange = (e) => {
+    let val = e.target.value;
+    if (val.includes("@")) {
+      val = val.split("@")[0];
+    }
+    setEmail(val);
+  };
 
   return (
     <Box
@@ -126,27 +180,39 @@ export default function Register() {
             </Typography>
           </Box>
 
-          <Box component="form" noValidate sx={{ mt: 0.5 }}>
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 0.5 }}>
             <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: "#111827", mb: 0.4, display: "block" }}>
               Nama Lengkap
             </Typography>
             <TextField
               fullWidth
               size="small"
+              value={namaLengkap}
+              onChange={(e) => {
+                setNamaLengkap(e.target.value);
+                if (errors.namaLengkap) {
+                  setErrors((prev) => ({ ...prev, namaLengkap: "" }));
+                }
+              }}
               placeholder="Masukkan Nama Lengkap"
               sx={{
-                mb: 1.4,
+                mb: errors.namaLengkap ? 0.6 : 1.4,
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "10px",
                   bgcolor: "#f9fafb",
                   fontFamily: "'Poppins', sans-serif",
                   fontSize: "0.875rem",
-                  "& fieldset": { borderColor: "#e5e7eb" },
-                  "&:hover fieldset": { borderColor: "#9ca3af" },
-                  "&.Mui-focused fieldset": { borderColor: "#23573c" },
+                  "& fieldset": { borderColor: errors.namaLengkap ? "#dc2626" : "#e5e7eb" },
+                  "&:hover fieldset": { borderColor: errors.namaLengkap ? "#dc2626" : "#9ca3af" },
+                  "&.Mui-focused fieldset": { borderColor: errors.namaLengkap ? "#dc2626" : "#23573c" },
                 },
               }}
             />
+            {errors.namaLengkap && (
+              <Typography sx={{ color: "#dc2626", fontSize: "0.8rem", fontWeight: 500, mb: 1.2, ml: 0.3 }}>
+                * {errors.namaLengkap}
+              </Typography>
+            )}
 
             <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: "#111827", mb: 0.4, display: "block" }}>
               Email
@@ -154,20 +220,52 @@ export default function Register() {
             <TextField
               fullWidth
               size="small"
-              placeholder="nama@email.com"
+              value={email}
+              onChange={(e) => {
+                handleEmailChange(e);
+                if (errors.email) {
+                  setErrors((prev) => ({ ...prev, email: "" }));
+                }
+              }}
+              placeholder="nama"
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <Typography sx={{ color: "#6b7280", fontSize: "0.875rem", fontWeight: 500, userSelect: "none" }}>
+                        @gmail.com
+                      </Typography>
+                    </InputAdornment>
+                  ),
+                },
+              }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <Typography sx={{ color: "#6b7280", fontSize: "0.875rem", fontWeight: 500, userSelect: "none" }}>
+                      @gmail.com
+                    </Typography>
+                  </InputAdornment>
+                ),
+              }}
               sx={{
-                mb: 1.4,
+                mb: errors.email ? 0.6 : 1.4,
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "10px",
                   bgcolor: "#f9fafb",
                   fontFamily: "'Poppins', sans-serif",
                   fontSize: "0.875rem",
-                  "& fieldset": { borderColor: "#e5e7eb" },
-                  "&:hover fieldset": { borderColor: "#9ca3af" },
-                  "&.Mui-focused fieldset": { borderColor: "#23573c" },
+                  "& fieldset": { borderColor: errors.email ? "#dc2626" : "#e5e7eb" },
+                  "&:hover fieldset": { borderColor: errors.email ? "#dc2626" : "#9ca3af" },
+                  "&.Mui-focused fieldset": { borderColor: errors.email ? "#dc2626" : "#23573c" },
                 },
               }}
             />
+            {errors.email && (
+              <Typography sx={{ color: "#dc2626", fontSize: "0.8rem", fontWeight: 500, mb: 1.2, ml: 0.3 }}>
+                * {errors.email}
+              </Typography>
+            )}
 
             <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: "#111827", mb: 0.4, display: "block" }}>
               Password
@@ -176,7 +274,35 @@ export default function Register() {
               fullWidth
               size="small"
               type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (errors.password) {
+                  setErrors((prev) => ({ ...prev, password: "" }));
+                }
+              }}
               placeholder="Minimal 8 karakter"
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                        aria-label={showPassword ? "Sembunyikan password" : "Lihat password"}
+                        sx={{ color: "#4b5563" }}
+                      >
+                        {showPassword ? (
+                              <VisibilityOffOutlinedIcon sx={{ fontSize: 20 }} />
+                            ) : (
+                              <VisibilityOutlinedIcon sx={{ fontSize: 20 }} />
+                            )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
+              }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -184,6 +310,7 @@ export default function Register() {
                       size="small"
                       onClick={() => setShowPassword(!showPassword)}
                       edge="end"
+                      aria-label={showPassword ? "Sembunyikan password" : "Lihat password"}
                       sx={{ color: "#4b5563" }}
                     >
                       {showPassword ? (
@@ -202,18 +329,23 @@ export default function Register() {
                 ),
               }}
               sx={{
-                mb: 1.4,
+                mb: errors.password ? 0.6 : 1.4,
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "10px",
                   bgcolor: "#f9fafb",
                   fontFamily: "'Poppins', sans-serif",
                   fontSize: "0.875rem",
-                  "& fieldset": { borderColor: "#e5e7eb" },
-                  "&:hover fieldset": { borderColor: "#9ca3af" },
-                  "&.Mui-focused fieldset": { borderColor: "#23573c" },
+                  "& fieldset": { borderColor: errors.password ? "#dc2626" : "#e5e7eb" },
+                  "&:hover fieldset": { borderColor: errors.password ? "#dc2626" : "#9ca3af" },
+                  "&.Mui-focused fieldset": { borderColor: errors.password ? "#dc2626" : "#23573c" },
                 },
               }}
             />
+            {errors.password && (
+              <Typography sx={{ color: "#dc2626", fontSize: "0.8rem", fontWeight: 500, mb: 1.2, ml: 0.3 }}>
+                * {errors.password}
+              </Typography>
+            )}
 
             <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: "#111827", mb: 0.4, display: "block" }}>
               Konfirmasi Password
@@ -222,7 +354,35 @@ export default function Register() {
               fullWidth
               size="small"
               type={showConfirmPassword ? "text" : "password"}
+              value={confirmPassword}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                if (errors.confirmPassword) {
+                  setErrors((prev) => ({ ...prev, confirmPassword: "" }));
+                }
+              }}
               placeholder="Ulangi password"
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        edge="end"
+                        aria-label={showConfirmPassword ? "Sembunyikan password" : "Lihat password"}
+                        sx={{ color: "#4b5563" }}
+                      >
+                        {showConfirmPassword ? (
+                              <VisibilityOffOutlinedIcon sx={{ fontSize: 20 }} />
+                            ) : (
+                              <VisibilityOutlinedIcon sx={{ fontSize: 20 }} />
+                            )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
+              }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -230,6 +390,7 @@ export default function Register() {
                       size="small"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       edge="end"
+                      aria-label={showConfirmPassword ? "Sembunyikan password" : "Lihat password"}
                       sx={{ color: "#4b5563" }}
                     >
                       {showConfirmPassword ? (
@@ -248,21 +409,27 @@ export default function Register() {
                 ),
               }}
               sx={{
-                mb: 2,
+                mb: errors.confirmPassword ? 0.6 : 2,
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "10px",
                   bgcolor: "#f9fafb",
                   fontFamily: "'Poppins', sans-serif",
                   fontSize: "0.875rem",
-                  "& fieldset": { borderColor: "#e5e7eb" },
-                  "&:hover fieldset": { borderColor: "#9ca3af" },
-                  "&.Mui-focused fieldset": { borderColor: "#23573c" },
+                  "& fieldset": { borderColor: errors.confirmPassword ? "#dc2626" : "#e5e7eb" },
+                  "&:hover fieldset": { borderColor: errors.confirmPassword ? "#dc2626" : "#9ca3af" },
+                  "&.Mui-focused fieldset": { borderColor: errors.confirmPassword ? "#dc2626" : "#23573c" },
                 },
               }}
             />
+            {errors.confirmPassword && (
+              <Typography sx={{ color: "#dc2626", fontSize: "0.8rem", fontWeight: 500, mb: 1.5, ml: 0.3 }}>
+                * {errors.confirmPassword}
+              </Typography>
+            )}
 
             <Button
               fullWidth
+              type="submit"
               variant="contained"
               size="medium"
               sx={{
@@ -300,6 +467,35 @@ export default function Register() {
           </Box>
         </Box>
       </Paper>
+
+      {/* Toast Notification */}
+      {toast && (
+        <div
+          className="toast-responsive"
+          style={{
+            position: "fixed",
+            top: "24px",
+            right: "24px",
+            zIndex: 99999,
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            padding: "14px 22px",
+            borderRadius: "10px",
+            color: "#ffffff",
+            backgroundColor: "#23573c",
+            fontSize: "14px",
+            fontWeight: "600",
+            boxShadow: "0 8px 28px rgba(0, 0, 0, 0.22)",
+            animation: "fadeIn 0.25s ease",
+            maxWidth: "calc(100vw - 48px)",
+            fontFamily: "'Poppins', sans-serif"
+          }}
+        >
+          <CheckCircleOutlinedIcon sx={{ fontSize: 20, color: "#ffffff" }} />
+          <span>{toast}</span>
+        </div>
+      )}
     </Box>
   );
 }
