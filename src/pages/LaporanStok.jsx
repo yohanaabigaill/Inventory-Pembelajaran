@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import * as XLSX from 'xlsx';
+import XLSX from 'xlsx-js-style';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 
@@ -13,7 +13,7 @@ import ArrowUpwardOutlinedIcon from '@mui/icons-material/ArrowUpwardOutlined';
 import PendingActionsOutlinedIcon from '@mui/icons-material/PendingActionsOutlined';
 import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
 
-// Jenis Laporan 
+// Jenis Laporan
 const REPORT_TYPES = [
   { id: 'stok_card', label: '1. Stok Card', icon: AssessmentOutlinedIcon },
   { id: 'stok_balance', label: '2. Stok Balance', icon: Inventory2OutlinedIcon },
@@ -64,12 +64,12 @@ const MASTER_MODULS = [
   { id: 37, nama: 'Mushaf Ash Shahib A4 tanpa Terjemah', stokAwal: 115 },
   { id: 38, nama: 'Mushaf Ash Shahib A6 Terjemah', stokAwal: 145 },
   { id: 39, nama: 'Mushaf Ash Shahib A6 tanpa Terjemah', stokAwal: 140 },
-  { id: 40, nama: 'Mushaf Ash Shahib A5 Terjemah (Reguler)', stokAwal: 310 },
-  { id: 41, nama: 'Mushaf Ash Shahib A5 tanpa Terjemah (Reguler)', stokAwal: 280 },
-  { id: 42, nama: 'Mushaf Al Kamil A5 Terjemah (Reguler)', stokAwal: 260 },
-  { id: 43, nama: 'Mushaf Al Kamil A5 tanpa Terjemah (Reguler)', stokAwal: 240 },
-  { id: 44, nama: 'Mushaf Ash Shahib A4 Terjemah (Reguler)', stokAwal: 185 },
-  { id: 45, nama: 'Mushaf Ash Shahib A4 tanpa Terjemah (Reguler)', stokAwal: 170 },
+  { id: 40, nama: 'Mushaf Ash Shahib A5 Terjemah', stokAwal: 310 },
+  { id: 41, nama: 'Mushaf Ash Shahib A5 tanpa Terjemah', stokAwal: 280 },
+  { id: 42, nama: 'Mushaf Al Kamil A5 Terjemah', stokAwal: 260 },
+  { id: 43, nama: 'Mushaf Al Kamil A5 tanpa Terjemah', stokAwal: 240 },
+  { id: 44, nama: 'Mushaf Ash Shahib A4 Terjemah', stokAwal: 185 },
+  { id: 45, nama: 'Mushaf Ash Shahib A4 tanpa Terjemah', stokAwal: 170 },
   { id: 46, nama: 'Mushaf Al Mujib A6 Terjemah', stokAwal: 195 },
   { id: 47, nama: 'Mushaf Al Kamil A6 tanpa Terjemah', stokAwal: 205 }
 ];
@@ -200,6 +200,10 @@ const DATA_PESANAN_PENGIRIMAN = [
   }
 ];
 
+const INDO_MONTH_NAMES = [
+  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+];
 
 // Format Tanggal (D/M/YYYY)
 const formatTanggalSingkat = (dateStr) => {
@@ -217,16 +221,11 @@ const formatTanggalSingkat = (dateStr) => {
 
 // Format Periode Banner
 const formatPeriodeBanner = (startStr, endStr, isSingle) => {
-  const monthNames = [
-    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-  ];
-
   if (isSingle) {
     if (!startStr) return '';
     try {
       const [y, m, d] = startStr.split('-');
-      return `Per Tanggal ${parseInt(d, 10)} ${monthNames[parseInt(m, 10) - 1] || ''} ${y}`;
+      return `Per Tanggal ${parseInt(d, 10)} ${INDO_MONTH_NAMES[parseInt(m, 10) - 1] || ''} ${y}`;
     } catch {
       return `Per Tanggal ${startStr}`;
     }
@@ -238,13 +237,671 @@ const formatPeriodeBanner = (startStr, endStr, isSingle) => {
     const [y2, m2, d2] = endStr.split('-');
 
     if (m1 === m2 && y1 === y2) {
-      return `Per Tanggal ${parseInt(d1, 10)} - ${parseInt(d2, 10)} ${monthNames[parseInt(m1, 10) - 1] || ''} ${y1}`;
+      return `Per Tanggal ${parseInt(d1, 10)} - ${parseInt(d2, 10)} ${INDO_MONTH_NAMES[parseInt(m1, 10) - 1] || ''} ${y1}`;
     }
-    return `Per Tanggal ${parseInt(d1, 10)} ${monthNames[parseInt(m1, 10) - 1] || ''} ${y1} - ${parseInt(d2, 10)} ${monthNames[parseInt(m2, 10) - 1] || ''} ${y2}`;
+    return `Per Tanggal ${parseInt(d1, 10)} ${INDO_MONTH_NAMES[parseInt(m1, 10) - 1] || ''} ${y1} - ${parseInt(d2, 10)} ${INDO_MONTH_NAMES[parseInt(m2, 10) - 1] || ''} ${y2}`;
   } catch {
     return `Per Tanggal ${startStr} s/d ${endStr}`;
   }
 };
+
+const CALENDAR_MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
+const CALENDAR_SHORT_MONTHS = [
+  'Jan', 'Feb', 'Mar', 'Apr',
+  'May', 'Jun', 'Jul', 'Aug',
+  'Sep', 'Oct', 'Nov', 'Dec'
+];
+
+const CALENDAR_DAY_NAMES = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+
+// Kalender Responsive
+function LaporanPengirimanDatePickerInput({
+  value,
+  onChange,
+  onOpen,
+  onClose,
+  alignRight = false,
+  placeholder = 'dd/mm/yyyy'
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMonthYearOpen, setIsMonthYearOpen] = useState(false);
+  const [computedAlignRight, setComputedAlignRight] = useState(alignRight);
+  const containerRef = useRef(null);
+  const activeYearRef = useRef(null);
+
+  const [viewYear, setViewYear] = useState(() => {
+    if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return parseInt(value.slice(0, 4), 10);
+    }
+    return new Date().getFullYear();
+  });
+
+  const [viewMonth, setViewMonth] = useState(() => {
+    if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return parseInt(value.slice(5, 7), 10) - 1;
+    }
+    return new Date().getMonth();
+  });
+
+  const [expandedYear, setExpandedYear] = useState(viewYear);
+
+  useEffect(() => {
+    if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      const parts = value.split('-').map(Number);
+      setViewYear(parts[0]);
+      setViewMonth(parts[1] - 1);
+      setExpandedYear(parts[0]);
+    }
+  }, [value]);
+
+  useEffect(() => {
+    setExpandedYear(viewYear);
+  }, [viewYear, isMonthYearOpen]);
+
+  useEffect(() => {
+    if (isMonthYearOpen && activeYearRef.current) {
+      activeYearRef.current.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  }, [isMonthYearOpen, expandedYear]);
+
+  useEffect(() => {
+    if (isOpen && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      if (alignRight || window.innerWidth - rect.left < 285) {
+        setComputedAlignRight(true);
+      } else {
+        setComputedAlignRight(false);
+      }
+    }
+  }, [isOpen, alignRight]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+        setIsMonthYearOpen(false);
+        onClose?.();
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [onClose]);
+
+  const prevMonth = (e) => {
+    e.stopPropagation();
+    setIsMonthYearOpen(false);
+    if (viewMonth === 0) {
+      setViewMonth(11);
+      setViewYear((y) => y - 1);
+    } else {
+      setViewMonth((m) => m - 1);
+    }
+  };
+
+  const nextMonth = (e) => {
+    e.stopPropagation();
+    setIsMonthYearOpen(false);
+    if (viewMonth === 11) {
+      setViewMonth(0);
+      setViewYear((y) => y + 1);
+    } else {
+      setViewMonth((m) => m + 1);
+    }
+  };
+
+  const handleSelectDay = (day) => {
+    const mStr = String(viewMonth + 1).padStart(2, '0');
+    const dStr = String(day).padStart(2, '0');
+    onChange(`${viewYear}-${mStr}-${dStr}`);
+    setIsOpen(false);
+    onClose?.();
+  };
+
+  const handleSelectPrevMonthDay = (day) => {
+    let y = viewYear;
+    let m = viewMonth - 1;
+    if (m < 0) { m = 11; y -= 1; }
+    const mStr = String(m + 1).padStart(2, '0');
+    const dStr = String(day).padStart(2, '0');
+    onChange(`${y}-${mStr}-${dStr}`);
+    setIsOpen(false);
+    onClose?.();
+  };
+
+  const handleSelectNextMonthDay = (day) => {
+    let y = viewYear;
+    let m = viewMonth + 1;
+    if (m > 11) { m = 0; y += 1; }
+    const mStr = String(m + 1).padStart(2, '0');
+    const dStr = String(day).padStart(2, '0');
+    onChange(`${y}-${mStr}-${dStr}`);
+    setIsOpen(false);
+    onClose?.();
+  };
+
+  const handleSetToday = (e) => {
+    e.stopPropagation();
+    setIsMonthYearOpen(false);
+    const now = new Date();
+    const yStr = now.getFullYear();
+    const mStr = String(now.getMonth() + 1).padStart(2, '0');
+    const dStr = String(now.getDate()).padStart(2, '0');
+    onChange(`${yStr}-${mStr}-${dStr}`);
+    setViewYear(now.getFullYear());
+    setViewMonth(now.getMonth());
+    setIsOpen(false);
+    onClose?.();
+  };
+
+  const handleClear = (e) => {
+    e.stopPropagation();
+    setIsMonthYearOpen(false);
+    onChange('');
+    setIsOpen(false);
+    onClose?.();
+  };
+
+  const formatDisplay = (dStr) => {
+    if (!dStr) return '';
+    try {
+      const [y, m, d] = dStr.split('-');
+      if (!y || !m || !d) return dStr;
+      return `${String(parseInt(m, 10)).padStart(2, '0')}/${String(parseInt(d, 10)).padStart(2, '0')}/${y}`;
+    } catch {
+      return dStr;
+    }
+  };
+
+  const firstDayOfWeek = new Date(viewYear, viewMonth, 1).getDay();
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const daysInPrevMonth = new Date(viewYear, viewMonth, 0).getDate();
+
+  const prevDays = [];
+  for (let i = 0; i < firstDayOfWeek; i++) {
+    prevDays.push(daysInPrevMonth - firstDayOfWeek + i + 1);
+  }
+
+  const currentDays = [];
+  for (let i = 1; i <= daysInMonth; i++) {
+    currentDays.push(i);
+  }
+
+  const remainingCells = 42 - (prevDays.length + currentDays.length);
+  const nextDays = [];
+  for (let i = 1; i <= remainingCells; i++) {
+    nextDays.push(i);
+  }
+
+  const yearRange = [];
+  for (let y = Math.min(2020, viewYear - 3); y <= Math.max(2035, viewYear + 6); y++) {
+    yearRange.push(y);
+  }
+
+  let selY = null, selM = null, selD = null;
+  if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const parts = value.split('-').map(Number);
+    selY = parts[0];
+    selM = parts[1] - 1;
+    selD = parts[2];
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className="laporan-datepicker-input-wrapper"
+      onClick={() => {
+        setIsOpen((prev) => {
+          const next = !prev;
+          if (next) onOpen?.();
+          else onClose?.();
+          return next;
+        });
+        setIsMonthYearOpen(false);
+      }}
+      style={{
+        position: 'relative',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '6px',
+        flex: 1,
+        minWidth: 0,
+        cursor: 'pointer',
+        userSelect: 'none'
+      }}
+    >
+      <span
+        style={{
+          fontSize: '13px',
+          fontFamily: 'inherit',
+          color: '#1a3e2b',
+          fontWeight: '500',
+          whiteSpace: 'nowrap',
+          letterSpacing: '0.2px'
+        }}
+      >
+        {formatDisplay(value) || placeholder}
+      </span>
+
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 20 20"
+        fill="none"
+        stroke="#4a5568"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        style={{ flexShrink: 0, opacity: 0.85 }}
+      >
+        <rect x="2.5" y="4" width="15" height="13" rx="2" fill="#ffffff" />
+        <line x1="2.5" y1="8" x2="17.5" y2="8" stroke="#4a5568" strokeWidth="1.5" />
+        <line x1="6" y1="2" x2="6" y2="4.5" stroke="#4a5568" strokeWidth="1.5" />
+        <line x1="14" y1="2" x2="14" y2="4.5" stroke="#4a5568" strokeWidth="1.5" />
+        <circle cx="6" cy="11" r="0.75" fill="#4a5568" stroke="none" />
+        <circle cx="10" cy="11" r="0.75" fill="#4a5568" stroke="none" />
+        <circle cx="14" cy="11" r="0.75" fill="#4a5568" stroke="none" />
+        <circle cx="6" cy="14" r="0.75" fill="#4a5568" stroke="none" />
+        <circle cx="10" cy="14" r="0.75" fill="#4a5568" stroke="none" />
+        <circle cx="14" cy="14" r="0.75" fill="#4a5568" stroke="none" />
+      </svg>
+
+      {isOpen && (
+        <div
+          className="laporan-calendar-popover"
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 8px)',
+            left: computedAlignRight ? 'auto' : 0,
+            right: computedAlignRight ? 0 : 'auto',
+            width: '272px',
+            backgroundColor: '#ffffff',
+            borderRadius: '8px',
+            border: '1px solid #dadce0',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.16)',
+            padding: '16px 14px 12px',
+            boxSizing: 'border-box',
+            zIndex: 10050,
+            userSelect: 'none',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif'
+          }}
+        >
+          {/* Header Kalender */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '12px'
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setIsMonthYearOpen((prev) => !prev)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                background: 'none',
+                border: 'none',
+                padding: '2px 4px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                fontWeight: '700',
+                color: '#202124',
+                transition: 'background-color 0.15s'
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f3f4')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+              title={isMonthYearOpen ? 'Kembali ke Kalender Hari' : 'Pilih Bulan & Tahun'}
+            >
+              <span>{CALENDAR_MONTH_NAMES[viewMonth]} {viewYear}</span>
+              <span
+                style={{
+                  fontSize: '9px',
+                  color: '#3c4043',
+                  display: 'inline-block',
+                  transform: isMonthYearOpen ? 'rotate(180deg)' : 'none',
+                  transition: 'transform 0.15s ease'
+                }}
+              >
+                ▼
+              </span>
+            </button>
+
+            {!isMonthYearOpen && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <button
+                  type="button"
+                  onClick={prevMonth}
+                  title="Bulan sebelumnya"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '28px',
+                    height: '28px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    color: '#202124',
+                    transition: 'background-color 0.15s'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f3f4')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="19" x2="12" y2="5" />
+                    <polyline points="5 12 12 5 19 12" />
+                  </svg>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={nextMonth}
+                  title="Bulan berikutnya"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '28px',
+                    height: '28px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    color: '#202124',
+                    transition: 'background-color 0.15s'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f3f4')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <polyline points="19 12 12 19 5 12" />
+                  </svg>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {isMonthYearOpen ? (
+            <div
+              style={{
+                maxHeight: '270px',
+                overflowY: 'auto',
+                paddingRight: '2px',
+                borderTop: '1px solid #f1f3f4'
+              }}
+            >
+              {yearRange.map((y) => {
+                const isExpanded = y === expandedYear;
+                return (
+                  <div key={y} ref={isExpanded ? activeYearRef : null}>
+                    <div
+                      onClick={() => setExpandedYear(y)}
+                      style={{
+                        padding: '8px 12px',
+                        fontSize: '13.5px',
+                        fontWeight: isExpanded ? '600' : '400',
+                        color: '#202124',
+                        backgroundColor: isExpanded ? '#f1f3f4' : 'transparent',
+                        borderBottom: '1px solid #e8eaed',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isExpanded) e.currentTarget.style.backgroundColor = '#f8faf9';
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isExpanded) e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                    >
+                      {y}
+                    </div>
+
+                    {isExpanded && (
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(4, 1fr)',
+                          gap: '10px 4px',
+                          padding: '12px 6px 14px',
+                          backgroundColor: '#ffffff',
+                          borderBottom: '1px solid #e8eaed'
+                        }}
+                      >
+                        {CALENDAR_SHORT_MONTHS.map((mShort, mIdx) => {
+                          const isSelectedMonth =
+                            (selY === y && selM === mIdx) || (y === viewYear && mIdx === viewMonth);
+
+                          return (
+                            <button
+                              key={mShort}
+                              type="button"
+                              onClick={() => {
+                                setViewYear(y);
+                                setViewMonth(mIdx);
+                                setIsMonthYearOpen(false);
+                              }}
+                              style={{
+                                height: '32px',
+                                width: '46px',
+                                margin: '0 auto',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '13px',
+                                fontWeight: isSelectedMonth ? '700' : '400',
+                                color: isSelectedMonth ? '#ffffff' : '#202124',
+                                backgroundColor: isSelectedMonth ? '#3c4043' : 'transparent',
+                                border: isSelectedMonth ? '2px solid #202124' : 'none',
+                                borderRadius: '3px',
+                                cursor: 'pointer',
+                                boxSizing: 'border-box',
+                                transition: 'background-color 0.15s ease'
+                              }}
+                              onMouseEnter={(e) => {
+                                if (!isSelectedMonth) e.currentTarget.style.backgroundColor = '#f1f3f4';
+                              }}
+                              onMouseLeave={(e) => {
+                                if (!isSelectedMonth) e.currentTarget.style.backgroundColor = 'transparent';
+                              }}
+                            >
+                              {mShort}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <>
+              {/* Nama Hari */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(7, 1fr)',
+                  textAlign: 'center',
+                  marginBottom: '10px'
+                }}
+              >
+                {CALENDAR_DAY_NAMES.map((d) => (
+                  <div
+                    key={d}
+                    style={{
+                      fontSize: '12.5px',
+                      fontWeight: '500',
+                      color: '#202124'
+                    }}
+                  >
+                    {d}
+                  </div>
+                ))}
+              </div>
+
+              {/* Grid Tanggal */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(7, 1fr)',
+                  rowGap: '6px',
+                  columnGap: '2px',
+                  textAlign: 'center'
+                }}
+              >
+                {prevDays.map((d, i) => (
+                  <button
+                    key={`prev-${i}`}
+                    type="button"
+                    onClick={() => handleSelectPrevMonthDay(d)}
+                    style={{
+                      height: '28px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '13px',
+                      color: '#70757a',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      borderRadius: '3px'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f3f4')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                  >
+                    {d}
+                  </button>
+                ))}
+
+                {currentDays.map((d) => {
+                  const isSelected = selY === viewYear && selM === viewMonth && selD === d;
+
+                  return (
+                    <button
+                      key={`day-${d}`}
+                      type="button"
+                      onClick={() => handleSelectDay(d)}
+                      style={{
+                        height: '28px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '13px',
+                        fontWeight: isSelected ? '700' : '400',
+                        borderRadius: '3px',
+                        border: isSelected ? '2px solid #202124' : 'none',
+                        backgroundColor: isSelected ? '#3c4043' : 'transparent',
+                        color: isSelected ? '#ffffff' : '#202124',
+                        cursor: 'pointer',
+                        boxSizing: 'border-box',
+                        transition: 'background-color 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isSelected) e.currentTarget.style.backgroundColor = '#f1f3f4';
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                    >
+                      {d}
+                    </button>
+                  );
+                })}
+
+                {nextDays.map((d, i) => (
+                  <button
+                    key={`next-${i}`}
+                    type="button"
+                    onClick={() => handleSelectNextMonthDay(d)}
+                    style={{
+                      height: '28px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '13px',
+                      color: '#70757a',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      borderRadius: '3px'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f3f4')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginTop: '16px',
+                  paddingTop: '6px'
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={handleClear}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    color: '#1a73e8',
+                    cursor: 'pointer',
+                    padding: '4px 6px',
+                    borderRadius: '4px'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f3f4')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
+                  Clear
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSetToday}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    color: '#1a73e8',
+                    cursor: 'pointer',
+                    padding: '4px 6px',
+                    borderRadius: '4px'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f3f4')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
+                  Today
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // Dropdown Filter Modul
 function SearchableModulDropdown({ value, onChange, options = [] }) {
@@ -297,7 +954,11 @@ function SearchableModulDropdown({ value, onChange, options = [] }) {
   };
 
   return (
-    <div ref={containerRef} style={{ position: 'relative', userSelect: 'none', minWidth: '170px' }}>
+    <div
+      ref={containerRef}
+      className="laporan-dropdown-container"
+      style={{ position: 'relative', userSelect: 'none', minWidth: '170px' }}
+    >
       <div
         onClick={handleTriggerClick}
         style={{
@@ -385,7 +1046,7 @@ function SearchableModulDropdown({ value, onChange, options = [] }) {
           {/* Opsi Modul */}
           <div style={{ maxHeight: '220px', overflowY: 'auto' }}>
             {filteredOptions.length === 0 ? (
-              <div style={{ padding: '10px 14px', fontSize: '13px', color: '#94a3b8', fontStyle: 'italic' }}>
+              <div style={{ padding: '10px 14px', fontSize: '13px', color: '#94a3b8' }}>
                 Modul tidak ditemukan
               </div>
             ) : (
@@ -635,58 +1296,150 @@ export default function LaporanStok() {
     let colWidths = [];
     let merges = [];
 
+    const thinBorder = {
+      top: { style: 'thin', color: { rgb: 'CBD5E1' } },
+      bottom: { style: 'thin', color: { rgb: 'CBD5E1' } },
+      left: { style: 'thin', color: { rgb: 'CBD5E1' } },
+      right: { style: 'thin', color: { rgb: 'CBD5E1' } }
+    };
+
+    const cellTitle = (v) => ({
+      v: v ?? '',
+      t: 's',
+      s: {
+        alignment: { horizontal: 'center', vertical: 'center' },
+        font: { name: 'Calibri', sz: 13, bold: true, color: { rgb: '1A3E2B' } }
+      }
+    });
+
+    const cellSubtitle = (v) => ({
+      v: v ?? '',
+      t: 's',
+      s: {
+        alignment: { horizontal: 'center', vertical: 'center' },
+        font: { name: 'Calibri', sz: 10.5, bold: false, color: { rgb: '475569' } }
+      }
+    });
+
+    const cellHeader = (v, align = 'center') => ({
+      v: v ?? '',
+      t: typeof v === 'number' ? 'n' : 's',
+      s: {
+        alignment: { horizontal: align, vertical: 'center', wrapText: true },
+        font: { name: 'Calibri', sz: 11, bold: true, color: { rgb: '0F172A' } },
+        border: thinBorder
+      }
+    });
+
+    const cellCenter = (v, isBold = false) => ({
+      v: v ?? '',
+      t: typeof v === 'number' ? 'n' : 's',
+      s: {
+        alignment: { horizontal: 'center', vertical: 'center' },
+        font: { name: 'Calibri', sz: 11, bold: isBold, color: { rgb: '1E293B' } },
+        border: thinBorder
+      }
+    });
+
+    const cellLeft = (v, isBold = false) => ({
+      v: v ?? '',
+      t: typeof v === 'number' ? 'n' : 's',
+      s: {
+        alignment: { horizontal: 'left', vertical: 'center' },
+        font: { name: 'Calibri', sz: 11, bold: isBold, color: { rgb: '1E293B' } },
+        border: thinBorder
+      }
+    });
+
+    const cellRight = (v, isBold = false) => ({
+      v: v ?? '',
+      t: typeof v === 'number' ? 'n' : 's',
+      s: {
+        alignment: { horizontal: 'right', vertical: 'center' },
+        font: { name: 'Calibri', sz: 11, bold: isBold, color: { rgb: '1E293B' } },
+        border: thinBorder
+      }
+    });
+
+    const cellEmpty = () => ({
+      v: '',
+      t: 's',
+      s: {
+        alignment: { horizontal: 'center', vertical: 'center' },
+        border: thinBorder
+      }
+    });
+
     // 1. STOK CARD
     if (selectedReport === 'stok_card') {
       fileName = `Laporan_Stok_Card_${startDate}_sd_${endDate}.xlsx`;
-      
-      aoa.push(['', '', 'Laporan Stok Card', '', '']);
-      aoa.push(['', '', `Per Tanggal ${formatPeriodeBanner(startDate, endDate, false).replace('Per Tanggal ', '')}`, '', '']);
+
+      aoa.push([cellTitle('Laporan Stok Card'), '', '', '', '']);
+      aoa.push([cellSubtitle(reportBannerSubtitle), '', '', '', '']);
       aoa.push([]);
 
-      merges.push({ s: { r: 0, c: 1 }, e: { r: 0, c: 3 } });
-      merges.push({ s: { r: 1, c: 1 }, e: { r: 1, c: 3 } });
+      merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: 4 } });
+      merges.push({ s: { r: 1, c: 0 }, e: { r: 1, c: 4 } });
 
       stokCardData.forEach((modul) => {
-        aoa.push(['Tanggal', modul.namaModul, 'M', 'K', 'Saldo']);
-        aoa.push([formatTanggalSingkat(startDate), 'Stok awal', '', '', modul.stokAwal]);
+        aoa.push([
+          cellHeader('Tanggal', 'center'),
+          cellHeader(modul.namaModul, 'left'),
+          cellHeader('M', 'center'),
+          cellHeader('K', 'center'),
+          cellHeader('Saldo', 'center')
+        ]);
+
+        aoa.push([
+          cellCenter(formatTanggalSingkat(startDate)),
+          cellLeft('Stok awal', true),
+          cellCenter(''),
+          cellCenter(''),
+          cellCenter(modul.stokAwal, true)
+        ]);
 
         modul.rows.forEach((r) => {
           aoa.push([
-            formatTanggalSingkat(r.tanggal),
-            r.keterangan,
-            r.masuk !== null ? r.masuk : '',
-            r.keluar !== null ? r.keluar : '',
-            r.saldo
+            cellCenter(formatTanggalSingkat(r.tanggal)),
+            cellLeft(r.keterangan),
+            cellCenter(r.masuk !== null ? r.masuk : ''),
+            cellCenter(r.keluar !== null ? r.keluar : ''),
+            cellCenter(r.saldo)
           ]);
         });
 
         aoa.push([]);
       });
 
-      colWidths = [{ wch: 15 }, { wch: 42 }, { wch: 8 }, { wch: 8 }, { wch: 12 }];
+      colWidths = [{ wch: 15 }, { wch: 42 }, { wch: 10 }, { wch: 10 }, { wch: 14 }];
     }
 
     // 2. STOK BALANCE
     else if (selectedReport === 'stok_balance') {
       fileName = `Laporan_Stok_Balance_Per_${singleDate}.xlsx`;
 
-      aoa.push(['', 'Laporan Stok Balance', '']);
-      aoa.push(['', formatPeriodeBanner(singleDate, '', true), '']);
+      aoa.push([cellTitle('Laporan Stok Balance'), '', '']);
+      aoa.push([cellSubtitle(reportBannerSubtitle), '', '']);
       aoa.push([]);
 
       merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: 2 } });
       merges.push({ s: { r: 1, c: 0 }, e: { r: 1, c: 2 } });
 
-      aoa.push(['No', 'Nama Modul', 'Jumlah']);
+      aoa.push([
+        cellHeader('No', 'center'),
+        cellHeader('Nama Modul', 'left'),
+        cellHeader('Jumlah', 'center')
+      ]);
+
       stokBalanceData.forEach((r) => {
         aoa.push([
-          r.no,
-          r.namaModul,
-          r.stokAkhir
+          cellCenter(r.no),
+          cellLeft(r.namaModul),
+          cellCenter(r.stokAkhir)
         ]);
       });
 
-      colWidths = [{ wch: 8 }, { wch: 40 }, { wch: 14 }];
+      colWidths = [{ wch: 8 }, { wch: 45 }, { wch: 16 }];
     }
 
     // 3 & 4. CUSTOMER SUDAH / BELUM DIKIRIM
@@ -695,15 +1448,24 @@ export default function LaporanStok() {
       const title = isSudah ? 'Laporan Customer Sudah Dikirim' : 'Laporan Customer Belum Dikirim';
       fileName = isSudah ? `Laporan_Customer_Sudah_Dikirim_${startDate}_sd_${endDate}.xlsx` : `Laporan_Customer_Belum_Dikirim_${startDate}_sd_${endDate}.xlsx`;
 
-      aoa.push(['', '', '', title, '', '', '', '']);
-      aoa.push(['', '', '', formatPeriodeBanner(startDate, endDate, false), '', '', '', '']);
+      aoa.push([cellTitle(title), '', '', '', '', '', '', '']);
+      aoa.push([cellSubtitle(reportBannerSubtitle), '', '', '', '', '', '', '']);
       aoa.push([]);
 
-      merges.push({ s: { r: 0, c: 2 }, e: { r: 0, c: 5 } });
-      merges.push({ s: { r: 1, c: 2 }, e: { r: 1, c: 5 } });
+      merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: 7 } });
+      merges.push({ s: { r: 1, c: 0 }, e: { r: 1, c: 7 } });
 
       const dateHeader = isSudah ? 'Tanggal Kirim' : 'Tanggal Pesan';
-      aoa.push([dateHeader, 'No Pesanan', 'Nama', 'Metode Pengiriman', 'Pesanan', 'Jumlah', 'Alamat', 'Status']);
+      aoa.push([
+        cellHeader(dateHeader, 'center'),
+        cellHeader('No Pesanan', 'center'),
+        cellHeader('Nama', 'left'),
+        cellHeader('Metode Pengiriman', 'left'),
+        cellHeader('Pesanan', 'left'),
+        cellHeader('Jumlah', 'center'),
+        cellHeader('Alamat', 'left'),
+        cellHeader('Status', 'center')
+      ]);
 
       customerShippingData.forEach((order) => {
         const startRowIdx = aoa.length;
@@ -712,25 +1474,25 @@ export default function LaporanStok() {
         order.items.forEach((item, itemIdx) => {
           if (itemIdx === 0) {
             aoa.push([
-              formatTanggalSingkat(order.tanggal),
-              order.noPesanan,
-              order.nama,
-              order.metode,
-              item.nama,
-              item.qty,
-              order.alamat,
-              order.status
+              cellCenter(formatTanggalSingkat(order.tanggal)),
+              cellCenter(order.noPesanan),
+              cellLeft(order.nama),
+              cellLeft(order.metode),
+              cellLeft(item.nama),
+              cellCenter(item.qty),
+              cellLeft(order.alamat),
+              cellCenter(order.status, false)
             ]);
           } else {
             aoa.push([
-              '',
-              '',
-              '',
-              '',
-              item.nama,
-              item.qty,
-              '',
-              ''
+              cellEmpty(),
+              cellEmpty(),
+              cellEmpty(),
+              cellEmpty(),
+              cellLeft(item.nama),
+              cellCenter(item.qty),
+              cellEmpty(),
+              cellEmpty()
             ]);
           }
         });
@@ -755,8 +1517,8 @@ export default function LaporanStok() {
       const title = isMasuk ? 'Laporan Modul Masuk' : 'Laporan Modul Keluar';
       fileName = isMasuk ? `Laporan_Modul_Masuk_${startDate}_sd_${endDate}.xlsx` : `Laporan_Modul_Keluar_${startDate}_sd_${endDate}.xlsx`;
 
-      aoa.push(['', title, '']);
-      aoa.push(['', formatPeriodeBanner(startDate, endDate, false), '']);
+      aoa.push([cellTitle(title), '', '']);
+      aoa.push([cellSubtitle(reportBannerSubtitle), '', '']);
       aoa.push([]);
 
       merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: 2 } });
@@ -764,21 +1526,33 @@ export default function LaporanStok() {
 
       modulMutasiGroupedData.forEach((modul) => {
         const modulTitleRowIdx = aoa.length;
-        aoa.push([modul.namaModul, '', '']);
+        aoa.push([cellHeader(modul.namaModul, 'left'), cellEmpty(), cellEmpty()]);
         merges.push({ s: { r: modulTitleRowIdx, c: 0 }, e: { r: modulTitleRowIdx, c: 2 } });
 
-        aoa.push(['Tanggal', 'Keterangan', 'Jumlah']);
+        aoa.push([
+          cellHeader('Tanggal', 'center'),
+          cellHeader('Keterangan', 'left'),
+          cellHeader('Jumlah', 'center')
+        ]);
 
         if (modul.rows.length === 0) {
-          aoa.push(['-', '-', 0]);
+          aoa.push([cellCenter('-'), cellCenter('-'), cellCenter(0)]);
         } else {
           modul.rows.forEach((r) => {
-            aoa.push([formatTanggalSingkat(r.tanggal), r.keterangan, r.jumlah]);
+            aoa.push([
+              cellCenter(formatTanggalSingkat(r.tanggal)),
+              cellLeft(r.keterangan),
+              cellCenter(r.jumlah)
+            ]);
           });
         }
 
         const totalRowIdx = aoa.length;
-        aoa.push(['Total', '', modul.totalJumlah]);
+        aoa.push([
+          cellRight('Total', false),
+          cellEmpty(),
+          cellCenter(modul.totalJumlah, false)
+        ]);
         merges.push({ s: { r: totalRowIdx, c: 0 }, e: { r: totalRowIdx, c: 1 } });
 
         aoa.push([]);
@@ -810,9 +1584,9 @@ export default function LaporanStok() {
           onToggleSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
         />
 
-        <div style={styles.contentArea}>
-          {/* Jenis Laporan */}
-          <div style={styles.reportTypesGrid}>
+        <div style={styles.contentArea} className="content-body-responsive">
+          {/* Jenis Laporan (Card Statistik) */}
+          <div style={styles.statsGrid} className="stats-grid-responsive">
             {REPORT_TYPES.map((type) => {
               const isSelected = selectedReport === type.id;
               const IconComp = type.icon;
@@ -825,23 +1599,18 @@ export default function LaporanStok() {
                     setSelectedModulFilter('ALL');
                     setCurrentModulPage(1);
                   }}
+                  className="stat-card-responsive"
                   style={{
-                    ...styles.reportCard,
-                    borderColor: isSelected ? '#23573c' : '#e2e8f0',
-                    backgroundColor: isSelected ? '#f0fdf4' : '#ffffff',
-                    boxShadow: isSelected ? '0 4px 14px rgba(35, 87, 60, 0.12)' : '0 1px 3px rgba(0,0,0,0.05)'
+                    ...styles.statCard,
+                    borderLeft: '4px solid #23573c',
+                    backgroundColor: '#ffffff',
+                    boxShadow: isSelected
+                      ? '0 0 0 2px #23573c, 0 4px 12px rgba(35, 87, 60, 0.08)'
+                      : '0 2px 8px rgba(0, 0, 0, 0.03)'
                   }}
                 >
-                  <div style={styles.cardHeaderRow}>
-                    <div
-                      style={{
-                        ...styles.cardIconBox,
-                        backgroundColor: isSelected ? '#23573c' : '#f1f5f9',
-                        color: isSelected ? '#ffffff' : '#475569'
-                      }}
-                    >
-                      <IconComp sx={{ fontSize: 22 }} />
-                    </div>
+                  <div style={styles.statIconWrapper}>
+                    <IconComp sx={{ fontSize: 24, color: '#23573c' }} />
                   </div>
                   <div style={styles.cardTitleText}>{type.label}</div>
                 </div>
@@ -850,82 +1619,61 @@ export default function LaporanStok() {
           </div>
 
           {/* Toolbar Filter */}
-          <div style={styles.toolbarCard}>
-            <div style={styles.toolbarFlex}>
+          <div style={styles.toolbarCard} className="laporan-toolbar-card">
+            <div style={styles.toolbarFlex} className="laporan-toolbar-flex">
               {/* Filter Tanggal */}
-              <div style={styles.dateFilterContainer}>
+              <div style={styles.dateFilterContainer} className="laporan-date-container">
                 {isSingleDateReport ? (
                   <div
+                    className="laporan-date-box"
                     style={{
                       ...styles.dateRangeWrapper,
                       boxShadow: isDateFocused ? '0 0 0 3px rgba(35, 87, 60, 0.15)' : 'none'
                     }}
-                    onClick={() => setIsDateFocused(true)}
-                    onFocus={() => setIsDateFocused(true)}
-                    onBlur={(e) => {
-                      if (!e.currentTarget.contains(e.relatedTarget)) {
-                        setIsDateFocused(false);
-                      }
-                    }}
                   >
                     <CalendarTodayOutlinedIcon sx={{ color: '#23573c', fontSize: 18, flexShrink: 0 }} />
-                    <input
-                      type="date"
+                    <LaporanPengirimanDatePickerInput
                       value={singleDate}
-                      onChange={(e) => {
-                        setSingleDate(e.target.value);
+                      onChange={(val) => {
+                        setSingleDate(val);
                         setCurrentModulPage(1);
                       }}
-                      onClick={(e) => {
-                        setIsDateFocused(true);
-                        try { e.target.showPicker?.(); } catch {}
-                      }}
-                      style={styles.dateInput}
+                      onOpen={() => setIsDateFocused(true)}
+                      onClose={() => setIsDateFocused(false)}
+                      placeholder="dd/mm/yyyy"
                     />
                   </div>
                 ) : (
                   <div
+                    className="laporan-date-box"
                     style={{
                       ...styles.dateRangeWrapper,
                       boxShadow: isDateFocused ? '0 0 0 3px rgba(35, 87, 60, 0.15)' : 'none'
                     }}
-                    onClick={() => setIsDateFocused(true)}
-                    onFocus={() => setIsDateFocused(true)}
-                    onBlur={(e) => {
-                      if (!e.currentTarget.contains(e.relatedTarget)) {
-                        setIsDateFocused(false);
-                      }
-                    }}
                   >
                     <CalendarTodayOutlinedIcon sx={{ color: '#23573c', fontSize: 18, flexShrink: 0 }} />
-                    <input
-                      type="date"
+                    <LaporanPengirimanDatePickerInput
                       value={startDate}
-                      max={endDate || undefined}
-                      onChange={(e) => {
-                        setStartDate(e.target.value);
+                      onChange={(val) => {
+                        setStartDate(val);
                         setCurrentModulPage(1);
                       }}
-                      onClick={(e) => {
-                        setIsDateFocused(true);
-                        try { e.target.showPicker?.(); } catch {}
-                      }}
-                      style={styles.dateInput}
+                      onOpen={() => setIsDateFocused(true)}
+                      onClose={() => setIsDateFocused(false)}
+                      alignRight={false}
+                      placeholder="dd/mm/yyyy"
                     />
                     <span style={styles.dateSeparator}>s/d</span>
-                    <input
-                      type="date"
+                    <LaporanPengirimanDatePickerInput
                       value={endDate}
-                      min={startDate || undefined}
-                      onChange={(e) => {
-                        setEndDate(e.target.value);
+                      onChange={(val) => {
+                        setEndDate(val);
                         setCurrentModulPage(1);
                       }}
-                      onClick={(e) => {
-                        setIsDateFocused(true);
-                        try { e.target.showPicker?.(); } catch {}
-                      }}
-                      style={styles.dateInput}
+                      onOpen={() => setIsDateFocused(true)}
+                      onClose={() => setIsDateFocused(false)}
+                      alignRight={true}
+                      placeholder="dd/mm/yyyy"
                     />
                   </div>
                 )}
@@ -933,7 +1681,7 @@ export default function LaporanStok() {
 
               {/* Filter Modul */}
               {(selectedReport === 'stok_card' || selectedReport === 'modul_masuk' || selectedReport === 'modul_keluar') && (
-                <div style={styles.modulFilterWrapper}>
+                <div style={styles.modulFilterWrapper} className="laporan-modul-filter-wrapper">
                   <SearchableModulDropdown
                     value={selectedModulFilter}
                     onChange={(val) => {
@@ -946,10 +1694,11 @@ export default function LaporanStok() {
               )}
 
               {/* Unduh Excel */}
-              <div style={{ marginLeft: 'auto' }}>
+              <div className="laporan-export-wrapper" style={{ marginLeft: 'auto' }}>
                 <button
                   type="button"
                   onClick={handleExportExcel}
+                  className="laporan-export-btn"
                   style={styles.btnExportExcel}
                 >
                   <FileDownloadOutlinedIcon sx={{ fontSize: 20 }} />
@@ -960,54 +1709,54 @@ export default function LaporanStok() {
           </div>
 
           {/* Tampilan Tabel */}
-          <div style={styles.tableCard}>
+          <div style={styles.tableCard} className="laporan-table-card">
             {/* Banner Header */}
-            <div style={styles.pdfBannerBox}>
-              <div style={styles.pdfBannerTitle}>{reportBannerTitle}</div>
-              <div style={styles.pdfBannerSubtitle}>{reportBannerSubtitle}</div>
+            <div style={styles.pdfBannerBox} className="laporan-banner-box">
+              <div style={styles.pdfBannerTitle} className="laporan-banner-title">{reportBannerTitle}</div>
+              <div style={styles.pdfBannerSubtitle} className="laporan-banner-subtitle">{reportBannerSubtitle}</div>
             </div>
 
-            <div style={styles.tableResponsive}>
+            <div style={styles.tableResponsive} className="laporan-table-responsive">
               {/* 1. Stok Card */}
               {selectedReport === 'stok_card' && (
-                <div style={{ padding: '0 20px 20px 20px' }}>
+                <div className="laporan-table-content" style={{ padding: '0 20px 20px 20px' }}>
                   {stokCardData.length === 0 ? (
                     <div style={styles.emptyState}>Tidak ada data modul yang sesuai.</div>
                   ) : (
                     <>
                       {paginatedStokCard.map((modul) => (
                         <div key={modul.id} style={styles.modulCardTableWrapper}>
-                          <table style={styles.pdfTable}>
+                          <table style={styles.pdfTable} className="laporan-pdf-table table-stok-card">
                             <thead>
                               <tr style={styles.pdfThRow}>
-                                <th style={{ ...styles.pdfTh, width: '18%', textAlign: 'center' }}>Tanggal</th>
-                                <th style={{ ...styles.pdfTh, width: '46%' }}>{modul.namaModul}</th>
-                                <th style={{ ...styles.pdfTh, width: '12%', textAlign: 'center' }}>M</th>
-                                <th style={{ ...styles.pdfTh, width: '12%', textAlign: 'center' }}>K</th>
-                                <th style={{ ...styles.pdfTh, width: '12%', textAlign: 'center' }}>Saldo</th>
+                                <th style={{ ...styles.pdfTh, width: '18%', textAlign: 'center' }} className="th-stok-tanggal">Tanggal</th>
+                                <th style={{ ...styles.pdfTh, width: '46%' }} className="th-stok-nama">{modul.namaModul}</th>
+                                <th style={{ ...styles.pdfTh, width: '12%', textAlign: 'center' }} className="th-stok-m">M</th>
+                                <th style={{ ...styles.pdfTh, width: '12%', textAlign: 'center' }} className="th-stok-k">K</th>
+                                <th style={{ ...styles.pdfTh, width: '12%', textAlign: 'center' }} className="th-stok-saldo">Saldo</th>
                               </tr>
                             </thead>
                             <tbody>
                               {/* Stok Awal */}
                               <tr style={styles.pdfTr}>
-                                <td style={{ ...styles.pdfTd, textAlign: 'center' }}>{formatTanggalSingkat(startDate)}</td>
-                                <td style={{ ...styles.pdfTd, fontWeight: '600' }}>Stok awal</td>
-                                <td style={{ ...styles.pdfTd, textAlign: 'center' }}></td>
-                                <td style={{ ...styles.pdfTd, textAlign: 'center' }}></td>
-                                <td style={{ ...styles.pdfTd, textAlign: 'center', fontWeight: '600' }}>{modul.stokAwal}</td>
+                                <td style={{ ...styles.pdfTd, textAlign: 'center' }} className="td-stok-tanggal">{formatTanggalSingkat(startDate)}</td>
+                                <td style={{ ...styles.pdfTd, fontWeight: '600' }} className="td-stok-nama">Stok awal</td>
+                                <td style={{ ...styles.pdfTd, textAlign: 'center' }} className="td-stok-m"></td>
+                                <td style={{ ...styles.pdfTd, textAlign: 'center' }} className="td-stok-k"></td>
+                                <td style={{ ...styles.pdfTd, textAlign: 'center', fontWeight: '600' }} className="td-stok-saldo">{modul.stokAwal}</td>
                               </tr>
                               {/* Riwayat Mutasi */}
                               {modul.rows.map((row, rIdx) => (
                                 <tr key={rIdx} style={styles.pdfTr}>
-                                  <td style={{ ...styles.pdfTd, textAlign: 'center' }}>{formatTanggalSingkat(row.tanggal)}</td>
-                                  <td style={styles.pdfTd}>{row.keterangan}</td>
-                                  <td style={{ ...styles.pdfTd, textAlign: 'center', fontWeight: '600' }}>
+                                  <td style={{ ...styles.pdfTd, textAlign: 'center' }} className="td-stok-tanggal">{formatTanggalSingkat(row.tanggal)}</td>
+                                  <td style={styles.pdfTd} className="td-stok-nama">{row.keterangan}</td>
+                                  <td style={{ ...styles.pdfTd, textAlign: 'center', fontWeight: '600' }} className="td-stok-m">
                                     {row.masuk || ''}
                                   </td>
-                                  <td style={{ ...styles.pdfTd, textAlign: 'center', fontWeight: '600' }}>
+                                  <td style={{ ...styles.pdfTd, textAlign: 'center', fontWeight: '600' }} className="td-stok-k">
                                     {row.keluar || ''}
                                   </td>
-                                  <td style={{ ...styles.pdfTd, textAlign: 'center', fontWeight: '600' }}>{row.saldo}</td>
+                                  <td style={{ ...styles.pdfTd, textAlign: 'center', fontWeight: '600' }} className="td-stok-saldo">{row.saldo}</td>
                                 </tr>
                               ))}
                             </tbody>
@@ -1017,15 +1766,16 @@ export default function LaporanStok() {
 
                       {/* Pagination Stok Card */}
                       {stokCardData.length > itemsPerPage && (
-                        <div style={styles.cardFooter}>
+                        <div style={styles.cardFooter} className="laporan-card-footer">
                           <div style={styles.pageInfo}>
                             {stokCardData.length > 0 ? (currentModulPage - 1) * itemsPerPage + 1 : 0} - {Math.min(currentModulPage * itemsPerPage, stokCardData.length)} dari {stokCardData.length}
                           </div>
-                          <div style={styles.paginationButtons}>
+                          <div style={styles.paginationButtons} className="laporan-pagination-buttons">
                             <button
                               type="button"
                               disabled={currentModulPage === 1}
                               onClick={() => setCurrentModulPage((p) => Math.max(1, p - 1))}
+                              className="btn-page-arrow"
                               style={{
                                 ...styles.btnPageArrow,
                                 opacity: currentModulPage === 1 ? 0.4 : 1,
@@ -1040,6 +1790,7 @@ export default function LaporanStok() {
                                 key={num}
                                 type="button"
                                 onClick={() => setCurrentModulPage(num)}
+                                className={`btn-page-num ${currentModulPage === num ? 'active' : ''}`}
                                 style={{
                                   ...styles.btnPageNum,
                                   ...(currentModulPage === num ? styles.btnPageNumActive : {})
@@ -1053,6 +1804,7 @@ export default function LaporanStok() {
                               type="button"
                               disabled={currentModulPage === totalModulPages}
                               onClick={() => setCurrentModulPage((p) => Math.min(totalModulPages, p + 1))}
+                              className="btn-page-arrow"
                               style={{
                                 ...styles.btnPageArrow,
                                 opacity: currentModulPage === totalModulPages ? 0.4 : 1,
@@ -1071,13 +1823,13 @@ export default function LaporanStok() {
 
               {/* 2. Stok Balance */}
               {selectedReport === 'stok_balance' && (
-                <div style={{ padding: '0 20px 20px 20px' }}>
-                  <table style={styles.pdfTable}>
+                <div className="laporan-table-content" style={{ padding: '0 20px 20px 20px' }}>
+                  <table style={styles.pdfTable} className="laporan-pdf-table table-stok-balance">
                     <thead>
                       <tr style={styles.pdfThRow}>
-                        <th style={{ ...styles.pdfTh, width: '10%', textAlign: 'center' }}>No</th>
-                        <th style={{ ...styles.pdfTh, width: '68%' }}>Nama Modul</th>
-                        <th style={{ ...styles.pdfTh, width: '22%', textAlign: 'center' }}>Jumlah</th>
+                        <th style={{ ...styles.pdfTh, width: '10%', textAlign: 'center' }} className="th-balance-no">No</th>
+                        <th style={{ ...styles.pdfTh, width: '68%' }} className="th-balance-nama">Nama Modul</th>
+                        <th style={{ ...styles.pdfTh, width: '22%', textAlign: 'center' }} className="th-balance-jumlah">Jumlah</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1088,9 +1840,9 @@ export default function LaporanStok() {
                       ) : (
                         paginatedStokBalance.map((row) => (
                           <tr key={row.id} style={styles.pdfTr}>
-                            <td style={{ ...styles.pdfTd, textAlign: 'center' }}>{row.no}</td>
-                            <td style={styles.pdfTd}>{row.namaModul}</td>
-                            <td style={{ ...styles.pdfTd, textAlign: 'center' }}>
+                            <td style={{ ...styles.pdfTd, textAlign: 'center' }} className="td-balance-no">{row.no}</td>
+                            <td style={styles.pdfTd} className="td-balance-nama">{row.namaModul}</td>
+                            <td style={{ ...styles.pdfTd, textAlign: 'center' }} className="td-balance-jumlah">
                               {row.stokAkhir}
                             </td>
                           </tr>
@@ -1101,15 +1853,16 @@ export default function LaporanStok() {
 
                   {/* Pagination Stok Balance */}
                   {stokBalanceData.length > itemsPerPageBalance && (
-                    <div style={styles.cardFooter}>
+                    <div style={styles.cardFooter} className="laporan-card-footer">
                       <div style={styles.pageInfo}>
                         {stokBalanceData.length > 0 ? (currentModulPage - 1) * itemsPerPageBalance + 1 : 0} - {Math.min(currentModulPage * itemsPerPageBalance, stokBalanceData.length)} dari {stokBalanceData.length}
                       </div>
-                      <div style={styles.paginationButtons}>
+                      <div style={styles.paginationButtons} className="laporan-pagination-buttons">
                         <button
                           type="button"
                           disabled={currentModulPage === 1}
                           onClick={() => setCurrentModulPage((p) => Math.max(1, p - 1))}
+                          className="btn-page-arrow"
                           style={{
                             ...styles.btnPageArrow,
                             opacity: currentModulPage === 1 ? 0.4 : 1,
@@ -1124,6 +1877,7 @@ export default function LaporanStok() {
                             key={num}
                             type="button"
                             onClick={() => setCurrentModulPage(num)}
+                            className={`btn-page-num ${currentModulPage === num ? 'active' : ''}`}
                             style={{
                               ...styles.btnPageNum,
                               ...(currentModulPage === num ? styles.btnPageNumActive : {})
@@ -1137,6 +1891,7 @@ export default function LaporanStok() {
                           type="button"
                           disabled={currentModulPage === totalBalancePages}
                           onClick={() => setCurrentModulPage((p) => Math.min(totalBalancePages, p + 1))}
+                          className="btn-page-arrow"
                           style={{
                             ...styles.btnPageArrow,
                             opacity: currentModulPage === totalBalancePages ? 0.4 : 1,
@@ -1153,132 +1908,175 @@ export default function LaporanStok() {
 
               {/* 3 & 4. Customer Sudah/Belum Dikirim */}
               {(selectedReport === 'sudah_dikirim' || selectedReport === 'belum_dikirim') && (
-                <div style={{ padding: '0 20px 24px 20px' }}>
-                  <table style={styles.pdfTable}>
-                    <thead>
-                      <tr style={styles.pdfThRow}>
-                        <th style={{ ...styles.pdfTh, width: '12%', textAlign: 'center' }}>
-                          {selectedReport === 'sudah_dikirim' ? 'Tanggal Kirim' : 'Tanggal Pesan'}
-                        </th>
-                        <th style={{ ...styles.pdfTh, width: '12%', textAlign: 'center' }}>No Pesanan</th>
-                        <th style={{ ...styles.pdfTh, width: '16%' }}>Nama</th>
-                        <th style={{ ...styles.pdfTh, width: '14%' }}>Metode Pengiriman</th>
-                        <th style={{ ...styles.pdfTh, width: '18%' }}>Pesanan</th>
-                        <th style={{ ...styles.pdfTh, width: '6%', textAlign: 'center' }}>Jumlah</th>
-                        <th style={{ ...styles.pdfTh, width: '22%' }}>Alamat</th>
-                        <th style={{ ...styles.pdfTh, width: '10%', textAlign: 'center' }}>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {customerShippingData.length === 0 ? (
-                        <tr>
-                          <td colSpan={8} style={styles.emptyState}>
-                            Tidak ada data customer {selectedReport === 'sudah_dikirim' ? 'sudah dikirim' : 'belum dikirim'} pada periode ini.
-                          </td>
+                <div className="laporan-table-content" style={{ padding: '0 20px 24px 20px' }}>
+                  {/* Desktop Table */}
+                  <div className="laporan-customer-desktop-table">
+                    <table style={styles.pdfTable} className="laporan-pdf-table">
+                      <thead>
+                        <tr style={styles.pdfThRow}>
+                          <th style={{ ...styles.pdfTh, width: '11%', textAlign: 'center' }}>
+                            {selectedReport === 'sudah_dikirim' ? 'Tanggal Kirim' : 'Tanggal Pesan'}
+                          </th>
+                          <th style={{ ...styles.pdfTh, width: '12%', textAlign: 'center' }}>No Pesanan</th>
+                          <th style={{ ...styles.pdfTh, width: '15%' }}>Nama</th>
+                          <th style={{ ...styles.pdfTh, width: '14%' }}>Metode Pengiriman</th>
+                          <th style={{ ...styles.pdfTh, width: '16%' }}>Pesanan</th>
+                          <th style={{ ...styles.pdfTh, width: '6%', textAlign: 'center' }}>Jumlah</th>
+                          <th style={{ ...styles.pdfTh, width: '14%' }}>Alamat</th>
+                          <th style={{ ...styles.pdfTh, width: '12%', textAlign: 'center', minWidth: '105px' }}>Status</th>
                         </tr>
-                      ) : (
-                        customerShippingData.map((order) => {
-                          const rowSpan = order.items.length;
+                      </thead>
+                      <tbody>
+                        {customerShippingData.length === 0 ? (
+                          <tr>
+                            <td colSpan={8} style={styles.emptyState}>
+                              Tidak ada data customer {selectedReport === 'sudah_dikirim' ? 'sudah dikirim' : 'belum dikirim'} pada periode ini.
+                            </td>
+                          </tr>
+                        ) : (
+                          customerShippingData.map((order) => {
+                            const rowSpan = order.items.length;
 
-                          return order.items.map((item, itemIdx) => {
-                            const isFirstItem = itemIdx === 0;
+                            return order.items.map((item, itemIdx) => {
+                              const isFirstItem = itemIdx === 0;
 
-                            return (
-                              <tr key={`${order.noPesanan}-${itemIdx}`} style={styles.pdfTr}>
-                                {isFirstItem && (
-                                  <>
-                                    <td
-                                      rowSpan={rowSpan}
-                                      style={{
-                                        ...styles.pdfTd,
-                                        textAlign: 'center',
-                                        verticalAlign: 'middle'
-                                      }}
-                                    >
-                                      {formatTanggalSingkat(order.tanggal)}
-                                    </td>
-                                    <td
-                                      rowSpan={rowSpan}
-                                      style={{
-                                        ...styles.pdfTd,
-                                        textAlign: 'center',
-                                        verticalAlign: 'middle'
-                                      }}
-                                    >
-                                      {order.noPesanan}
-                                    </td>
-                                    <td
-                                      rowSpan={rowSpan}
-                                      style={{
-                                        ...styles.pdfTd,
-                                        verticalAlign: 'middle'
-                                      }}
-                                    >
-                                      {order.nama}
-                                    </td>
-                                    <td
-                                      rowSpan={rowSpan}
-                                      style={{
-                                        ...styles.pdfTd,
-                                        verticalAlign: 'middle'
-                                      }}
-                                    >
-                                      {order.metode}
-                                    </td>
-                                  </>
-                                )}
+                              return (
+                                <tr key={`${order.noPesanan}-${itemIdx}`} style={styles.pdfTr}>
+                                  {isFirstItem && (
+                                    <>
+                                      <td
+                                        rowSpan={rowSpan}
+                                        style={{
+                                          ...styles.pdfTd,
+                                          textAlign: 'center',
+                                          verticalAlign: 'middle'
+                                        }}
+                                      >
+                                        {formatTanggalSingkat(order.tanggal)}
+                                      </td>
+                                      <td
+                                        rowSpan={rowSpan}
+                                        style={{
+                                          ...styles.pdfTd,
+                                          textAlign: 'center',
+                                          verticalAlign: 'middle'
+                                        }}
+                                      >
+                                        {order.noPesanan}
+                                      </td>
+                                      <td
+                                        rowSpan={rowSpan}
+                                        style={{
+                                          ...styles.pdfTd,
+                                          verticalAlign: 'middle'
+                                        }}
+                                      >
+                                        {order.nama}
+                                      </td>
+                                      <td
+                                        rowSpan={rowSpan}
+                                        style={{
+                                          ...styles.pdfTd,
+                                          verticalAlign: 'middle'
+                                        }}
+                                      >
+                                        {order.metode}
+                                      </td>
+                                    </>
+                                  )}
 
-                                {/* Pesanan & Qty */}
-                                <td style={styles.pdfTd}>
-                                  {item.nama}
-                                </td>
-                                <td
-                                  style={{
-                                    ...styles.pdfTd,
-                                    textAlign: 'center'
-                                  }}
-                                >
-                                  {item.qty}
-                                </td>
+                                  {/* Pesanan & Qty */}
+                                  <td style={styles.pdfTd}>
+                                    {item.nama}
+                                  </td>
+                                  <td
+                                    style={{
+                                      ...styles.pdfTd,
+                                      textAlign: 'center'
+                                    }}
+                                  >
+                                    {item.qty}
+                                  </td>
 
-                                {isFirstItem && (
-                                  <>
-                                    <td
-                                      rowSpan={rowSpan}
-                                      style={{
-                                        ...styles.pdfTd,
-                                        verticalAlign: 'middle'
-                                      }}
-                                    >
-                                      {order.alamat}
-                                    </td>
-                                    <td
-                                      rowSpan={rowSpan}
-                                      style={{
-                                        ...styles.pdfTd,
-                                        textAlign: 'center',
-                                        verticalAlign: 'middle'
-                                      }}
-                                    >
-                                      <span style={order.status === 'Sudah dikirim' ? styles.statusPillGreen : styles.statusPillYellow}>
-                                        {order.status}
-                                      </span>
-                                    </td>
-                                  </>
-                                )}
-                              </tr>
-                            );
-                          });
-                        })
-                      )}
-                    </tbody>
-                  </table>
+                                  {isFirstItem && (
+                                    <>
+                                      <td
+                                        rowSpan={rowSpan}
+                                        style={{
+                                          ...styles.pdfTd,
+                                          verticalAlign: 'middle'
+                                        }}
+                                      >
+                                        {order.alamat}
+                                      </td>
+                                      <td
+                                        rowSpan={rowSpan}
+                                        style={{
+                                          ...styles.pdfTd,
+                                          textAlign: 'center',
+                                          verticalAlign: 'middle',
+                                          whiteSpace: 'nowrap'
+                                        }}
+                                      >
+                                        <span style={order.status === 'Sudah dikirim' ? styles.statusPillGreen : styles.statusPillYellow}>
+                                          {order.status}
+                                        </span>
+                                      </td>
+                                    </>
+                                  )}
+                                </tr>
+                              );
+                            });
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Responsive Mobile Card */}
+                  <div className="laporan-customer-mobile-cards">
+                    {customerShippingData.length === 0 ? (
+                      <div style={styles.emptyState}>
+                        Tidak ada data customer {selectedReport === 'sudah_dikirim' ? 'sudah dikirim' : 'belum dikirim'} pada periode ini.
+                      </div>
+                    ) : (
+                      customerShippingData.map((order) => (
+                        <div key={order.noPesanan} className="laporan-order-card-item">
+                          <div className="laporan-order-card-header">
+                            <div>
+                              <span className="laporan-order-no">{order.noPesanan}</span>
+                              <span className="laporan-order-date"> • {formatTanggalSingkat(order.tanggal)}</span>
+                            </div>
+                            <span style={order.status === 'Sudah dikirim' ? styles.statusPillGreen : styles.statusPillYellow}>
+                              {order.status}
+                            </span>
+                          </div>
+
+                          <div className="laporan-order-card-body">
+                            <div className="laporan-order-name">{order.nama}</div>
+                            <div className="laporan-order-method">{order.metode}</div>
+                            <div className="laporan-order-address">{order.alamat}</div>
+
+                            <div className="laporan-order-items-wrapper">
+                              <div className="laporan-order-items-title">Pesanan:</div>
+                              {order.items.map((it, idx) => (
+                                <div key={idx} className="laporan-order-item-row">
+                                  <span className="laporan-order-item-nama">{it.nama}</span>
+                                  <span className="laporan-order-item-qty">{it.qty} modul</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
               )}
 
               {/* 5 & 6. Modul Masuk & Keluar */}
               {(selectedReport === 'modul_masuk' || selectedReport === 'modul_keluar') && (
-                <div style={{ padding: '0 20px 24px 20px' }}>
+                <div className="laporan-table-content" style={{ padding: '0 20px 24px 20px' }}>
                   {modulMutasiGroupedData.length === 0 ? (
                     <div style={styles.emptyState}>Tidak ada data modul yang sesuai.</div>
                   ) : (
@@ -1290,27 +2088,27 @@ export default function LaporanStok() {
                             {modul.namaModul}
                           </div>
 
-                          <table style={styles.pdfTable}>
+                          <table style={styles.pdfTable} className="laporan-pdf-table table-modul-mutasi">
                             <thead>
                               <tr style={styles.pdfThRow}>
-                                <th style={{ ...styles.pdfTh, width: '22%', textAlign: 'center' }}>Tanggal</th>
-                                <th style={{ ...styles.pdfTh, width: '58%' }}>Keterangan</th>
-                                <th style={{ ...styles.pdfTh, width: '20%', textAlign: 'center' }}>Jumlah</th>
+                                <th style={{ ...styles.pdfTh, width: '22%', textAlign: 'center' }} className="th-mutasi-tanggal">Tanggal</th>
+                                <th style={{ ...styles.pdfTh, width: '58%' }} className="th-mutasi-keterangan">Keterangan</th>
+                                <th style={{ ...styles.pdfTh, width: '20%', textAlign: 'center' }} className="th-mutasi-jumlah">Jumlah</th>
                               </tr>
                             </thead>
                             <tbody>
                               {modul.rows.length === 0 ? (
                                 <tr style={styles.pdfTr}>
-                                  <td style={{ ...styles.pdfTd, textAlign: 'center', color: '#64748b' }}>-</td>
-                                  <td style={{ ...styles.pdfTd, color: '#64748b' }}>-</td>
-                                  <td style={{ ...styles.pdfTd, textAlign: 'center', fontWeight: '600' }}>0</td>
+                                  <td style={{ ...styles.pdfTd, textAlign: 'center', color: '#64748b' }} className="td-mutasi-tanggal">-</td>
+                                  <td style={{ ...styles.pdfTd, color: '#64748b' }} className="td-mutasi-keterangan">-</td>
+                                  <td style={{ ...styles.pdfTd, textAlign: 'center', fontWeight: '600' }} className="td-mutasi-jumlah">0</td>
                                 </tr>
                               ) : (
                                 modul.rows.map((row, rIdx) => (
                                   <tr key={rIdx} style={styles.pdfTr}>
-                                    <td style={{ ...styles.pdfTd, textAlign: 'center' }}>{formatTanggalSingkat(row.tanggal)}</td>
-                                    <td style={styles.pdfTd}>{row.keterangan}</td>
-                                    <td style={{ ...styles.pdfTd, textAlign: 'center', fontWeight: '600' }}>{row.jumlah}</td>
+                                    <td style={{ ...styles.pdfTd, textAlign: 'center' }} className="td-mutasi-tanggal">{formatTanggalSingkat(row.tanggal)}</td>
+                                    <td style={styles.pdfTd} className="td-mutasi-keterangan">{row.keterangan}</td>
+                                    <td style={{ ...styles.pdfTd, textAlign: 'center', fontWeight: '600' }} className="td-mutasi-jumlah">{row.jumlah}</td>
                                   </tr>
                                 ))
                               )}
@@ -1318,6 +2116,7 @@ export default function LaporanStok() {
                               <tr style={styles.totalRow}>
                                 <td
                                   colSpan={2}
+                                  className="td-mutasi-total-label"
                                   style={{
                                     ...styles.pdfTd,
                                     fontWeight: '700',
@@ -1328,6 +2127,7 @@ export default function LaporanStok() {
                                   Total
                                 </td>
                                 <td
+                                  className="td-mutasi-total-val"
                                   style={{
                                     ...styles.pdfTd,
                                     textAlign: 'center',
@@ -1344,15 +2144,16 @@ export default function LaporanStok() {
 
                       {/* Pagination Modul Mutasi */}
                       {modulMutasiGroupedData.length > itemsPerPage && (
-                        <div style={styles.cardFooter}>
+                        <div style={styles.cardFooter} className="laporan-card-footer">
                           <div style={styles.pageInfo}>
                             {modulMutasiGroupedData.length > 0 ? (currentModulPage - 1) * itemsPerPage + 1 : 0} - {Math.min(currentModulPage * itemsPerPage, modulMutasiGroupedData.length)} dari {modulMutasiGroupedData.length}
                           </div>
-                          <div style={styles.paginationButtons}>
+                          <div style={styles.paginationButtons} className="laporan-pagination-buttons">
                             <button
                               type="button"
                               disabled={currentModulPage === 1}
                               onClick={() => setCurrentModulPage((p) => Math.max(1, p - 1))}
+                              className="btn-page-arrow"
                               style={{
                                 ...styles.btnPageArrow,
                                 opacity: currentModulPage === 1 ? 0.4 : 1,
@@ -1367,6 +2168,7 @@ export default function LaporanStok() {
                                 key={num}
                                 type="button"
                                 onClick={() => setCurrentModulPage(num)}
+                                className={`btn-page-num ${currentModulPage === num ? 'active' : ''}`}
                                 style={{
                                   ...styles.btnPageNum,
                                   ...(currentModulPage === num ? styles.btnPageNumActive : {})
@@ -1380,6 +2182,7 @@ export default function LaporanStok() {
                               type="button"
                               disabled={currentModulPage === totalMutasiPages}
                               onClick={() => setCurrentModulPage((p) => Math.min(totalMutasiPages, p + 1))}
+                              className="btn-page-arrow"
                               style={{
                                 ...styles.btnPageArrow,
                                 opacity: currentModulPage === totalMutasiPages ? 0.4 : 1,
@@ -1403,7 +2206,6 @@ export default function LaporanStok() {
   );
 }
 
-// Styles
 const styles = {
   layoutContainer: {
     display: 'flex',
@@ -1424,40 +2226,44 @@ const styles = {
     margin: '0 auto',
     boxSizing: 'border-box'
   },
-  reportTypesGrid: {
+  statsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+    gridTemplateColumns: 'repeat(3, 1fr)',
     gap: '14px',
     marginBottom: '20px'
   },
-  reportCard: {
-    border: '1.5px solid #e2e8f0',
-    borderRadius: '12px',
-    padding: '16px',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    display: 'flex',
-    flexDirection: 'column'
-  },
-  cardHeaderRow: {
+  statCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: '14px',
+    border: '1px solid #eef2ef',
+    borderLeft: '4px solid #23573c',
+    padding: '16px 20px',
     display: 'flex',
     alignItems: 'center',
-    marginBottom: '12px'
+    gap: '14px',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.03)',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    userSelect: 'none',
+    boxSizing: 'border-box'
   },
-  cardIconBox: {
-    width: '42px',
-    height: '42px',
-    borderRadius: '10px',
+  statIconWrapper: {
+    width: '44px',
+    height: '44px',
+    borderRadius: '12px',
+    backgroundColor: '#e8f5ed',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    transition: 'all 0.2s ease'
+    flexShrink: 0
   },
   cardTitleText: {
     fontSize: '15px',
     fontWeight: '700',
-    color: '#0f172a',
-    margin: 0
+    color: '#1a3e2b',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
   },
   toolbarCard: {
     backgroundColor: '#ffffff',
@@ -1572,7 +2378,8 @@ const styles = {
   },
   tableResponsive: {
     overflowX: 'auto',
-    width: '100%'
+    width: '100%',
+    WebkitOverflowScrolling: 'touch'
   },
   pdfTable: {
     width: '100%',
@@ -1605,29 +2412,41 @@ const styles = {
     backgroundColor: '#f8fafc'
   },
   statusPillGreen: {
-    display: 'inline-block',
-    padding: '3px 8px',
-    borderRadius: '4px',
-    fontSize: '12px',
-    fontWeight: '600',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '4px 12px',
+    borderRadius: '6px',
+    fontSize: '11.5px',
+    fontWeight: '700',
+    letterSpacing: '0.3px',
     backgroundColor: '#dcfce7',
-    color: '#166534'
+    color: '#16a34a',
+    border: '1px solid #16a34a',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
   },
   statusPillYellow: {
-    display: 'inline-block',
-    padding: '3px 8px',
-    borderRadius: '4px',
-    fontSize: '12px',
-    fontWeight: '600',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '4px 12px',
+    borderRadius: '6px',
+    fontSize: '11.5px',
+    fontWeight: '700',
+    letterSpacing: '0.3px',
     backgroundColor: '#fef3c7',
-    color: '#92400e'
+    color: '#d97706',
+    border: '1px solid #d97706',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
   },
   emptyState: {
     textAlign: 'center',
-    padding: '30px',
+    padding: '36px 20px',
     color: '#64748b',
-    fontSize: '13.5px',
-    fontStyle: 'italic'
+    fontSize: '14px',
+    fontWeight: '500'
   },
   cardFooter: {
     display: 'flex',
