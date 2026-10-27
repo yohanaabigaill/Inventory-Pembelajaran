@@ -130,7 +130,7 @@ const DATA_PESANAN_PENGIRIMAN = [
     tanggalKirim: '',
     namaPembeli: 'Hendra Pratama',
     metode: 'Titip ke Ustazah',
-    alamat: 'Titip ke Ustazah Fatimah Azzahra (Kavling Baru)',
+    alamat: 'Titip ke Ustazah Fatimah Azzahra',
     status: 'Belum dikirim',
     items: [
       { nama: 'Tahmidi', qty: 4 }
@@ -414,7 +414,7 @@ function LaporanPengirimanDatePickerInput({
     try {
       const [y, m, d] = dStr.split('-');
       if (!y || !m || !d) return dStr;
-      return `${String(parseInt(m, 10)).padStart(2, '0')}/${String(parseInt(d, 10)).padStart(2, '0')}/${y}`;
+      return `${String(parseInt(d, 10)).padStart(2, '0')}/${String(parseInt(m, 10)).padStart(2, '0')}/${y}`;
     } catch {
       return dStr;
     }
@@ -903,7 +903,7 @@ function LaporanPengirimanDatePickerInput({
   );
 }
 
-// Dropdown Filter Modul
+// Dropdown Filter Modul Multi-Select
 function SearchableModulDropdown({ value, onChange, options = [] }) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -928,8 +928,25 @@ function SearchableModulDropdown({ value, onChange, options = [] }) {
     }
   }, [isOpen]);
 
-  const selectedOpt = options.find((o) => o.value === value);
-  const displayLabel = selectedOpt ? selectedOpt.label : 'Semua Modul';
+  const selectedValues = useMemo(() => {
+    if (!value) return ['ALL'];
+    if (Array.isArray(value)) {
+      return value.length === 0 ? ['ALL'] : value;
+    }
+    return [value];
+  }, [value]);
+
+  const isAllSelected = selectedValues.includes('ALL') || selectedValues.length === 0;
+
+  // Label tombol dropdown
+  const displayLabel = useMemo(() => {
+    if (isAllSelected) return 'Semua Modul';
+    if (selectedValues.length === 1) {
+      const opt = options.find((o) => o.value === selectedValues[0]);
+      return opt ? opt.label : selectedValues[0];
+    }
+    return `${selectedValues.length} Modul Terpilih`;
+  }, [isAllSelected, selectedValues, options]);
 
   const filteredOptions = useMemo(() => {
     if (!search.trim()) return options;
@@ -937,10 +954,27 @@ function SearchableModulDropdown({ value, onChange, options = [] }) {
     return options.filter((o) => o.label.toLowerCase().includes(q));
   }, [options, search]);
 
-  const handleSelect = (val) => {
-    onChange(val);
-    setIsOpen(false);
-    setSearch('');
+  const handleToggleItem = (val) => {
+    if (val === 'ALL') {
+      onChange(['ALL']);
+      return;
+    }
+
+    let nextValues;
+    if (isAllSelected) {
+      nextValues = [val];
+    } else {
+      if (selectedValues.includes(val)) {
+        nextValues = selectedValues.filter((v) => v !== val && v !== 'ALL');
+        if (nextValues.length === 0) {
+          nextValues = ['ALL'];
+        }
+      } else {
+        nextValues = [...selectedValues.filter((v) => v !== 'ALL'), val];
+      }
+    }
+
+    onChange(nextValues);
   };
 
   const handleTriggerClick = () => {
@@ -957,10 +991,11 @@ function SearchableModulDropdown({ value, onChange, options = [] }) {
     <div
       ref={containerRef}
       className="laporan-dropdown-container"
-      style={{ position: 'relative', userSelect: 'none', minWidth: '170px' }}
+      style={{ position: 'relative', userSelect: 'none' }}
     >
       <div
         onClick={handleTriggerClick}
+        title={isAllSelected ? 'Semua Modul' : selectedValues.join(', ')}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -968,21 +1003,25 @@ function SearchableModulDropdown({ value, onChange, options = [] }) {
           cursor: 'pointer',
           minHeight: '38px',
           height: '38px',
-          padding: '0 14px',
+          padding: '0 12px',
           borderRadius: '10px',
           backgroundColor: '#f6faf7',
           border: '1px solid #23573c',
           boxSizing: 'border-box',
           boxShadow: isOpen ? '0 0 0 3px rgba(35, 87, 60, 0.15)' : 'none',
           transition: 'all 0.2s ease',
-          fontSize: '13.5px',
+          fontSize: '13px',
           fontWeight: '600',
-          color: '#1a3e2b'
+          color: '#1a3e2b',
+          gap: '6px'
         }}
       >
-        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {displayLabel}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', overflow: 'hidden', minWidth: 0, flex: 1 }}>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {displayLabel}
+          </span>
+        </div>
+
         <svg
           width="12"
           height="12"
@@ -993,8 +1032,7 @@ function SearchableModulDropdown({ value, onChange, options = [] }) {
           style={{
             transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
             transition: 'transform 0.2s ease',
-            flexShrink: 0,
-            marginLeft: '8px'
+            flexShrink: 0
           }}
         >
           <polyline points="6 9 12 15 18 9" />
@@ -1009,6 +1047,7 @@ function SearchableModulDropdown({ value, onChange, options = [] }) {
             top: 'calc(100% + 4px)',
             left: 0,
             right: 0,
+            minWidth: '240px',
             backgroundColor: '#ffffff',
             border: '1px solid #23573c',
             borderRadius: '10px',
@@ -1020,7 +1059,7 @@ function SearchableModulDropdown({ value, onChange, options = [] }) {
           }}
         >
           {/* Input Pencarian */}
-          <div style={{ padding: '6px 8px', borderBottom: '1px solid #eef2ef', backgroundColor: '#f8faf9' }}>
+          <div style={{ padding: '6px 8px', borderBottom: '1px solid #eef2ef', backgroundColor: '#ffffff' }}>
             <input
               ref={searchInputRef}
               type="text"
@@ -1037,38 +1076,73 @@ function SearchableModulDropdown({ value, onChange, options = [] }) {
                 outline: 'none',
                 boxSizing: 'border-box',
                 fontFamily: 'inherit',
-                backgroundColor: '#ffffff',
+                backgroundColor: '#f8faf9',
                 color: '#1a3e2b'
               }}
             />
           </div>
 
           {/* Opsi Modul */}
-          <div style={{ maxHeight: '220px', overflowY: 'auto' }}>
+          <div style={{ maxHeight: '230px', overflowY: 'auto' }}>
             {filteredOptions.length === 0 ? (
               <div style={{ padding: '10px 14px', fontSize: '13px', color: '#94a3b8' }}>
                 Modul tidak ditemukan
               </div>
             ) : (
               filteredOptions.map((opt) => {
-                const isSelected = opt.value === value;
+                const isItemAll = opt.value === 'ALL';
+                const isSelected = isItemAll ? isAllSelected : selectedValues.includes(opt.value);
 
                 return (
                   <div
                     key={opt.value}
-                    onClick={() => handleSelect(opt.value)}
-                    className="custom-dropdown-item"
+                    onClick={() => handleToggleItem(opt.value)}
+                    className={`laporan-modul-multiselect-item ${isSelected ? 'selected' : ''}`}
                     style={{
-                      padding: '10px 14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '9px 12px',
                       fontSize: '13px',
                       fontWeight: isSelected ? '700' : '500',
-                      color: isSelected ? '#ffffff' : '#1e293b',
-                      backgroundColor: isSelected ? '#23573c' : 'transparent',
+                      color: isSelected ? '#1b4332' : '#1e293b',
+                      backgroundColor: isSelected ? '#f2f8f4' : 'transparent',
                       cursor: 'pointer',
-                      transition: 'background-color 0.15s ease, color 0.15s ease'
+                      userSelect: 'none'
                     }}
                   >
-                    {opt.label}
+                    <div
+                      style={{
+                        width: '16px',
+                        height: '16px',
+                        borderRadius: '4px',
+                        border: isSelected ? '1px solid #23573c' : '1px solid #cbd5e1',
+                        backgroundColor: isSelected ? '#23573c' : '#ffffff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginRight: '10px',
+                        flexShrink: 0,
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      {isSelected && (
+                        <svg
+                          width="11"
+                          height="11"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="#ffffff"
+                          strokeWidth="3.2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      )}
+                    </div>
+                    <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {opt.label}
+                    </span>
                   </div>
                 );
               })
@@ -1088,15 +1162,11 @@ export default function LaporanStok() {
   const [startDate, setStartDate] = useState('2026-10-01');
   const [endDate, setEndDate] = useState('2026-10-31');
   const [singleDate, setSingleDate] = useState('2026-10-31');
-  const [selectedModulFilter, setSelectedModulFilter] = useState('ALL');
+  const [selectedModulFilter, setSelectedModulFilter] = useState(['ALL']);
 
   // State Focus Filter Tanggal
   const [isDateFocused, setIsDateFocused] = useState(false);
 
-  // State Pagination
-  const [currentModulPage, setCurrentModulPage] = useState(1);
-  const itemsPerPage = 5;
-  const itemsPerPageBalance = 10;
 
   const isSingleDateReport = selectedReport === 'stok_balance';
 
@@ -1117,6 +1187,19 @@ export default function LaporanStok() {
     return formatPeriodeBanner(isSingleDateReport ? singleDate : startDate, endDate, isSingleDateReport);
   }, [startDate, endDate, singleDate, isSingleDateReport]);
 
+  // Max width untuk tabel di web
+  const reportMaxWidth = useMemo(() => {
+    switch (selectedReport) {
+      case 'stok_card': return '840px';
+      case 'stok_balance': return '580px';
+      case 'modul_masuk':
+      case 'modul_keluar': return '750px';
+      case 'sudah_dikirim':
+      case 'belum_dikirim': return '1060px';
+      default: return '100%';
+    }
+  }, [selectedReport]);
+
   // Options Dropdown Filter Modul
   const modulDropdownOptions = useMemo(() => {
     const list = [{ value: 'ALL', label: 'Semua Modul' }];
@@ -1129,7 +1212,9 @@ export default function LaporanStok() {
   // 1. Data Stok Card
   const stokCardData = useMemo(() => {
     const targetModuls = MASTER_MODULS.filter((m) => {
-      if (selectedModulFilter !== 'ALL' && m.nama !== selectedModulFilter) return false;
+      if (selectedModulFilter && selectedModulFilter.length > 0 && !selectedModulFilter.includes('ALL')) {
+        return selectedModulFilter.includes(m.nama);
+      }
       return true;
     });
 
@@ -1190,19 +1275,14 @@ export default function LaporanStok() {
     });
   }, [startDate, endDate, selectedModulFilter]);
 
-  // Pagination Stok Card
-  const totalModulPages = Math.ceil(stokCardData.length / itemsPerPage) || 1;
-  const paginatedStokCard = useMemo(() => {
-    const start = (currentModulPage - 1) * itemsPerPage;
-    return stokCardData.slice(start, start + itemsPerPage);
-  }, [stokCardData, currentModulPage, itemsPerPage]);
-
   // 2. Data Stok Balance
   const stokBalanceData = useMemo(() => {
     const targetDate = singleDate || '2026-10-31';
 
     const targetModuls = MASTER_MODULS.filter((m) => {
-      if (selectedModulFilter !== 'ALL' && m.nama !== selectedModulFilter) return false;
+      if (selectedModulFilter && selectedModulFilter.length > 0 && !selectedModulFilter.includes('ALL')) {
+        return selectedModulFilter.includes(m.nama);
+      }
       return true;
     });
 
@@ -1220,13 +1300,6 @@ export default function LaporanStok() {
       };
     });
   }, [singleDate, selectedModulFilter]);
-
-  // Pagination Stok Balance
-  const totalBalancePages = Math.ceil(stokBalanceData.length / itemsPerPageBalance) || 1;
-  const paginatedStokBalance = useMemo(() => {
-    const start = (currentModulPage - 1) * itemsPerPageBalance;
-    return stokBalanceData.slice(start, start + itemsPerPageBalance);
-  }, [stokBalanceData, currentModulPage, itemsPerPageBalance]);
 
   // 3 & 4. Data Customer Sudah/Belum Dikirim
   const customerShippingData = useMemo(() => {
@@ -1254,7 +1327,9 @@ export default function LaporanStok() {
     const targetType = isMasuk ? 'MASUK' : 'KELUAR';
 
     const targetModuls = MASTER_MODULS.filter((m) => {
-      if (selectedModulFilter !== 'ALL' && m.nama !== selectedModulFilter) return false;
+      if (selectedModulFilter && selectedModulFilter.length > 0 && !selectedModulFilter.includes('ALL')) {
+        return selectedModulFilter.includes(m.nama);
+      }
       return true;
     });
 
@@ -1280,13 +1355,6 @@ export default function LaporanStok() {
       };
     });
   }, [selectedReport, startDate, endDate, selectedModulFilter]);
-
-  // Pagination Modul 
-  const totalMutasiPages = Math.ceil(modulMutasiGroupedData.length / itemsPerPage) || 1;
-  const paginatedModulMutasi = useMemo(() => {
-    const start = (currentModulPage - 1) * itemsPerPage;
-    return modulMutasiGroupedData.slice(start, start + itemsPerPage);
-  }, [modulMutasiGroupedData, currentModulPage, itemsPerPage]);
 
   // Ekspor Excel (.xlsx)
   const handleExportExcel = () => {
@@ -1385,8 +1453,8 @@ export default function LaporanStok() {
         aoa.push([
           cellHeader('Tanggal', 'center'),
           cellHeader(modul.namaModul, 'left'),
-          cellHeader('M', 'center'),
-          cellHeader('K', 'center'),
+          cellHeader('Masuk', 'center'),
+          cellHeader('Keluar', 'center'),
           cellHeader('Saldo', 'center')
         ]);
 
@@ -1596,8 +1664,10 @@ export default function LaporanStok() {
                   key={type.id}
                   onClick={() => {
                     setSelectedReport(type.id);
-                    setSelectedModulFilter('ALL');
-                    setCurrentModulPage(1);
+                    setSelectedModulFilter(['ALL']);
+                    setStartDate('2026-10-01');
+                    setEndDate('2026-10-31');
+                    setSingleDate('2026-10-31');
                   }}
                   className="stat-card-responsive"
                   style={{
@@ -1634,10 +1704,7 @@ export default function LaporanStok() {
                     <CalendarTodayOutlinedIcon sx={{ color: '#23573c', fontSize: 18, flexShrink: 0 }} />
                     <LaporanPengirimanDatePickerInput
                       value={singleDate}
-                      onChange={(val) => {
-                        setSingleDate(val);
-                        setCurrentModulPage(1);
-                      }}
+                      onChange={(val) => setSingleDate(val)}
                       onOpen={() => setIsDateFocused(true)}
                       onClose={() => setIsDateFocused(false)}
                       placeholder="dd/mm/yyyy"
@@ -1654,10 +1721,7 @@ export default function LaporanStok() {
                     <CalendarTodayOutlinedIcon sx={{ color: '#23573c', fontSize: 18, flexShrink: 0 }} />
                     <LaporanPengirimanDatePickerInput
                       value={startDate}
-                      onChange={(val) => {
-                        setStartDate(val);
-                        setCurrentModulPage(1);
-                      }}
+                      onChange={(val) => setStartDate(val)}
                       onOpen={() => setIsDateFocused(true)}
                       onClose={() => setIsDateFocused(false)}
                       alignRight={false}
@@ -1666,10 +1730,7 @@ export default function LaporanStok() {
                     <span style={styles.dateSeparator}>s/d</span>
                     <LaporanPengirimanDatePickerInput
                       value={endDate}
-                      onChange={(val) => {
-                        setEndDate(val);
-                        setCurrentModulPage(1);
-                      }}
+                      onChange={(val) => setEndDate(val)}
                       onOpen={() => setIsDateFocused(true)}
                       onClose={() => setIsDateFocused(false)}
                       alignRight={true}
@@ -1684,10 +1745,7 @@ export default function LaporanStok() {
                 <div style={styles.modulFilterWrapper} className="laporan-modul-filter-wrapper">
                   <SearchableModulDropdown
                     value={selectedModulFilter}
-                    onChange={(val) => {
-                      setSelectedModulFilter(val);
-                      setCurrentModulPage(1);
-                    }}
+                    onChange={(val) => setSelectedModulFilter(val)}
                     options={modulDropdownOptions}
                   />
                 </div>
@@ -1711,7 +1769,7 @@ export default function LaporanStok() {
           {/* Tampilan Tabel */}
           <div style={styles.tableCard} className="laporan-table-card">
             {/* Banner Header */}
-            <div style={styles.pdfBannerBox} className="laporan-banner-box">
+            <div style={{ ...styles.pdfBannerBox, maxWidth: reportMaxWidth }} className="laporan-banner-box">
               <div style={styles.pdfBannerTitle} className="laporan-banner-title">{reportBannerTitle}</div>
               <div style={styles.pdfBannerSubtitle} className="laporan-banner-subtitle">{reportBannerSubtitle}</div>
             </div>
@@ -1724,16 +1782,16 @@ export default function LaporanStok() {
                     <div style={styles.emptyState}>Tidak ada data modul yang sesuai.</div>
                   ) : (
                     <>
-                      {paginatedStokCard.map((modul) => (
-                        <div key={modul.id} style={styles.modulCardTableWrapper}>
+                      {stokCardData.map((modul) => (
+                        <div key={modul.id} style={{ ...styles.modulCardTableWrapper, maxWidth: reportMaxWidth, margin: '0 auto 24px auto' }}>
                           <table style={styles.pdfTable} className="laporan-pdf-table table-stok-card">
                             <thead>
                               <tr style={styles.pdfThRow}>
-                                <th style={{ ...styles.pdfTh, width: '18%', textAlign: 'center' }} className="th-stok-tanggal">Tanggal</th>
-                                <th style={{ ...styles.pdfTh, width: '46%' }} className="th-stok-nama">{modul.namaModul}</th>
-                                <th style={{ ...styles.pdfTh, width: '12%', textAlign: 'center' }} className="th-stok-m">M</th>
-                                <th style={{ ...styles.pdfTh, width: '12%', textAlign: 'center' }} className="th-stok-k">K</th>
-                                <th style={{ ...styles.pdfTh, width: '12%', textAlign: 'center' }} className="th-stok-saldo">Saldo</th>
+                                <th style={{ ...styles.pdfTh, width: '16%', textAlign: 'center' }} className="th-stok-tanggal">Tanggal</th>
+                                <th style={{ ...styles.pdfTh, width: '42%' }} className="th-stok-nama">{modul.namaModul}</th>
+                                <th style={{ ...styles.pdfTh, width: '14%', textAlign: 'center' }} className="th-stok-m">Masuk</th>
+                                <th style={{ ...styles.pdfTh, width: '14%', textAlign: 'center' }} className="th-stok-k">Keluar</th>
+                                <th style={{ ...styles.pdfTh, width: '14%', textAlign: 'center' }} className="th-stok-saldo">Saldo</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -1763,59 +1821,6 @@ export default function LaporanStok() {
                           </table>
                         </div>
                       ))}
-
-                      {/* Pagination Stok Card */}
-                      {stokCardData.length > itemsPerPage && (
-                        <div style={styles.cardFooter} className="laporan-card-footer">
-                          <div style={styles.pageInfo}>
-                            {stokCardData.length > 0 ? (currentModulPage - 1) * itemsPerPage + 1 : 0} - {Math.min(currentModulPage * itemsPerPage, stokCardData.length)} dari {stokCardData.length}
-                          </div>
-                          <div style={styles.paginationButtons} className="laporan-pagination-buttons">
-                            <button
-                              type="button"
-                              disabled={currentModulPage === 1}
-                              onClick={() => setCurrentModulPage((p) => Math.max(1, p - 1))}
-                              className="btn-page-arrow"
-                              style={{
-                                ...styles.btnPageArrow,
-                                opacity: currentModulPage === 1 ? 0.4 : 1,
-                                cursor: currentModulPage === 1 ? 'not-allowed' : 'pointer'
-                              }}
-                            >
-                              &lt;
-                            </button>
-
-                            {Array.from({ length: totalModulPages }, (_, i) => i + 1).map((num) => (
-                              <button
-                                key={num}
-                                type="button"
-                                onClick={() => setCurrentModulPage(num)}
-                                className={`btn-page-num ${currentModulPage === num ? 'active' : ''}`}
-                                style={{
-                                  ...styles.btnPageNum,
-                                  ...(currentModulPage === num ? styles.btnPageNumActive : {})
-                                }}
-                              >
-                                {num}
-                              </button>
-                            ))}
-
-                            <button
-                              type="button"
-                              disabled={currentModulPage === totalModulPages}
-                              onClick={() => setCurrentModulPage((p) => Math.min(totalModulPages, p + 1))}
-                              className="btn-page-arrow"
-                              style={{
-                                ...styles.btnPageArrow,
-                                opacity: currentModulPage === totalModulPages ? 0.4 : 1,
-                                cursor: currentModulPage === totalModulPages ? 'not-allowed' : 'pointer'
-                              }}
-                            >
-                              &gt;
-                            </button>
-                          </div>
-                        </div>
-                      )}
                     </>
                   )}
                 </div>
@@ -1824,7 +1829,7 @@ export default function LaporanStok() {
               {/* 2. Stok Balance */}
               {selectedReport === 'stok_balance' && (
                 <div className="laporan-table-content" style={{ padding: '0 20px 20px 20px' }}>
-                  <table style={styles.pdfTable} className="laporan-pdf-table table-stok-balance">
+                  <table style={{ ...styles.pdfTable, maxWidth: reportMaxWidth, margin: '0 auto' }} className="laporan-pdf-table table-stok-balance">
                     <thead>
                       <tr style={styles.pdfThRow}>
                         <th style={{ ...styles.pdfTh, width: '10%', textAlign: 'center' }} className="th-balance-no">No</th>
@@ -1838,7 +1843,7 @@ export default function LaporanStok() {
                           <td colSpan={3} style={styles.emptyState}>Tidak ada data stok modul.</td>
                         </tr>
                       ) : (
-                        paginatedStokBalance.map((row) => (
+                        stokBalanceData.map((row) => (
                           <tr key={row.id} style={styles.pdfTr}>
                             <td style={{ ...styles.pdfTd, textAlign: 'center' }} className="td-balance-no">{row.no}</td>
                             <td style={styles.pdfTd} className="td-balance-nama">{row.namaModul}</td>
@@ -1850,59 +1855,6 @@ export default function LaporanStok() {
                       )}
                     </tbody>
                   </table>
-
-                  {/* Pagination Stok Balance */}
-                  {stokBalanceData.length > itemsPerPageBalance && (
-                    <div style={styles.cardFooter} className="laporan-card-footer">
-                      <div style={styles.pageInfo}>
-                        {stokBalanceData.length > 0 ? (currentModulPage - 1) * itemsPerPageBalance + 1 : 0} - {Math.min(currentModulPage * itemsPerPageBalance, stokBalanceData.length)} dari {stokBalanceData.length}
-                      </div>
-                      <div style={styles.paginationButtons} className="laporan-pagination-buttons">
-                        <button
-                          type="button"
-                          disabled={currentModulPage === 1}
-                          onClick={() => setCurrentModulPage((p) => Math.max(1, p - 1))}
-                          className="btn-page-arrow"
-                          style={{
-                            ...styles.btnPageArrow,
-                            opacity: currentModulPage === 1 ? 0.4 : 1,
-                            cursor: currentModulPage === 1 ? 'not-allowed' : 'pointer'
-                          }}
-                        >
-                          &lt;
-                        </button>
-
-                        {Array.from({ length: totalBalancePages }, (_, i) => i + 1).map((num) => (
-                          <button
-                            key={num}
-                            type="button"
-                            onClick={() => setCurrentModulPage(num)}
-                            className={`btn-page-num ${currentModulPage === num ? 'active' : ''}`}
-                            style={{
-                              ...styles.btnPageNum,
-                              ...(currentModulPage === num ? styles.btnPageNumActive : {})
-                            }}
-                          >
-                            {num}
-                          </button>
-                        ))}
-
-                        <button
-                          type="button"
-                          disabled={currentModulPage === totalBalancePages}
-                          onClick={() => setCurrentModulPage((p) => Math.min(totalBalancePages, p + 1))}
-                          className="btn-page-arrow"
-                          style={{
-                            ...styles.btnPageArrow,
-                            opacity: currentModulPage === totalBalancePages ? 0.4 : 1,
-                            cursor: currentModulPage === totalBalancePages ? 'not-allowed' : 'pointer'
-                          }}
-                        >
-                          &gt;
-                        </button>
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
 
@@ -1910,7 +1862,7 @@ export default function LaporanStok() {
               {(selectedReport === 'sudah_dikirim' || selectedReport === 'belum_dikirim') && (
                 <div className="laporan-table-content" style={{ padding: '0 20px 24px 20px' }}>
                   {/* Desktop Table */}
-                  <div className="laporan-customer-desktop-table">
+                  <div className="laporan-customer-desktop-table" style={{ maxWidth: reportMaxWidth, margin: '0 auto' }}>
                     <table style={styles.pdfTable} className="laporan-pdf-table">
                       <thead>
                         <tr style={styles.pdfThRow}>
@@ -2060,10 +2012,10 @@ export default function LaporanStok() {
                             <div className="laporan-order-items-wrapper">
                               <div className="laporan-order-items-title">Pesanan:</div>
                               {order.items.map((it, idx) => (
-                                <div key={idx} className="laporan-order-item-row">
-                                  <span className="laporan-order-item-nama">{it.nama}</span>
-                                  <span className="laporan-order-item-qty">{it.qty} modul</span>
-                                </div>
+                                  <div key={idx} className="laporan-order-item-row">
+                                    <span className="laporan-order-item-nama">{it.nama}</span>
+                                    <span className="laporan-order-item-qty">{it.qty}</span>
+                                  </div>
                               ))}
                             </div>
                           </div>
@@ -2081,8 +2033,8 @@ export default function LaporanStok() {
                     <div style={styles.emptyState}>Tidak ada data modul yang sesuai.</div>
                   ) : (
                     <>
-                      {paginatedModulMutasi.map((modul) => (
-                        <div key={modul.id} style={styles.modulCardTableWrapper}>
+                      {modulMutasiGroupedData.map((modul) => (
+                        <div key={modul.id} style={{ ...styles.modulCardTableWrapper, maxWidth: reportMaxWidth, margin: '0 auto 24px auto' }}>
                           {/* Nama Modul */}
                           <div style={styles.modulSectionHeader}>
                             {modul.namaModul}
@@ -2141,59 +2093,6 @@ export default function LaporanStok() {
                           </table>
                         </div>
                       ))}
-
-                      {/* Pagination Modul Mutasi */}
-                      {modulMutasiGroupedData.length > itemsPerPage && (
-                        <div style={styles.cardFooter} className="laporan-card-footer">
-                          <div style={styles.pageInfo}>
-                            {modulMutasiGroupedData.length > 0 ? (currentModulPage - 1) * itemsPerPage + 1 : 0} - {Math.min(currentModulPage * itemsPerPage, modulMutasiGroupedData.length)} dari {modulMutasiGroupedData.length}
-                          </div>
-                          <div style={styles.paginationButtons} className="laporan-pagination-buttons">
-                            <button
-                              type="button"
-                              disabled={currentModulPage === 1}
-                              onClick={() => setCurrentModulPage((p) => Math.max(1, p - 1))}
-                              className="btn-page-arrow"
-                              style={{
-                                ...styles.btnPageArrow,
-                                opacity: currentModulPage === 1 ? 0.4 : 1,
-                                cursor: currentModulPage === 1 ? 'not-allowed' : 'pointer'
-                              }}
-                            >
-                              &lt;
-                            </button>
-
-                            {Array.from({ length: totalMutasiPages }, (_, i) => i + 1).map((num) => (
-                              <button
-                                key={num}
-                                type="button"
-                                onClick={() => setCurrentModulPage(num)}
-                                className={`btn-page-num ${currentModulPage === num ? 'active' : ''}`}
-                                style={{
-                                  ...styles.btnPageNum,
-                                  ...(currentModulPage === num ? styles.btnPageNumActive : {})
-                                }}
-                              >
-                                {num}
-                              </button>
-                            ))}
-
-                            <button
-                              type="button"
-                              disabled={currentModulPage === totalMutasiPages}
-                              onClick={() => setCurrentModulPage((p) => Math.min(totalMutasiPages, p + 1))}
-                              className="btn-page-arrow"
-                              style={{
-                                ...styles.btnPageArrow,
-                                opacity: currentModulPage === totalMutasiPages ? 0.4 : 1,
-                                cursor: currentModulPage === totalMutasiPages ? 'not-allowed' : 'pointer'
-                              }}
-                            >
-                              &gt;
-                            </button>
-                          </div>
-                        </div>
-                      )}
                     </>
                   )}
                 </div>
@@ -2346,20 +2245,20 @@ const styles = {
     backgroundColor: '#c6efce',
     border: '1px solid #b2dfbb',
     borderRadius: '8px',
-    padding: '14px 20px',
-    margin: '20px 20px 20px 20px',
+    padding: '12px 18px',
+    margin: '20px auto 18px auto',
     textAlign: 'center',
     boxSizing: 'border-box'
   },
   pdfBannerTitle: {
-    fontSize: '16px',
+    fontSize: '15.5px',
     fontWeight: '800',
     color: '#006100',
     marginBottom: '4px',
     letterSpacing: '0.01em'
   },
   pdfBannerSubtitle: {
-    fontSize: '13px',
+    fontSize: '12.5px',
     fontWeight: '600',
     color: '#006100'
   },
@@ -2370,10 +2269,10 @@ const styles = {
     display: 'inline-block',
     backgroundColor: '#dcfce7',
     color: '#166534',
-    padding: '6px 14px',
+    padding: '5px 12px',
     borderRadius: '6px',
     fontWeight: '700',
-    fontSize: '14px',
+    fontSize: '13px',
     marginBottom: '8px'
   },
   tableResponsive: {
@@ -2385,7 +2284,7 @@ const styles = {
     width: '100%',
     borderCollapse: 'collapse',
     textAlign: 'left',
-    fontSize: '13px',
+    fontSize: '12.5px',
     border: '1px solid #94a3b8'
   },
   pdfThRow: {
@@ -2393,8 +2292,8 @@ const styles = {
   },
   pdfTh: {
     border: '1px solid #94a3b8',
-    padding: '10px 12px',
-    fontSize: '13px',
+    padding: '7px 10px',
+    fontSize: '12.5px',
     fontWeight: '700',
     color: '#0f172a',
     whiteSpace: 'nowrap'
@@ -2404,7 +2303,8 @@ const styles = {
   },
   pdfTd: {
     border: '1px solid #94a3b8',
-    padding: '8px 12px',
+    padding: '6px 10px',
+    fontSize: '12px',
     color: '#1e293b',
     verticalAlign: 'middle'
   },
@@ -2447,61 +2347,5 @@ const styles = {
     color: '#64748b',
     fontSize: '14px',
     fontWeight: '500'
-  },
-  cardFooter: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '14px 4px 6px 4px',
-    backgroundColor: '#ffffff',
-    borderTop: '1px solid #eef2ef',
-    flexWrap: 'wrap',
-    gap: '12px'
-  },
-  pageInfo: {
-    fontSize: '14px',
-    color: '#64748b',
-    fontWeight: '400'
-  },
-  paginationButtons: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px'
-  },
-  btnPageArrow: {
-    width: '32px',
-    height: '32px',
-    borderRadius: '8px',
-    border: '1px solid #dce4de',
-    backgroundColor: '#ffffff',
-    color: '#3d5246',
-    fontSize: '14px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.15s'
-  },
-  btnPageNum: {
-    width: '32px',
-    height: '32px',
-    borderRadius: '8px',
-    border: '1px solid #dce4de',
-    backgroundColor: '#ffffff',
-    color: '#3d5246',
-    fontSize: '14px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.15s'
-  },
-  btnPageNumActive: {
-    backgroundColor: '#23573c',
-    border: 'none',
-    color: '#ffffff',
-    fontWeight: '700',
-    boxShadow: '0 2px 6px rgba(35, 87, 60, 0.3)'
   }
 };
