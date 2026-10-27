@@ -11,6 +11,7 @@ import VerifikasiPembayaran from "./pages/VerifikasiPembayaran";
 import StatusPengiriman from "./pages/StatusPengiriman";
 import Profile from "./pages/Profile";
 import LaporanStok from "./pages/LaporanStok";
+import KatalogModul from "./pages/KatalogModul";
 import './index.css';
 
 function App() {
@@ -28,6 +29,8 @@ function App() {
         <Route path="/verifikasi-pembayaran" element={<VerifikasiPembayaran />} />
         <Route path="/status-pengiriman" element={<StatusPengiriman />} />
         <Route path="/laporan-stok" element={<LaporanStok />} />
+        <Route path="/katalog-modul" element={<KatalogModul />} />
+        <Route path="/katalog" element={<KatalogModul />} />
         <Route path="/profil" element={<Profile />} />
         <Route path="/" element={<Dashboard />} />
       </Routes>
