@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
+import Sidebar from '../../components/Sidebar';
+import Navbar from '../../components/Navbar';
 
 // Icons
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
@@ -509,26 +509,7 @@ export default function StokOpname() {
   const [selectedBulan, setSelectedBulan] = useState('Oktober');
 
   // jika Super Admin menolak stok opname
-  const [monthlyData, setMonthlyData] = useState(() => {
-    const initial = getInitialMonthlyData();
-    try {
-      const saved = localStorage.getItem('rsq_stok_opname_shared');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        const juliData = parsed && parsed['2026-07'];
-        return {
-          ...initial,
-          ...parsed,
-          '2026-07': (juliData && juliData.statusPeriode === 'Ditolak')
-            ? { ...juliData, catatanPenolakan: 'Mohon hitung ulang fisik modul Asasi karena ada selisih 8 modul.' }
-            : initial['2026-07']
-        };
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    return initial;
-  });
+  const [monthlyData, setMonthlyData] = useState(() => getInitialMonthlyData());
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua Jenis');
@@ -643,12 +624,6 @@ export default function StokOpname() {
           : { ...existing, items: updatedItems }
       };
 
-      try {
-        localStorage.setItem('rsq_stok_opname_shared', JSON.stringify(nextData));
-      } catch (e) {
-        console.error(e);
-      }
-
       return nextData;
     });
   };
@@ -681,12 +656,6 @@ export default function StokOpname() {
           ? updatedItems
           : { ...existing, items: updatedItems }
       };
-
-      try {
-        localStorage.setItem('rsq_stok_opname_shared', JSON.stringify(nextData));
-      } catch (e) {
-        console.error(e);
-      }
 
       return nextData;
     });
@@ -746,12 +715,6 @@ export default function StokOpname() {
           : { ...existing, items: updatedList }
       };
 
-      try {
-        localStorage.setItem('rsq_stok_opname_shared', JSON.stringify(nextData));
-      } catch (e) {
-        console.error(e);
-      }
-
       return nextData;
     });
     showToast('Draf berhasil disimpan', 'success');
@@ -795,12 +758,6 @@ export default function StokOpname() {
           items: updatedList
         }
       };
-
-      try {
-        localStorage.setItem('rsq_stok_opname_shared', JSON.stringify(nextData));
-      } catch (e) {
-        console.error(e);
-      }
 
       return nextData;
     });

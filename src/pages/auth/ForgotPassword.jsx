@@ -9,7 +9,9 @@ import {
   InputAdornment,
   IconButton
 } from "@mui/material";
-import Logo from "../components/Logo";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
+import Logo from "../../components/Logo";
 
 export default function ForgotPassword() {
   const [step, setStep] = useState(1);
@@ -21,6 +23,7 @@ export default function ForgotPassword() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [timer, setTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
+  const [emailError, setEmailError] = useState("");
 
   useEffect(() => {
     let interval = null;
@@ -36,11 +39,21 @@ export default function ForgotPassword() {
 
   const handleSendEmail = (e) => {
     e.preventDefault();
-    if (email.trim()) {
-      setStep(2);
-      setTimer(60);
-      setCanResend(false);
+    setEmailError("");
+
+    if (!email.trim()) {
+      setEmailError("Email wajib diisi");
+      return;
     }
+
+    if (!email.trim().toLowerCase().endsWith("@gmail.com")) {
+      setEmailError("Format email tidak valid");
+      return;
+    }
+
+    setStep(2);
+    setTimer(60);
+    setCanResend(false);
   };
 
   const handleOtpChange = (index, value) => {
@@ -223,22 +236,30 @@ export default function ForgotPassword() {
                   size="small"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="nama@email.com"
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (emailError) setEmailError("");
+                  }}
+                  placeholder="nama@gmail.com"
                   required
                   sx={{
-                    mb: 2.2,
+                    mb: emailError ? 0.6 : 2.2,
                     "& .MuiOutlinedInput-root": {
                       borderRadius: "10px",
                       bgcolor: "#f9fafb",
                       fontFamily: "'Poppins', sans-serif",
                       fontSize: "0.875rem",
-                      "& fieldset": { borderColor: "#e5e7eb" },
-                      "&:hover fieldset": { borderColor: "#9ca3af" },
-                      "&.Mui-focused fieldset": { borderColor: "#23573c" },
+                      "& fieldset": { borderColor: emailError ? "#dc2626" : "#e5e7eb" },
+                      "&:hover fieldset": { borderColor: emailError ? "#dc2626" : "#9ca3af" },
+                      "&.Mui-focused fieldset": { borderColor: emailError ? "#dc2626" : "#23573c" },
                     },
                   }}
                 />
+                {emailError && (
+                  <Typography sx={{ color: "#dc2626", fontSize: "0.8rem", fontWeight: 500, mb: 1.5, ml: 0.3 }}>
+                    * {emailError}
+                  </Typography>
+                )}
 
                 <Button
                   fullWidth
@@ -407,6 +428,27 @@ export default function ForgotPassword() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Minimal 8 karakter"
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            size="small"
+                            onClick={() => setShowPassword(!showPassword)}
+                            edge="end"
+                            aria-label={showPassword ? "Sembunyikan password" : "Lihat password"}
+                            sx={{ color: "#4b5563" }}
+                          >
+                            {showPassword ? (
+                              <VisibilityOffOutlinedIcon sx={{ fontSize: 20 }} />
+                            ) : (
+                              <VisibilityOutlinedIcon sx={{ fontSize: 20 }} />
+                            )}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
@@ -414,6 +456,7 @@ export default function ForgotPassword() {
                           size="small"
                           onClick={() => setShowPassword(!showPassword)}
                           edge="end"
+                          aria-label={showPassword ? "Sembunyikan password" : "Lihat password"}
                           sx={{ color: "#4b5563" }}
                         >
                           {showPassword ? (
@@ -455,6 +498,27 @@ export default function ForgotPassword() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Ulangi kata sandi baru"
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            size="small"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            edge="end"
+                            aria-label={showConfirmPassword ? "Sembunyikan password" : "Lihat password"}
+                            sx={{ color: "#4b5563" }}
+                          >
+                            {showConfirmPassword ? (
+                              <VisibilityOffOutlinedIcon sx={{ fontSize: 20 }} />
+                            ) : (
+                              <VisibilityOutlinedIcon sx={{ fontSize: 20 }} />
+                            )}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
@@ -462,6 +526,7 @@ export default function ForgotPassword() {
                           size="small"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                           edge="end"
+                          aria-label={showConfirmPassword ? "Sembunyikan password" : "Lihat password"}
                           sx={{ color: "#4b5563" }}
                         >
                           {showConfirmPassword ? (

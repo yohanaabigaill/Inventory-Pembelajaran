@@ -11,9 +11,11 @@ import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined
 import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 
 export default function Sidebar({
-  role = 'admin', //admin/super admin
+  role = 'admin', // admin / super_admin / peserta
   activeMenu = 'Data Modul',
   isOpen = false,
   onClose = () => {},
@@ -22,6 +24,7 @@ export default function Sidebar({
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const isSuperAdmin = role === 'super_admin' || role === 'SUPER ADMIN' || role === 'superadmin';
+  const isPeserta = role === 'peserta' || role === 'PESERTA' || role === 'santri';
 
   const handleMenuClick = (item) => {
     if (onSelectMenu) {
@@ -33,7 +36,7 @@ export default function Sidebar({
     onClose();
   };
 
-  const menuSections = [
+  const adminMenuSections = [
     {
       title: 'UTAMA',
       items: [
@@ -93,6 +96,31 @@ export default function Sidebar({
     }
   ];
 
+  const pesertaMenuSections = [
+    {
+      title: '',
+      items: [
+        {
+          name: 'Katalog Modul',
+          path: '/katalog-modul',
+          icon: <MenuBookOutlinedIcon sx={{ fontSize: 20 }} />
+        },
+        {
+          name: 'Pesanan',
+          path: '/pesanan',
+          icon: <ShoppingCartOutlinedIcon sx={{ fontSize: 20 }} />
+        },
+        {
+          name: 'Riwayat & Kwitansi',
+          path: '/riwayat-kwitansi',
+          icon: <ReceiptLongOutlinedIcon sx={{ fontSize: 20 }} />
+        }
+      ]
+    }
+  ];
+
+  const menuSections = isPeserta ? pesertaMenuSections : adminMenuSections;
+
   return (
     <>
       {/* Mobile Overlay */}
@@ -114,7 +142,7 @@ export default function Sidebar({
         <div style={styles.navScroll}>
           {menuSections.map((section, idx) => (
             <div key={idx} style={styles.sectionContainer}>
-              <div style={styles.sectionTitle}>{section.title}</div>
+              {section.title ? <div style={styles.sectionTitle}>{section.title}</div> : null}
               {section.items.map((item, itemIdx) => {
                 const isActive = item.name === activeMenu;
                 return (

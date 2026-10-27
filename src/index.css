@@ -908,3 +908,65 @@ select option:active {
     flex-shrink: 0 !important;
   }
 }
+
+/* Katalog Modul Responsif */
+.modul-card-hover {
+  transition: transform 0.22s ease, box-shadow 0.22s ease !important;
+}
+
+.modul-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(35, 87, 60, 0.14) !important;
+}
+
+.modul-card-hover:hover img {
+  transform: scale(1.03);
+}
+
+@media (max-width: 1200px) {
+  .catalog-grid-responsive {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+@media (max-width: 868px) {
+  .catalog-grid-responsive {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+  }
+}
+
+@media (max-width: 540px) {
+  .catalog-grid-responsive {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Pop-up Pesanan Modul */
+  .order-row-item-responsive {
+    align-items: flex-start !important;
+    padding: 12px 10px !important;
+    gap: 12px !important;
+  }
+
+  .order-row-content-responsive {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+  }
+
+  .order-row-title-responsive {
+    white-space: normal !important;
+    word-break: break-word !important;
+    line-height: 1.35 !important;
+    font-size: 14.5px !important;
+    overflow: visible !important;
+  }
+
+  .order-row-controls-responsive {
+    justify-content: space-between !important;
+    width: 100% !important;
+    padding-top: 6px !important;
+    border-top: 1px dashed #e2e8f0 !important;
+  }
+}

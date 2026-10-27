@@ -1,14 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
-import coverAsasi from '../assets/asasi.jpg';
-import coverTahmidi from '../assets/tahmidi.jpg';
-import coverAlHisan1 from '../assets/alhisan1.jpg';
-import coverBukuDoa from '../assets/bukudoa.jpg';
-import coverMushafAshShahibA5 from '../assets/mushaf_ash_shahib_a5.jpg';
-import coverMushafAlKamilA5 from '../assets/mushaf_al_kamil_a5.jpg';
-import coverMushafAshShahibA6 from '../assets/mushaf_ash_shahib_a6.jpg';
-import coverUtsmani1 from '../assets/utsmani1.jpg';
+import Sidebar from '../../components/Sidebar';
+import Navbar from '../../components/Navbar';
+import coverAsasi from '../../assets/asasi.jpg';
+import coverTahmidi from '../../assets/tahmidi.jpg';
+import coverAlHisan1 from '../../assets/alhisan1.jpg';
+import coverBukuDoa from '../../assets/bukudoa.jpg';
+import coverMushafAshShahibA5 from '../../assets/mushaf_ash_shahib_a5.jpg';
+import coverMushafAlKamilA5 from '../../assets/mushaf_al_kamil_a5.jpg';
+import coverMushafAshShahibA6 from '../../assets/mushaf_ash_shahib_a6.jpg';
+import coverUtsmani1 from '../../assets/utsmani1.jpg';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 
@@ -134,7 +134,7 @@ function CustomDropdown({
   );
 }
 
-// Kategori pada filter
+// Filter jenis
 const KATEGORI_OPTIONS = [
   'Semua Jenis',
   'Al Haqq',
@@ -146,7 +146,7 @@ const KATEGORI_OPTIONS = [
   'Al Quran'
 ];
 
-// Kategori untuk Modal
+// Filter status
 const MODAL_KATEGORI_OPTIONS = KATEGORI_OPTIONS.filter(opt => opt !== 'Semua Jenis');
 const STATUS_OPTIONS = [
   'Semua Status',
@@ -341,7 +341,7 @@ export default function DataModul() {
         return;
       }
 
-      // Validasi ukuran maksimal 2MB
+      // Validasi ukuran foto maksimal 2MB
       if (file.size > 2 * 1024 * 1024) {
         setFormErrors(prev => ({
           ...prev,
@@ -408,13 +408,21 @@ export default function DataModul() {
     setIsModalOpen(true);
   };
 
+  // Tutup Modal Tambah dan Edit
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingModul(null);
+    setFormErrors(INITIAL_FORM_ERRORS);
+    setFormData(INITIAL_FORM_DATA);
+  };
+
   // Modal Hapus Modul
   const handleRequestDelete = (id) => {
     setDeleteConfirmId(id);
   };
 
   const handleConfirmDelete = () => {
-    if (deleteConfirmId) {
+    if (deleteConfirmId !== null && deleteConfirmId !== undefined) {
       setModulList(prev => prev.filter(item => item.id !== deleteConfirmId));
       setDeleteConfirmId(null);
       showNotification('Modul berhasil dihapus!', 'success');
@@ -477,15 +485,25 @@ export default function DataModul() {
       setModulList(prev =>
         prev.map(item =>
           item.id === editingModul.id
-            ? { ...formData, hpp: hppNum, hargaJual: hargaNum, stok: stokNum, minRestock: minRestockNum, status }
+            ? {
+                ...item,
+                ...formData,
+                id: editingModul.id,
+                sku: formData.sku || item.sku,
+                hpp: hppNum,
+                hargaJual: hargaNum,
+                stok: stokNum,
+                minRestock: minRestockNum,
+                status
+              }
             : item
         )
       );
     } else {
       const newItem = {
+        ...formData,
         id: Date.now(),
         sku: formData.sku || `RSQ-TH-0${modulList.length + 1}`,
-        ...formData,
         hpp: hppNum,
         hargaJual: hargaNum,
         stok: stokNum,
@@ -495,7 +513,7 @@ export default function DataModul() {
       setModulList(prev => [newItem, ...prev]);
     }
 
-    setIsModalOpen(false);
+    handleCloseModal();
     showNotification(
       editingModul ? 'Modul berhasil diperbarui!' : 'Modul berhasil ditambahkan!',
       'success'
@@ -771,7 +789,7 @@ export default function DataModul() {
 
       {/* Modal Tambah dan Edit */}
       {isModalOpen && (
-        <div style={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
+        <div style={styles.modalOverlay} onClick={handleCloseModal}>
           <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div style={styles.modalHeader}>
@@ -929,7 +947,7 @@ export default function DataModul() {
 
               {/* Tombol Simpan dan Batal */}
               <div style={styles.modalFooterBar}>
-                <button type="button" onClick={() => setIsModalOpen(false)} style={styles.btnModalCancel}>
+                <button type="button" onClick={handleCloseModal} style={styles.btnModalCancel}>
                   Batal
                 </button>
                 <button type="submit" style={styles.btnModalSave}>
@@ -942,7 +960,7 @@ export default function DataModul() {
       )}
 
       {/*Modal Hapus */}
-      {deleteConfirmId && (
+      {deleteConfirmId !== null && deleteConfirmId !== undefined && (
         <div style={styles.modalOverlay} onClick={handleCancelDelete}>
           <div style={styles.deleteModalContent} onClick={(e) => e.stopPropagation()}>
             <div style={styles.deleteIconWrapper}>
@@ -1255,13 +1273,6 @@ const styles = {
     justifyContent: 'center',
     zIndex: 1000,
     padding: '20px'
-  },
-  errorText: {
-    color: '#ef4444',
-    fontSize: '11.5px',
-    fontWeight: '500',
-    marginTop: '4px',
-    display: 'block'
   },
   modalContent: {
     backgroundColor: '#ffffff',

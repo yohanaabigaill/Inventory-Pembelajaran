@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import XLSX from 'xlsx-js-style';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
+import Sidebar from '../../components/Sidebar';
+import Navbar from '../../components/Navbar';
 
 // Icons
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';

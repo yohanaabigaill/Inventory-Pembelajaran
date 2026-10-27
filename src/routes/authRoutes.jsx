@@ -1,8 +1,8 @@
 import React from "react";
 import { Route } from "react-router-dom";
-import Login from "../pages/Login";
-import Register from "../pages/Register";
-import ForgotPassword from "../pages/ForgotPassword";
+import Login from "../pages/auth/Login";
+import Register from "../pages/auth/Register";
+import ForgotPassword from "../pages/auth/ForgotPassword";
 
 export const authRoutes = (
   <>
