@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
+import Sidebar from '../../components/Sidebar';
+import Navbar from '../../components/Navbar';
 
 // Icons
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';

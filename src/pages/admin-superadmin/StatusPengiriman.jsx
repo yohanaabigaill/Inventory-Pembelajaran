@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
-import buktiSampaiImg from '../assets/bukti_pengiriman.jpg';
+import Sidebar from '../../components/Sidebar';
+import Navbar from '../../components/Navbar';
+import buktiSampaiImg from '../../assets/bukti_pengiriman.jpg';
 
 // Icons
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';

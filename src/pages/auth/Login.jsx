@@ -15,7 +15,7 @@ import {
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
-import Logo from "../components/Logo";
+import Logo from "../../components/Logo";
 
 export default function Login() {
   const navigate = useNavigate();

@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
-import Logo from "../components/Logo";
+import Logo from "../../components/Logo";
 
 export default function ForgotPassword() {
   const [step, setStep] = useState(1);

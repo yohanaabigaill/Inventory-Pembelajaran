@@ -1,14 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
-import coverAsasi from '../assets/asasi.jpg';
-import coverTahmidi from '../assets/tahmidi.jpg';
-import coverAlHisan1 from '../assets/alhisan1.jpg';
-import coverBukuDoa from '../assets/bukudoa.jpg';
-import coverMushafAshShahibA5 from '../assets/mushaf_ash_shahib_a5.jpg';
-import coverMushafAlKamilA5 from '../assets/mushaf_al_kamil_a5.jpg';
-import coverMushafAshShahibA6 from '../assets/mushaf_ash_shahib_a6.jpg';
-import coverUtsmani1 from '../assets/utsmani1.jpg';
+import Sidebar from '../../components/Sidebar';
+import Navbar from '../../components/Navbar';
+import coverAsasi from '../../assets/asasi.jpg';
+import coverTahmidi from '../../assets/tahmidi.jpg';
+import coverAlHisan1 from '../../assets/alhisan1.jpg';
+import coverBukuDoa from '../../assets/bukudoa.jpg';
+import coverMushafAshShahibA5 from '../../assets/mushaf_ash_shahib_a5.jpg';
+import coverMushafAlKamilA5 from '../../assets/mushaf_al_kamil_a5.jpg';
+import coverMushafAshShahibA6 from '../../assets/mushaf_ash_shahib_a6.jpg';
+import coverUtsmani1 from '../../assets/utsmani1.jpg';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 
