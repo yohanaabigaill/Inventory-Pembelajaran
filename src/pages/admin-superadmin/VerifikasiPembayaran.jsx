@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
-import contohBuktiTf from '../assets/contoh bukti tf.jpeg';
+import Sidebar from '../../components/Sidebar';
+import Navbar from '../../components/Navbar';
+import contohBuktiTf from '../../assets/contoh bukti tf.jpeg';
 
 // Icons
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
