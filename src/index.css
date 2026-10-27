@@ -82,6 +82,18 @@ select option:active {
   color: #ffffff !important;
 }
 
+.laporan-modul-multiselect-item {
+  transition: background-color 0.15s ease;
+}
+
+.laporan-modul-multiselect-item:hover {
+  background-color: #f0f7f3 !important;
+}
+
+.laporan-modul-multiselect-item.selected:hover {
+  background-color: #e6f2eb !important;
+}
+
 .custom-dropdown-menu {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -560,6 +572,11 @@ select option:active {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
+.laporan-dropdown-container {
+  min-width: 175px;
+  max-width: 270px;
+}
+
 @media (max-width: 640px) {
   .laporan-calendar-popover {
     max-width: calc(100vw - 20px);
@@ -599,10 +616,13 @@ select option:active {
 
   .laporan-modul-filter-wrapper {
     width: 100% !important;
+    max-width: 100% !important;
   }
 
   .laporan-dropdown-container {
     width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
   }
 
   .laporan-export-wrapper {
@@ -635,13 +655,15 @@ select option:active {
   }
 
   .laporan-table-responsive {
-    overflow-x: hidden !important;
+    overflow-x: auto !important;
     width: 100% !important;
+    -webkit-overflow-scrolling: touch;
   }
 
   .laporan-pdf-table {
     table-layout: fixed !important;
     width: 100% !important;
+    min-width: 320px !important;
     font-size: 11.5px !important;
     border-collapse: collapse !important;
   }
@@ -655,46 +677,53 @@ select option:active {
 
   .table-stok-card th.th-stok-tanggal,
   .table-stok-card td.td-stok-tanggal {
-    width: 20% !important;
+    width: 18% !important;
     text-align: center !important;
     white-space: nowrap !important;
-    font-size: 10.5px !important;
+    font-size: 10px !important;
     letter-spacing: -0.2px !important;
     padding: 6px 2px !important;
   }
 
   .table-stok-card th.th-stok-nama,
   .table-stok-card td.td-stok-nama {
-    width: 44% !important;
+    width: 32% !important;
     white-space: normal !important;
     word-break: break-word !important;
     line-height: 1.3 !important;
     padding-left: 5px !important;
     padding-right: 4px !important;
+    font-size: 11px !important;
   }
 
   .table-stok-card th.th-stok-m,
   .table-stok-card td.td-stok-m {
-    width: 12% !important;
+    width: 16% !important;
     text-align: center !important;
     white-space: nowrap !important;
     padding: 6px 2px !important;
+    font-size: 10.5px !important;
+    letter-spacing: -0.2px !important;
   }
 
   .table-stok-card th.th-stok-k,
   .table-stok-card td.td-stok-k {
-    width: 12% !important;
+    width: 17% !important;
     text-align: center !important;
     white-space: nowrap !important;
     padding: 6px 2px !important;
+    font-size: 10.5px !important;
+    letter-spacing: -0.2px !important;
   }
 
   .table-stok-card th.th-stok-saldo,
   .table-stok-card td.td-stok-saldo {
-    width: 12% !important;
+    width: 17% !important;
     text-align: center !important;
     white-space: nowrap !important;
     padding: 6px 2px !important;
+    font-size: 10.5px !important;
+    letter-spacing: -0.2px !important;
   }
 
   .table-stok-balance th.th-balance-no,
