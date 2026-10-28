@@ -1,32 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
+import Sidebar from '../../components/Sidebar';
+import Navbar from '../../components/Navbar';
 
 // Icons
 import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
-import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import HourglassEmptyOutlinedIcon from '@mui/icons-material/HourglassEmptyOutlined';
-import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
-import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
 import PaymentOutlinedIcon from '@mui/icons-material/PaymentOutlined';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
-import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 
 // Covers
-import coverAsasi from '../assets/asasi.jpg';
-import coverTahmidi from '../assets/tahmidi.jpg';
-import coverAlHisan1 from '../assets/alhisan1.jpg';
-import coverMushafAshShahibA5 from '../assets/mushaf_ash_shahib_a5.jpg';
-import contohBuktiTf from '../assets/contoh bukti tf.jpeg';
+import coverAsasi from '../../assets/asasi.jpg';
+import coverTahmidi from '../../assets/tahmidi.jpg';
+import coverAlHisan1 from '../../assets/alhisan1.jpg';
+import coverMushafAshShahibA5 from '../../assets/mushaf_ash_shahib_a5.jpg';
+import contohBuktiTf from '../../assets/contoh bukti tf.jpeg';
 
 // Data pesanan demo
 const INITIAL_DEMO_PESANAN = [

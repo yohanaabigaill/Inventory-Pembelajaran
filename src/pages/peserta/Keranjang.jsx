@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
-import ModalKonfirmasiPesanan from '../components/ModalKonfirmasiPesanan';
+import Sidebar from '../../components/Sidebar';
+import Navbar from '../../components/Navbar';
+import ModalKonfirmasiPesanan from '../../components/ModalKonfirmasiPesanan';
 
 // Icons
-import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
@@ -59,11 +58,9 @@ export default function Keranjang() {
     }).format(number);
   };
 
-  // Hitung total item
-  const totalItemsInCart = cartItems.reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
+  // Hitung item yang dicentang
   const checkedItems = cartItems.filter((item) => item.checked);
   const checkedCount = checkedItems.reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
-  const checkedDistinctCount = checkedItems.length;
   const checkedTotalHarga = checkedItems.reduce(
     (sum, item) => sum + item.hargaJual * (Number(item.qty) || 0),
     0
