@@ -32,7 +32,6 @@ function App() {
         <Route path="/status-pengiriman" element={<StatusPengiriman />} />
         <Route path="/laporan-stok" element={<LaporanStok />} />
         <Route path="/katalog-modul" element={<KatalogModul />} />
-        <Route path="/katalog" element={<KatalogModul />} />
         <Route path="/keranjang" element={<Keranjang />} />
         <Route path="/pesanan" element={<PesananSaya />} />
         <Route path="/profil" element={<Profile />} />
