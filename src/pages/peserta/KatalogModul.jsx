@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import Navbar from '../../components/Navbar';
+import ModalKonfirmasiPesanan from '../../components/ModalKonfirmasiPesanan';
 
 // Cover Modul
 import coverAsasi from '../../assets/asasi.jpg';
@@ -14,8 +16,9 @@ import coverUtsmani1 from '../../assets/utsmani1.jpg';
 
 // Icons
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
-import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
-import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
+import AddShoppingCartOutlinedIcon from '@mui/icons-material/AddShoppingCartOutlined';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
+import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
 import { Checkbox, FormControlLabel, Typography } from '@mui/material';
 
 // Custom Dropdown
@@ -223,16 +226,24 @@ const INITIAL_MODULS = [
 ];
 
 export default function KatalogModul() {
+  const navigate = useNavigate();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedKategori, setSelectedKategori] = useState('Semua Jenis');
   const [onlyAvailableStock, setOnlyAvailableStock] = useState(false);
 
-  // Daftar Modul yang sedang dipesan
-  const [orderItems, setOrderItems] = useState([]);
+  // Cart State 
+  const [cartItems, setCartItems] = useState(() => {
+    try {
+      const saved = localStorage.getItem('inventory_rsq_cart');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
 
-  // Modal State
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [checkoutItem, setCheckoutItem] = useState(null);
 
   // Toast Notifikasi
   const [notification, setNotification] = useState(null);
@@ -243,6 +254,15 @@ export default function KatalogModul() {
       setNotification(null);
     }, 3200);
   };
+
+  // Simpan keranjang ke localStorage setiap ada perubahan
+  useEffect(() => {
+    try {
+      localStorage.setItem('inventory_rsq_cart', JSON.stringify(cartItems));
+    } catch (e) {
+      console.error('Gagal menyimpan keranjang:', e);
+    }
+  }, [cartItems]);
 
   // Filter modul berdasarkan pencarian, kategori, dan stok tersedia
   const filteredModuls = INITIAL_MODULS.filter((item) => {
@@ -260,76 +280,37 @@ export default function KatalogModul() {
     }).format(number);
   };
 
-  // Hitung total buku dan total harga
-  const totalBuku = orderItems.reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
-  const totalHarga = orderItems.reduce(
-    (sum, item) => sum + item.hargaJual * (Number(item.qty) || 0),
-    0
-  );
+  // Total item di keranjang (seluruh kuantitas)
+  const totalItemsInCart = cartItems.reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
 
-  // Tambah modul ke pesanan & langsung buka modal
-  const handleCardClick = (modul) => {
-    if (modul.stok === 0) {
-      return;
-    }
+  // Tambah modul ke keranjang 
+  const handleAddToCart = (modul) => {
+    if (modul.stok === 0) return;
 
-    setOrderItems((prev) => {
+    setCartItems((prev) => {
       const existing = prev.find((item) => item.id === modul.id);
       if (existing) {
-        // Jika sudah ada, tetap pertahankan kuantitasnya
-        return prev;
+        const nextQty = Math.min((Number(existing.qty) || 0) + 1, modul.stok);
+        return prev.map((item) =>
+          item.id === modul.id ? { ...item, qty: nextQty } : item
+        );
       }
-      // Jika baru, tambahkan dengan kuantitas 1
-      return [...prev, { ...modul, qty: 1 }];
+      return [...prev, { ...modul, qty: 1, checked: false }];
     });
 
-    setIsOrderModalOpen(true);
+    showToast('Berhasil ditambahkan ke keranjang');
   };
 
-  // Update kuantitas item di pesanan
-  const handleUpdateQty = (modulId, newQty) => {
-    setOrderItems((prev) => {
-      return prev.map((item) => {
-        if (item.id === modulId) {
-          if (newQty === '') {
-            return { ...item, qty: '' };
-          }
-          const parsed = Number(newQty);
-          const clamped = Math.max(1, Math.min(parsed, item.stok));
-          return { ...item, qty: clamped };
-        }
-        return item;
-      });
-    });
-  };
-
-  // Hapus modul dari pesanan
-  const handleRemoveItem = (modulId) => {
-    setOrderItems((prev) => {
-      const updated = prev.filter((item) => item.id !== modulId);
-      if (updated.length === 0) {
-        setIsOrderModalOpen(false);
-        showToast('Semua modul telah dihapus dari pesanan.');
-      }
-      return updated;
-    });
-  };
-
-  // Tombol tambah modul lain dari katalog
-  const handleTambahModulLain = () => {
-    setIsOrderModalOpen(false);
-    showToast('Silakan klik modul lain untuk menambahkannya ke pesanan ini.');
-  };
-
-  // Konfirmasi Checkout Pesanan
-  const handleKonfirmasiPesanan = () => {
-    setIsOrderModalOpen(false);
-    setOrderItems([]);
+  // Beli Langsung Buka Modal Konfirmasi Pemesanan Modul
+  const handleBuyNow = (modul) => {
+    if (modul.stok === 0) return;
+    setCheckoutItem(modul);
+    setIsCheckoutModalOpen(true);
   };
 
   return (
     <div style={styles.layoutContainer}>
-      {/* Sidebar khusus role peserta */}
+      {/* Sidebar role peserta */}
       <Sidebar
         role="peserta"
         activeMenu="Katalog Modul"
@@ -415,37 +396,16 @@ export default function KatalogModul() {
                 sx={{ ml: { xs: 0, sm: 0.5 }, mr: 0, userSelect: 'none' }}
               />
             </div>
-
-            {/* Tombol Lihat Pesanan jika sudah ada item yang dipilih */}
-            {orderItems.length > 0 && (
-              <button
-                id="btn-lihat-pesanan-header"
-                type="button"
-                onClick={() => setIsOrderModalOpen(true)}
-                style={styles.btnLihatPesananHeader}
-                title="Buka kembali daftar pesanan Anda"
-              >
-                <span>Lihat Pesanan ({totalBuku})</span>
-              </button>
-            )}
           </div>
 
-          {/* Grid 4 Card */}
+          {/* Grid Modul */}
           <div className="catalog-grid-responsive" style={styles.catalogGrid}>
             {filteredModuls.map((item) => {
               return (
                 <div
                   key={item.id}
                   className="modul-card-hover"
-                  onClick={() => {
-                    if (item.stok > 0) {
-                      handleCardClick(item);
-                    }
-                  }}
-                  style={{
-                    ...styles.modulCard,
-                    cursor: item.stok === 0 ? 'default' : 'pointer'
-                  }}
+                  style={styles.modulCard}
                 >
                   {/* Gambar Cover Modul */}
                   <div style={styles.coverWrapper}>
@@ -454,17 +414,27 @@ export default function KatalogModul() {
 
                   {/* Isi Card */}
                   <div style={styles.cardContent}>
-                    <span style={styles.cardJenis}>{item.kategori}</span>
-                    <h3 style={styles.modulTitle} title={item.nama}>
+                    {/* Baris Atas: Kategori (kiri) & Stok (kanan) */}
+                    <div style={styles.cardTopRow}>
+                      <span style={styles.cardJenis}>{item.kategori}</span>
+                      <span
+                        style={{
+                          fontSize: '11.5px',
+                          fontWeight: '600',
+                          color: item.stok > 0 ? '#475569' : '#dc2626'
+                        }}
+                      >
+                        {item.stok > 0 ? `Stok: ${item.stok}` : 'Habis'}
+                      </span>
+                    </div>
+
+                    <h3 style={styles.modulTitle}>
                       {item.nama}
                     </h3>
 
                     {/* Harga Jual */}
                     <div style={styles.priceRow}>
-                      <div style={styles.priceBlock}>
-                        <span style={styles.priceLabel}>Harga</span>
-                        <span style={styles.priceValue}>{formatRupiah(item.hargaJual)}</span>
-                      </div>
+                      <span style={styles.priceValue}>{formatRupiah(item.hargaJual)}</span>
                     </div>
 
                     {/* Tombol Aksi */}
@@ -477,16 +447,27 @@ export default function KatalogModul() {
                         <span>Stok Habis</span>
                       </button>
                     ) : (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCardClick(item);
-                        }}
-                        style={styles.btnPilihModul}
-                      >
-                        <span>Pesan Modul</span>
-                      </button>
+                      <div style={styles.cardActionRow}>
+                        {/* Tombol + Keranjang */}
+                        <button
+                          type="button"
+                          onClick={() => handleAddToCart(item)}
+                          style={styles.btnTambahKeranjang}
+                        >
+                          <AddShoppingCartOutlinedIcon sx={{ fontSize: 18 }} />
+                          <span>Keranjang</span>
+                        </button>
+
+                        {/* Tombol Beli Langsung  */}
+                        <button
+                          type="button"
+                          onClick={() => handleBuyNow(item)}
+                          style={styles.btnBeliLangsung}
+                        >
+                          <LocalMallOutlinedIcon sx={{ fontSize: 17 }} />
+                          <span>Beli</span>
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -504,169 +485,23 @@ export default function KatalogModul() {
         </main>
       </div>
 
-      {/* Modal Pesanan Modul */}
-      {isOrderModalOpen && (
-        <div style={styles.modalOverlay} onClick={() => setIsOrderModalOpen(false)}>
-          <div style={styles.modalOrderContent} onClick={(e) => e.stopPropagation()}>
-            {/* Modal Header */}
-            <div style={styles.modalHeader}>
-              <h3 style={styles.modalHeaderTitle}>Detail Pesanan Modul</h3>
-            </div>
-            <div style={styles.modalOrderBody}>
-              {orderItems.length === 0 ? (
-                <div style={styles.emptyOrderBox}>
-                  <p style={{ margin: 0, color: '#64748b', fontSize: '14px', fontWeight: 500 }}>
-                    Belum ada modul di dalam pesanan.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setIsOrderModalOpen(false)}
-                    style={styles.btnPilihDariKatalog}
-                  >
-                    + Pilih Modul dari Katalog
-                  </button>
-                </div>
-              ) : (
-                <>
-                  {/* Daftar Baris Modul */}
-                  <div style={styles.orderRowsList}>
-                    {orderItems.map((item) => (
-                      <div key={item.id} className="order-row-item-responsive" style={styles.orderRowItem}>
-                        {/* Cover Modul */}
-                        <img
-                          src={item.cover}
-                          alt={item.nama}
-                          className="order-row-thumb-responsive"
-                          style={styles.orderRowThumb}
-                        />
-                        <div className="order-row-content-responsive" style={styles.orderRowContentWrap}>
-                          <div style={styles.orderRowInfo}>
-                            <span style={styles.orderRowStok}>
-                              Stok: <strong style={{ userSelect: 'text' }}>{item.stok}</strong>
-                            </span>
-                            <h4
-                              className="order-row-title-responsive"
-                              style={styles.orderRowTitle}
-                              title={item.nama}
-                            >
-                              {item.nama}
-                            </h4>
-                            <div style={styles.orderRowStepperWrap}>
-                              <button
-                                type="button"
-                                onClick={() => handleUpdateQty(item.id, (Number(item.qty) || 1) - 1)}
-                                style={styles.btnRowStepper}
-                                aria-label="Kurangi"
-                              >
-                                -
-                              </button>
-                              <input
-                                type="text"
-                                inputMode="numeric"
-                                pattern="[0-9]*"
-                                value={item.qty}
-                                onChange={(e) => {
-                                  const val = e.target.value.replace(/[^0-9]/g, '');
-                                  if (val === '') {
-                                    handleUpdateQty(item.id, '');
-                                  } else {
-                                    handleUpdateQty(item.id, parseInt(val, 10));
-                                  }
-                                }}
-                                onBlur={() => {
-                                  if (!item.qty || Number(item.qty) < 1) {
-                                    handleUpdateQty(item.id, 1);
-                                  }
-                                }}
-                                style={styles.rowStepperInput}
-                                aria-label="Jumlah pesanan"
-                              />
-                              <button
-                                type="button"
-                                disabled={Number(item.qty) >= item.stok}
-                                onClick={() => handleUpdateQty(item.id, (Number(item.qty) || 0) + 1)}
-                                style={{
-                                  ...styles.btnRowStepper,
-                                  opacity: Number(item.qty) >= item.stok ? 0.35 : 1,
-                                  cursor: Number(item.qty) >= item.stok ? 'not-allowed' : 'pointer'
-                                }}
-                                aria-label="Tambah"
-                              >
-                                +
-                              </button>
-                            </div>
-                          </div>
 
-                          <div className="order-row-controls-responsive" style={styles.orderRowControls}>
-                            <div style={styles.orderRowUnitPrice}>
-                              {formatRupiah(item.hargaJual)}
-                            </div>
+      <button
+        type="button"
+        onClick={() => navigate('/keranjang')}
+        className="cart-floating-btn"
+        style={styles.floatingCartBtn}
+      >
+        <ShoppingCartOutlinedIcon sx={{ fontSize: 26, color: '#ffffff' }} />
+      </button>
 
-                            {/* Tombol Hapus Baris */}
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveItem(item.id)}
-                              style={styles.btnRowDelete}
-                              title={`Hapus ${item.nama}`}
-                              aria-label="Hapus"
-                            >
-                              <DeleteOutlineOutlinedIcon sx={{ fontSize: 19 }} />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Tombol Tambah Pesanan */}
-                  <button
-                    id="btn-tambah-pesanan"
-                    type="button"
-                    onClick={handleTambahModulLain}
-                    style={styles.btnTambahLain}
-                  >
-                    <AddCircleOutlineOutlinedIcon sx={{ fontSize: 19 }} />
-                    <span>Tambah Pesanan</span>
-                  </button>
-
-                  {/* Ringkasan Total Pembayaran */}
-                  <div style={styles.orderSummaryCard}>
-                    <div style={styles.summaryRow}>
-                      <span style={styles.summaryTotalLabel}>Total Pembayaran</span>
-                      <span style={styles.summaryTotalValue}>{formatRupiah(totalHarga)}</span>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Modal Footer */}
-            {orderItems.length > 0 && (
-              <div style={styles.modalFooter}>
-                <button
-                  id="btn-batal-pesanan"
-                  type="button"
-                  onClick={() => {
-                    setOrderItems([]);
-                    setIsOrderModalOpen(false);
-                  }}
-                  style={styles.btnBatalModal}
-                >
-                  Batal
-                </button>
-                <button
-                  id="btn-konfirmasi-pesanan"
-                  type="button"
-                  onClick={handleKonfirmasiPesanan}
-                  style={styles.btnKonfirmasiModal}
-                >
-                  <span>Buat Pesanan</span>
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Modal Konfirmasi Checkout Langsung */}
+      <ModalKonfirmasiPesanan
+        isOpen={isCheckoutModalOpen}
+        onClose={() => setIsCheckoutModalOpen(false)}
+        items={checkoutItem ? [{ ...checkoutItem, qty: 1 }] : []}
+        canEditQty={true}
+      />
     </div>
   );
 }
@@ -739,7 +574,7 @@ const styles = {
     color: '#1a3e2b',
     cursor: 'pointer'
   },
-  btnLihatPesananHeader: {
+  btnKeranjangHeader: {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
@@ -748,12 +583,21 @@ const styles = {
     color: '#ffffff',
     borderRadius: '10px',
     border: 'none',
-    fontSize: '13px',
+    fontSize: '13.5px',
     fontWeight: '700',
     cursor: 'pointer',
     boxShadow: '0 4px 12px rgba(35, 87, 60, 0.22)',
     transition: 'all 0.2s ease',
     marginLeft: 'auto'
+  },
+  cartBadgeCount: {
+    backgroundColor: '#ffffff',
+    color: '#23573c',
+    fontSize: '11.5px',
+    fontWeight: '800',
+    padding: '1px 7px',
+    borderRadius: '12px',
+    marginLeft: '2px'
   },
   catalogGrid: {
     display: 'grid',
@@ -767,8 +611,8 @@ const styles = {
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
-    cursor: 'pointer',
     userSelect: 'none',
+    border: '1px solid #e2e8f0',
     transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease'
   },
   coverWrapper: {
@@ -783,23 +627,6 @@ const styles = {
     padding: 0,
     boxSizing: 'border-box'
   },
-  selectedBadge: {
-    position: 'absolute',
-    top: '10px',
-    right: '10px',
-    backgroundColor: '#23573c',
-    color: '#ffffff',
-    borderRadius: '20px',
-    padding: '4px 10px',
-    fontSize: '11px',
-    fontWeight: '700',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '5px',
-    zIndex: 2,
-    backdropFilter: 'blur(4px)'
-  },
   coverImage: {
     width: '100%',
     height: '100%',
@@ -813,20 +640,24 @@ const styles = {
     flexDirection: 'column',
     flex: 1
   },
+  cardTopRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '6px'
+  },
   cardJenis: {
     display: 'inline-block',
-    alignSelf: 'flex-start',
     backgroundColor: '#eaf7ef',
     border: '1px solid #23573c',
     borderRadius: '8px',
     padding: '2px 8px',
     fontSize: '11px',
     fontWeight: '700',
-    color: '#23573c',
-    marginBottom: '6px'
+    color: '#23573c'
   },
   modulTitle: {
-    fontSize: '17px',
+    fontSize: '16.5px',
     fontWeight: '700',
     color: '#0f172a',
     margin: '0 0 6px 0',
@@ -834,19 +665,8 @@ const styles = {
   },
   priceRow: {
     display: 'flex',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: '14px'
-  },
-  priceBlock: {
-    display: 'flex',
-    flexDirection: 'column'
-  },
-  priceLabel: {
-    fontSize: '11.5px',
-    color: '#64748b',
-    fontWeight: '500',
-    marginBottom: '2px'
   },
   priceValue: {
     fontSize: '17px',
@@ -854,20 +674,45 @@ const styles = {
     color: '#23573c',
     lineHeight: 1.2
   },
-  btnPilihModul: {
+  cardActionRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    marginTop: 'auto'
+  },
+  btnTambahKeranjang: {
+    flex: 1.15,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '11px 16px',
+    gap: '6px',
+    padding: '10px 10px',
+    borderRadius: '10px',
+    border: '1px solid #23573c',
+    backgroundColor: '#eaf7ef',
+    color: '#23573c',
+    fontSize: '12.5px',
+    fontWeight: '700',
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
+    fontFamily: 'inherit'
+  },
+  btnBeliLangsung: {
+    flex: 0.85,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '5px',
+    padding: '10px 12px',
     borderRadius: '10px',
     border: 'none',
     backgroundColor: '#23573c',
     color: '#ffffff',
-    fontSize: '14.5px',
+    fontSize: '12.5px',
     fontWeight: '700',
-    marginTop: 'auto',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.15s ease',
+    boxShadow: '0 3px 8px rgba(35, 87, 60, 0.22)',
     fontFamily: 'inherit'
   },
   btnStokHabis: {
@@ -879,10 +724,10 @@ const styles = {
     border: 'none',
     backgroundColor: '#e2e8f0',
     color: '#94a3b8',
-    fontSize: '14.5px',
+    fontSize: '14px',
     fontWeight: '700',
     marginTop: 'auto',
-    cursor: 'pointer',
+    cursor: 'not-allowed',
     fontFamily: 'inherit'
   },
   emptyContainer: {
@@ -893,274 +738,40 @@ const styles = {
     textAlign: 'center',
     border: '1px solid #e2e8f0'
   },
-  // Modal Base Overlay
-  modalOverlay: {
+  floatingCartBtn: {
     position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 9999,
-    padding: '18px'
-  },
-  modalHeader: {
-    padding: '18px 24px',
-    borderBottom: '1px solid #e2e8f0',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#f8fafc'
-  },
-  modalHeaderTitle: {
-    fontSize: '16px',
-    fontWeight: '700',
-    color: '#0f172a',
-    margin: 0
-  },
-  modalHeaderSub: {
-    fontSize: '12px',
-    color: '#64748b',
-    fontWeight: '500',
-    marginTop: '2px',
-    display: 'block'
-  },
-  btnCloseModal: {
-    backgroundColor: 'transparent',
-    border: 'none',
-    color: '#64748b',
-    cursor: 'pointer',
-    padding: '4px',
-    display: 'flex'
-  },
-  // Modal Order Content (Lebar & Berbaris)
-  modalOrderContent: {
-    backgroundColor: '#ffffff',
-    borderRadius: '18px',
-    width: '640px',
-    maxWidth: '100%',
-    maxHeight: '90vh',
-    overflow: 'hidden',
-    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.28)',
-    display: 'flex',
-    flexDirection: 'column'
-  },
-  modalOrderBody: {
-    padding: '20px 24px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-    overflowY: 'auto'
-  },
-  orderRowsList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-    maxHeight: '340px',
-    overflowY: 'auto',
-    paddingRight: '4px'
-  },
-  orderRowItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '14px',
-    padding: '12px 14px',
-    backgroundColor: '#f8faf9',
-    borderRadius: '12px',
-    border: '1px solid #e2e8f0',
-    transition: 'border-color 0.15s ease'
-  },
-  orderRowThumb: {
-    width: '54px',
-    height: '74px',
-    objectFit: 'cover',
-    borderRadius: '8px',
-    flexShrink: 0,
-    boxShadow: '0 2px 6px rgba(0,0,0,0.08)'
-  },
-  orderRowContentWrap: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flex: 1,
-    minWidth: 0,
-    gap: '14px'
-  },
-  orderRowInfo: {
-    flex: 1,
-    minWidth: 0
-  },
-  orderRowStok: {
-    fontSize: '12.5px',
-    fontWeight: '600',
-    color: '#475569',
-    userSelect: 'text',
-    display: 'inline-block',
-    marginBottom: '2px'
-  },
-  orderRowTitle: {
-    fontSize: '14.5px',
-    fontWeight: '700',
-    color: '#0f172a',
-    margin: '0',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap'
-  },
-  orderRowControls: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '14px',
-    flexShrink: 0
-  },
-  orderRowUnitPrice: {
-    fontSize: '15px',
-    fontWeight: '800',
-    color: '#23573c'
-  },
-  orderRowStepperWrap: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    marginTop: '6px',
-    flexShrink: 0
-  },
-  btnRowStepper: {
-    width: '28px',
-    height: '28px',
-    borderRadius: '6px',
-    border: 'none',
+    bottom: '28px',
+    right: '32px',
+    width: '56px',
+    height: '56px',
+    borderRadius: '50%',
     backgroundColor: '#23573c',
-    color: '#ffffff',
-    fontSize: '15px',
-    fontWeight: '700',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'background-color 0.15s ease'
-  },
-  rowStepperInput: {
-    width: '42px',
-    textAlign: 'center',
-    fontSize: '14.5px',
-    fontWeight: '700',
-    color: '#0f172a',
-    backgroundColor: 'transparent',
     border: 'none',
-    outline: 'none',
-    padding: '4px 0',
-    fontFamily: 'inherit',
-    userSelect: 'text'
-  },
-  btnRowDelete: {
-    width: '32px',
-    height: '32px',
-    borderRadius: '8px',
-    border: '1px solid #fecaca',
-    backgroundColor: '#fff5f5',
-    color: '#dc2626',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
-    flexShrink: 0,
-    transition: 'all 0.15s ease'
+    boxShadow: '0 8px 24px rgba(35, 87, 60, 0.38)',
+    zIndex: 990,
+    transition: 'transform 0.2s ease, box-shadow 0.2s ease'
   },
-  btnTambahLain: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '8px',
-    padding: '12px 18px',
-    borderRadius: '12px',
-    border: '1px solid #23573c',
-    backgroundColor: '#f6faf7',
-    color: '#23573c',
-    fontSize: '13.5px',
-    fontWeight: '700',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease',
-    width: '100%',
-    boxSizing: 'border-box'
-  },
-  orderSummaryCard: {
-    backgroundColor: '#f6faf7',
-    border: '1px solid #23573c',
-    borderRadius: '12px',
-    padding: '14px 18px',
-    display: 'flex',
-    flexDirection: 'column'
-  },
-  summaryRow: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between'
-  },
-  summaryTotalLabel: {
-    fontSize: '16.5px',
+  floatingCartBadge: {
+    position: 'absolute',
+    top: '-4px',
+    right: '-4px',
+    backgroundColor: '#ef4444',
+    color: '#ffffff',
+    fontSize: '11.5px',
     fontWeight: '800',
-    color: '#0f291e'
-  },
-  summaryTotalValue: {
-    fontSize: '21px',
-    fontWeight: '800',
-    color: '#23573c'
-  },
-  emptyOrderBox: {
-    padding: '40px 20px',
-    textAlign: 'center',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '12px'
-  },
-  btnPilihDariKatalog: {
-    padding: '10px 20px',
-    borderRadius: '10px',
-    backgroundColor: '#23573c',
-    color: '#ffffff',
-    border: 'none',
-    fontSize: '13px',
-    fontWeight: '700',
-    cursor: 'pointer'
-  },
-  modalFooter: {
-    padding: '14px 24px',
-    borderTop: '1px solid #e2e8f0',
+    minWidth: '22px',
+    height: '22px',
+    borderRadius: '11px',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: '10px',
-    backgroundColor: '#f8fafc'
-  },
-  btnBatalModal: {
-    padding: '9px 22px',
-    borderRadius: '10px',
-    border: '1px solid #23573c',
-    backgroundColor: '#ffffff',
-    color: '#23573c',
-    fontSize: '13.5px',
-    fontWeight: '700',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease'
-  },
-  btnKonfirmasiModal: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '10px 22px',
-    borderRadius: '9px',
-    border: 'none',
-    backgroundColor: '#23573c',
-    color: '#ffffff',
-    fontSize: '13.5px',
-    fontWeight: '700',
-    cursor: 'pointer',
-    boxShadow: '0 4px 14px rgba(35, 87, 60, 0.28)'
+    justifyContent: 'center',
+    padding: '0 5px',
+    boxShadow: '0 2px 6px rgba(0,0,0,0.25)',
+    border: '2px solid #ffffff'
   },
   toast: {
     position: 'fixed',

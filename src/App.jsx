@@ -12,6 +12,8 @@ import StatusPengiriman from "./pages/admin-superadmin/StatusPengiriman";
 import Profile from "./pages/admin-superadmin/Profile";
 import LaporanStok from "./pages/admin-superadmin/LaporanStok";
 import KatalogModul from "./pages/peserta/KatalogModul";
+import PesananSaya from "./pages/PesananSaya";
+import Keranjang from "./pages/Keranjang";
 import './index.css';
 
 function App() {
@@ -31,6 +33,8 @@ function App() {
         <Route path="/laporan-stok" element={<LaporanStok />} />
         <Route path="/katalog-modul" element={<KatalogModul />} />
         <Route path="/katalog" element={<KatalogModul />} />
+        <Route path="/keranjang" element={<Keranjang />} />
+        <Route path="/pesanan" element={<PesananSaya />} />
         <Route path="/profil" element={<Profile />} />
         <Route path="/" element={<Dashboard />} />
       </Routes>
