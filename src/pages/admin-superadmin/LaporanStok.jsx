@@ -563,7 +563,6 @@ function LaporanPengirimanDatePickerInput({
               }}
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f3f4')}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-              title={isMonthYearOpen ? 'Kembali ke Kalender Hari' : 'Pilih Bulan & Tahun'}
             >
               <span>{CALENDAR_MONTH_NAMES[viewMonth]} {viewYear}</span>
               <span
@@ -584,7 +583,6 @@ function LaporanPengirimanDatePickerInput({
                 <button
                   type="button"
                   onClick={prevMonth}
-                  title="Bulan sebelumnya"
                   style={{
                     background: 'none',
                     border: 'none',
@@ -610,7 +608,6 @@ function LaporanPengirimanDatePickerInput({
                 <button
                   type="button"
                   onClick={nextMonth}
-                  title="Bulan berikutnya"
                   style={{
                     background: 'none',
                     border: 'none',
@@ -995,7 +992,6 @@ function SearchableModulDropdown({ value, onChange, options = [] }) {
     >
       <div
         onClick={handleTriggerClick}
-        title={isAllSelected ? 'Semua Modul' : selectedValues.join(', ')}
         style={{
           display: 'flex',
           alignItems: 'center',
