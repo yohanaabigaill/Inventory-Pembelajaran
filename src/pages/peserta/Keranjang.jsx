@@ -143,7 +143,7 @@ export default function Keranjang() {
           onToggleSidebar={() => setIsMobileSidebarOpen((prev) => !prev)}
         />
 
-        <main style={styles.contentBody}>
+        <main className="cart-content-body" style={styles.contentBody}>
           {/* Toast */}
           {notification && (
             <div
@@ -194,47 +194,17 @@ export default function Keranjang() {
             </div>
           ) : (
             /* Tabel keranjang */
-            <div style={styles.cartTableCard}>
-              {/* Header tabel */}
-              <div style={styles.tableHeaderRow}>
-                <div style={styles.colCheckbox}>
-                  <label style={styles.selectAllLabel}>
-                    <Checkbox
-                      size="small"
-                      checked={isAllChecked}
-                      onChange={(e) => handleToggleSelectAll(e.target.checked)}
-                      sx={{
-                        color: '#23573c',
-                        '&.Mui-checked': { color: '#23573c' },
-                        padding: '4px'
-                      }}
-                    />
-                    <span style={styles.headerColText}>Pilih Semua ({cartItems.length})</span>
-                  </label>
-                </div>
-                <div style={{ ...styles.colModul, ...styles.headerColText }}>Produk Modul</div>
-                <div style={{ ...styles.colPrice, ...styles.headerColText }}>Harga Satuan</div>
-                <div style={{ ...styles.colQty, ...styles.headerColText }}>Jumlah</div>
-                <div style={{ ...styles.colSubtotal, ...styles.headerColText }}>Total Harga</div>
-                <div style={{ ...styles.colAction, ...styles.headerColText }}>Aksi</div>
-              </div>
-
-              {/* Daftar item */}
-              <div style={styles.tableBody}>
-                {cartItems.map((item) => (
-                  <div
-                    key={item.id}
-                    style={{
-                      ...styles.tableItemRow,
-                      backgroundColor: item.checked ? '#ffffff' : '#fcfdfd'
-                    }}
-                  >
-                    {/* Checkbox */}
-                    <div style={styles.colCheckbox}>
+            <div className="cart-table-card" style={styles.cartTableCard}>
+              <div className="cart-table-scroll-container">
+                <div className="cart-table-inner">
+                  {/* Header tabel */}
+                  <div className="cart-table-header" style={styles.tableHeaderRow}>
+                    <div className="cart-col-checkbox" style={styles.colCheckbox}>
                       <Checkbox
                         size="small"
-                        checked={!!item.checked}
-                        onChange={(e) => handleToggleItemCheck(item.id, e.target.checked)}
+                        checked={isAllChecked}
+                        onChange={(e) => handleToggleSelectAll(e.target.checked)}
+                        title="Pilih Semua Modul"
                         sx={{
                           color: '#23573c',
                           '&.Mui-checked': { color: '#23573c' },
@@ -242,108 +212,153 @@ export default function Keranjang() {
                         }}
                       />
                     </div>
-
-                    {/* Info modul */}
-                    <div style={styles.colModul}>
-                      <img src={item.cover} alt={item.nama} style={styles.itemThumb} />
-                      <div style={styles.itemDetailWrap}>
-                        <span style={styles.itemKategori}>{item.kategori}</span>
-                        <h4 style={styles.itemTitle}>{item.nama}</h4>
-                        <span style={styles.itemStokInfo}>Sisa stok: {item.stok}</span>
-                      </div>
+                    <div className="cart-col-modul" style={{ ...styles.colModul, ...styles.headerColText }}>
+                      Produk Modul ({cartItems.length})
                     </div>
-
-                    {/* Harga satuan */}
-                    <div style={styles.colPrice}>
-                      <span style={styles.itemUnitPrice}>{formatRupiah(item.hargaJual)}</span>
+                    <div className="cart-col-price" style={{ ...styles.colPrice, ...styles.headerColText }}>
+                      Harga Satuan
                     </div>
-
-                    {/* Stepper qty */}
-                    <div style={styles.colQty}>
-                      <div style={styles.stepperContainer}>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleUpdateCartQty(item.id, (Number(item.qty) || 1) - 1)
-                          }
-                          style={styles.btnStepper}
-                          aria-label="Kurangi"
-                        >
-                          -
-                        </button>
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          value={item.qty}
-                          onChange={(e) => {
-                            const val = e.target.value.replace(/[^0-9]/g, '');
-                            handleUpdateCartQty(
-                              item.id,
-                              val === '' ? '' : parseInt(val, 10)
-                            );
-                          }}
-                          onBlur={() => {
-                            if (!item.qty || Number(item.qty) < 1) {
-                              handleUpdateCartQty(item.id, 1);
-                            }
-                          }}
-                          style={styles.stepperInput}
-                          aria-label="Jumlah"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (Number(item.qty) >= item.stok) {
-                              showToast('Jumlah melebihi sisa stok', 'error');
-                              return;
-                            }
-                            handleUpdateCartQty(item.id, (Number(item.qty) || 0) + 1);
-                          }}
-                          style={{
-                            ...styles.btnStepper,
-                            opacity: Number(item.qty) >= item.stok ? 0.35 : 1,
-                            cursor:
-                              Number(item.qty) >= item.stok ? 'not-allowed' : 'pointer'
-                          }}
-                          aria-label="Tambah"
-                        >
-                          +
-                        </button>
-                      </div>
+                    <div className="cart-col-qty" style={{ ...styles.colQty, ...styles.headerColText }}>
+                      Jumlah
                     </div>
-
-                    {/* Subtotal */}
-                    <div style={styles.colSubtotal}>
-                      <span style={styles.itemSubtotalPrice}>
-                        {formatRupiah(item.hargaJual * (Number(item.qty) || 0))}
-                      </span>
+                    <div className="cart-col-subtotal" style={{ ...styles.colSubtotal, ...styles.headerColText }}>
+                      Total Harga
                     </div>
-
-                    {/* Aksi */}
-                    <div style={styles.colAction}>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveFromCart(item.id)}
-                        style={styles.btnRowDelete}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <polyline points="3 6 5 6 21 6" />
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                        </svg>
-                      </button>
+                    <div className="cart-col-action" style={{ ...styles.colAction, ...styles.headerColText }}>
+                      Aksi
                     </div>
                   </div>
-                ))}
+
+                  {/* Daftar item */}
+                  <div className="cart-table-body" style={styles.tableBody}>
+                    {cartItems.map((item) => (
+                      <div
+                        key={item.id}
+                        className="cart-item-row"
+                        style={{
+                          ...styles.tableItemRow,
+                          backgroundColor: item.checked ? '#ffffff' : '#fcfdfd'
+                        }}
+                      >
+                        {/* Checkbox */}
+                        <div className="cart-col-checkbox" style={styles.colCheckbox}>
+                          <Checkbox
+                            size="small"
+                            checked={!!item.checked}
+                            onChange={(e) => handleToggleItemCheck(item.id, e.target.checked)}
+                            sx={{
+                              color: '#23573c',
+                              '&.Mui-checked': { color: '#23573c' },
+                              padding: '4px'
+                            }}
+                          />
+                        </div>
+
+                        {/* Info modul */}
+                        <div className="cart-col-modul" style={styles.colModul}>
+                          <img src={item.cover} alt={item.nama} className="cart-item-thumb" style={styles.itemThumb} />
+                          <div style={styles.itemDetailWrap}>
+                            <span style={styles.itemKategori}>{item.kategori}</span>
+                            <h4 style={styles.itemTitle}>{item.nama}</h4>
+                            <span style={styles.itemStokInfo}>Sisa stok: {item.stok}</span>
+                          </div>
+                        </div>
+
+                        {/* Harga satuan */}
+                        <div className="cart-col-price" style={styles.colPrice}>
+                          <span style={styles.itemUnitPrice}>{formatRupiah(item.hargaJual)}</span>
+                        </div>
+
+                        {/* Stepper qty */}
+                        <div className="cart-col-qty" style={styles.colQty}>
+                          <div style={styles.stepperContainer}>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleUpdateCartQty(item.id, (Number(item.qty) || 1) - 1)
+                              }
+                              style={styles.btnStepper}
+                              aria-label="Kurangi"
+                            >
+                              -
+                            </button>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              pattern="[0-9]*"
+                              value={item.qty}
+                              onChange={(e) => {
+                                const val = e.target.value.replace(/[^0-9]/g, '');
+                                handleUpdateCartQty(
+                                  item.id,
+                                  val === '' ? '' : parseInt(val, 10)
+                                );
+                              }}
+                              onBlur={() => {
+                                if (!item.qty || Number(item.qty) < 1) {
+                                  handleUpdateCartQty(item.id, 1);
+                                }
+                              }}
+                              style={styles.stepperInput}
+                              aria-label="Jumlah"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (Number(item.qty) >= item.stok) {
+                                  showToast('Jumlah melebihi sisa stok', 'error');
+                                  return;
+                                }
+                                handleUpdateCartQty(item.id, (Number(item.qty) || 0) + 1);
+                              }}
+                              style={{
+                                ...styles.btnStepper,
+                                opacity: Number(item.qty) >= item.stok ? 0.35 : 1,
+                                cursor:
+                                  Number(item.qty) >= item.stok ? 'not-allowed' : 'pointer'
+                              }}
+                              aria-label="Tambah"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Subtotal */}
+                        <div className="cart-col-subtotal" style={styles.colSubtotal}>
+                          <span style={styles.itemSubtotalPrice}>
+                            {formatRupiah(item.hargaJual * (Number(item.qty) || 0))}
+                          </span>
+                        </div>
+
+                        {/* Aksi */}
+                        <div className="cart-col-action" style={styles.colAction}>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveFromCart(item.id)}
+                            style={styles.btnRowDelete}
+                            title="Hapus dari keranjang"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <polyline points="3 6 5 6 21 6" />
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Footer bar */}
-              <div style={styles.stickyFooterBar}>
-                <div style={styles.footerLeft}>
+              <div className="cart-sticky-footer" style={styles.stickyFooterBar}>
+                <div className="cart-footer-left" style={styles.footerLeft}>
                   {checkedItems.length > 0 && (
                     <button
                       type="button"
                       onClick={handleRemoveSelected}
+                      className="btn-delete-selected"
                       style={styles.btnDeleteSelected}
                     >
                       Hapus yang dipilih ({checkedItems.length})
@@ -351,10 +366,10 @@ export default function Keranjang() {
                   )}
                 </div>
 
-                <div style={styles.footerRight}>
-                  <div style={styles.totalSummaryWrap}>
-                    <span style={styles.totalSummaryLabel}>Total</span>
-                    <span style={styles.totalSummaryPrice}>
+                <div className="cart-footer-right" style={styles.footerRight}>
+                  <div className="cart-total-summary-wrap" style={styles.totalSummaryWrap}>
+                    <span className="cart-total-summary-label" style={styles.totalSummaryLabel}>Total</span>
+                    <span className="cart-total-summary-price" style={styles.totalSummaryPrice}>
                       {formatRupiah(checkedTotalHarga)}
                     </span>
                   </div>
@@ -363,6 +378,7 @@ export default function Keranjang() {
                     id="btn-checkout-page"
                     type="button"
                     onClick={handleProceedToCheckout}
+                    className="btn-checkout"
                     style={styles.btnCheckout}
                   >
                     <span>Checkout ({checkedCount})</span>
@@ -399,6 +415,8 @@ const styles = {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
+    minWidth: 0,
+    width: '100%',
     overflowX: 'hidden',
     backgroundColor: '#f8faf9'
   },
@@ -406,7 +424,10 @@ const styles = {
     padding: '24px 32px 40px',
     display: 'flex',
     flexDirection: 'column',
-    gap: '18px'
+    gap: '18px',
+    minWidth: 0,
+    width: '100%',
+    boxSizing: 'border-box'
   },
   topBar: {
     display: 'flex',
@@ -434,7 +455,10 @@ const styles = {
     borderRadius: '16px',
     border: '1px solid #e2e8f0',
     boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
-    overflow: 'hidden'
+    overflow: 'hidden',
+    minWidth: 0,
+    width: '100%',
+    boxSizing: 'border-box'
   },
   tableHeaderRow: {
     display: 'flex',
@@ -444,9 +468,11 @@ const styles = {
     borderBottom: '1px solid #dce4de'
   },
   colCheckbox: {
-    width: '180px',
+    width: '56px',
+    minWidth: '56px',
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'center',
     flexShrink: 0
   },
   colModul: {
@@ -628,7 +654,8 @@ const styles = {
   footerRight: {
     display: 'flex',
     alignItems: 'center',
-    gap: '24px'
+    gap: '24px',
+    marginLeft: 'auto'
   },
   totalSummaryWrap: {
     display: 'flex',
