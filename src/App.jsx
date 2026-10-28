@@ -12,8 +12,8 @@ import StatusPengiriman from "./pages/admin-superadmin/StatusPengiriman";
 import Profile from "./pages/admin-superadmin/Profile";
 import LaporanStok from "./pages/admin-superadmin/LaporanStok";
 import KatalogModul from "./pages/peserta/KatalogModul";
-import PesananSaya from "./pages/PesananSaya";
-import Keranjang from "./pages/Keranjang";
+import PesananSaya from "./pages/peserta/PesananSaya";
+import Keranjang from "./pages/peserta/Keranjang";
 import './index.css';
 
 function App() {
