@@ -1068,8 +1068,8 @@ export default function PesananSaya() {
                       {selectedOrderModal.metodePengiriman === 'Ambil di RSQ Pusat'
                         ? 'LOKASI PENGAMBILAN'
                         : selectedOrderModal.metodePengiriman === 'Titip ke Ustazah'
-                        ? 'KETERANGAN TITIP USTAZAH'
-                        : 'ALAMAT PENGIRIMAN'}
+                          ? 'KETERANGAN TITIP USTAZAH'
+                          : 'ALAMAT PENGIRIMAN'}
                     </span>
                     <p style={styles.infoValue}>
                       {selectedOrderModal.alamat ||

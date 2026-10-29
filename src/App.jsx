@@ -14,7 +14,7 @@ import LaporanStok from "./pages/admin-superadmin/LaporanStok";
 import KatalogModul from "./pages/peserta/KatalogModul";
 import PesananSaya from "./pages/peserta/PesananSaya";
 import Keranjang from "./pages/peserta/Keranjang";
-import Checkout from "./pages/Checkout";
+import Checkout from "./pages/peserta/Checkout";
 import './index.css';
 
 function ScrollToTop() {
