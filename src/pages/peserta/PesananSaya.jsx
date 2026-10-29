@@ -540,8 +540,9 @@ export default function PesananSaya() {
     showToast('Pesanan berhasil dibatalkan', 'success');
   };
 
-  // Reset data dummy
+  // Reset data dummy 
   useEffect(() => {
+    window.scrollTo(0, 0);
     try {
       localStorage.removeItem('inventory_rsq_pesanan');
     } catch (e) {

@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import Navbar from '../../components/Navbar';
-import ModalKonfirmasiPesanan from '../../components/ModalKonfirmasiPesanan';
 
 // Cover Modul
 import coverAsasi from '../../assets/asasi.jpg';
@@ -242,9 +241,6 @@ export default function KatalogModul() {
     }
   });
 
-  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
-  const [checkoutItem, setCheckoutItem] = useState(null);
-
   // Toast Notifikasi
   const [notification, setNotification] = useState(null);
 
@@ -301,11 +297,16 @@ export default function KatalogModul() {
     showToast('Berhasil ditambahkan ke keranjang');
   };
 
-  // Beli Langsung Buka Modal Konfirmasi Pemesanan Modul
+  // Beli Langsung  Menuju ke Halaman Checkout
   const handleBuyNow = (modul) => {
     if (modul.stok === 0) return;
-    setCheckoutItem(modul);
-    setIsCheckoutModalOpen(true);
+    navigate('/checkout', {
+      state: {
+        items: [{ ...modul, qty: 1 }],
+        canEditQty: true,
+        from: 'katalog'
+      }
+    });
   };
 
   return (
@@ -494,14 +495,6 @@ export default function KatalogModul() {
       >
         <ShoppingCartOutlinedIcon sx={{ fontSize: 26, color: '#ffffff' }} />
       </button>
-
-      {/* Modal Konfirmasi Checkout Langsung */}
-      <ModalKonfirmasiPesanan
-        isOpen={isCheckoutModalOpen}
-        onClose={() => setIsCheckoutModalOpen(false)}
-        items={checkoutItem ? [{ ...checkoutItem, qty: 1 }] : []}
-        canEditQty={true}
-      />
     </div>
   );
 }
