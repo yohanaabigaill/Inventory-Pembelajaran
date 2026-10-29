@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
+import Sidebar from '../../components/Sidebar';
+import Navbar from '../../components/Navbar';
 
 // Icons
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
@@ -17,8 +17,8 @@ import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
 import ZoomInOutlinedIcon from '@mui/icons-material/ZoomInOutlined';
 
 // Covers
-import coverAsasi from '../assets/asasi.jpg';
-import { INITIAL_DEMO_PESANAN } from './peserta/PesananSaya';
+import coverAsasi from '../../assets/asasi.jpg';
+import { INITIAL_DEMO_PESANAN } from './PesananSaya';
 
 export default function DetailPesanan() {
   const navigate = useNavigate();
