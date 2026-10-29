@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import Navbar from '../../components/Navbar';
-import ModalKonfirmasiPesanan from '../../components/ModalKonfirmasiPesanan';
 
 // Icons
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
@@ -24,9 +23,6 @@ export default function Keranjang() {
       return [];
     }
   });
-
-  // State modal checkout
-  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
 
 
   // Toast
@@ -118,13 +114,19 @@ export default function Keranjang() {
     showToast(`${checkedItems.length} modul terpilih dihapus dari keranjang`);
   };
 
-  // Buka checkout
+  // Buka checkout 
   const handleProceedToCheckout = () => {
     if (checkedItems.length === 0) {
       showToast('Pilih setidaknya 1 modul untuk checkout', 'error');
       return;
     }
-    setIsCheckoutModalOpen(true);
+    navigate('/checkout', {
+      state: {
+        items: checkedItems,
+        canEditQty: false,
+        from: 'keranjang'
+      }
+    });
   };
 
 
@@ -389,17 +391,6 @@ export default function Keranjang() {
           )}
         </main>
       </div>
-
-      {/* Modal checkout */}
-      <ModalKonfirmasiPesanan
-        isOpen={isCheckoutModalOpen}
-        onClose={() => setIsCheckoutModalOpen(false)}
-        items={checkedItems}
-        canEditQty={false}
-        onSuccess={() => {
-          setCartItems((prev) => prev.filter((item) => !item.checked));
-        }}
-      />
     </div>
   );
 }

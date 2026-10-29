@@ -1,5 +1,5 @@
-import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import React, { useEffect } from "react";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { authRoutes } from "./routes/authRoutes";
 import Dashboard from "./pages/admin-superadmin/Dashboard";
 import DataModul from "./pages/admin-superadmin/DataModul";
@@ -14,11 +14,23 @@ import LaporanStok from "./pages/admin-superadmin/LaporanStok";
 import KatalogModul from "./pages/peserta/KatalogModul";
 import PesananSaya from "./pages/peserta/PesananSaya";
 import Keranjang from "./pages/peserta/Keranjang";
+import Checkout from "./pages/peserta/Checkout";
 import './index.css';
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
 
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         {authRoutes}
         <Route path="/dashboard" element={<Dashboard />} />
@@ -33,6 +45,8 @@ function App() {
         <Route path="/laporan-stok" element={<LaporanStok />} />
         <Route path="/katalog-modul" element={<KatalogModul />} />
         <Route path="/keranjang" element={<Keranjang />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/konfirmasi-pesanan" element={<Checkout />} />
         <Route path="/pesanan" element={<PesananSaya />} />
         <Route path="/profil" element={<Profile />} />
         <Route path="/" element={<Dashboard />} />
