@@ -12,7 +12,6 @@ import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
-import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 
 export default function Sidebar({
   role = 'admin', // admin / super_admin / peserta
@@ -109,11 +108,6 @@ export default function Sidebar({
           name: 'Pesanan',
           path: '/pesanan',
           icon: <ShoppingCartOutlinedIcon sx={{ fontSize: 20 }} />
-        },
-        {
-          name: 'Riwayat & Kwitansi',
-          path: '/riwayat-kwitansi',
-          icon: <ReceiptLongOutlinedIcon sx={{ fontSize: 20 }} />
         }
       ]
     }
