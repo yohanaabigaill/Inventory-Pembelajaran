@@ -138,7 +138,7 @@ export default function Sidebar({
             <div key={idx} style={styles.sectionContainer}>
               {section.title ? <div style={styles.sectionTitle}>{section.title}</div> : null}
               {section.items.map((item, itemIdx) => {
-                const isActive = item.name === activeMenu;
+                const isActive = !showLogoutModal && item.name === activeMenu;
                 return (
                   <div
                     key={itemIdx}
@@ -164,26 +164,29 @@ export default function Sidebar({
           <div
             style={{
               ...styles.footerItem,
-              ...(activeMenu === 'Profil Saya' ? styles.footerItemActive : {})
+              ...(!showLogoutModal && activeMenu === 'Profil Saya' ? styles.footerItemActive : {})
             }}
             onClick={() => navigate('/profil')}
           >
-            <span style={activeMenu === 'Profil Saya' ? styles.navIconActive : styles.navIcon}>
+            <span style={!showLogoutModal && activeMenu === 'Profil Saya' ? styles.navIconActive : styles.navIcon}>
               <PersonOutlineOutlinedIcon sx={{ fontSize: 20 }} />
             </span>
             <span style={styles.footerLabel}>Profil Saya</span>
           </div>
           <div
-            style={{ ...styles.footerItem, color: '#c62828' }}
+            style={{
+              ...styles.footerItem,
+              ...(showLogoutModal ? styles.footerItemActive : { color: '#c62828' })
+            }}
             onClick={() => {
               onClose();
               setShowLogoutModal(true);
             }}
           >
-            <span style={{ display: 'flex', alignItems: 'center', color: '#c62828' }}>
+            <span style={{ display: 'flex', alignItems: 'center', color: showLogoutModal ? '#ffffff' : '#c62828' }}>
               <LogoutOutlinedIcon sx={{ fontSize: 20 }} />
             </span>
-            <span style={{ ...styles.footerLabel, color: '#c62828' }}>Keluar</span>
+            <span style={{ ...styles.footerLabel, color: showLogoutModal ? '#ffffff' : '#c62828' }}>Keluar</span>
           </div>
         </div>
       </aside>
@@ -200,7 +203,7 @@ export default function Sidebar({
           >
             <div style={styles.modalBody}>
               <div style={styles.modalIconBox}>
-                <LogoutOutlinedIcon sx={{ fontSize: 32, color: '#dc2626' }} />
+                <LogoutOutlinedIcon sx={{ fontSize: 32, color: '#23573c' }} />
               </div>
               <h3 style={styles.modalTitle}>Konfirmasi Keluar</h3>
               <p style={styles.modalDesc}>
@@ -365,7 +368,6 @@ const styles = {
     right: 0,
     bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.45)',
-    backdropFilter: 'blur(3px)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -394,7 +396,7 @@ const styles = {
     width: '60px',
     height: '60px',
     borderRadius: '50%',
-    backgroundColor: '#fee2e2',
+    backgroundColor: '#dcfce7',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',

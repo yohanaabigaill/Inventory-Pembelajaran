@@ -1765,7 +1765,7 @@ export default function VerifikasiPembayaran() {
 
       {/* Modal Pratinjau Kuitansi */}
       {selectedKwitansi && (
-        <div style={{ ...styles.modalOverlay, zIndex: 10002 }} onClick={() => setSelectedKwitansi(null)}>
+        <div style={{ ...styles.modalOverlay, zIndex: 999999, backgroundColor: 'rgba(0, 0, 0, 0.45)' }} onClick={() => setSelectedKwitansi(null)}>
           <div
             style={styles.kwitansiModalContainer}
             onClick={(e) => e.stopPropagation()}
@@ -1779,7 +1779,6 @@ export default function VerifikasiPembayaran() {
                   type="button"
                   onClick={handlePrintKwitansi}
                   style={styles.btnDownloadPdf}
-                  title="Unduh sebagai file PDF atau Cetak Kuitansi"
                 >
                   <FileDownloadOutlinedIcon sx={{ fontSize: 19 }} />
                   <span>Unduh Kuitansi (PDF)</span>
@@ -2954,14 +2953,14 @@ const styles = {
     boxShadow: '0 2px 8px rgba(35, 87, 60, 0.25)'
   },
   kwitansiModalContainer: {
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#ffffff',
     borderRadius: '16px',
     maxWidth: '600px',
     width: '95%',
     maxHeight: '92vh',
     display: 'flex',
     flexDirection: 'column',
-    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)',
     overflow: 'hidden'
   },
   kwitansiActionBar: {
@@ -2990,13 +2989,13 @@ const styles = {
   },
   kwitansiPaper: {
     backgroundColor: '#ffffff',
-    margin: '20px auto',
-    padding: '24px 30px',
+    margin: '0 auto',
+    padding: '20px 30px 28px',
     width: '100%',
-    maxWidth: '540px',
+    maxWidth: '560px',
     boxSizing: 'border-box',
-    borderRadius: '4px',
-    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+    borderRadius: '0 0 16px 16px',
+    boxShadow: 'none',
     overflowY: 'auto',
     fontFamily: "'Times New Roman', Times, serif, 'Poppins', sans-serif"
   },
