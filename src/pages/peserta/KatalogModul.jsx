@@ -19,7 +19,6 @@ import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import AddShoppingCartOutlinedIcon from '@mui/icons-material/AddShoppingCartOutlined';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
-import { Checkbox, FormControlLabel, Typography } from '@mui/material';
 
 // Custom Dropdown
 function CustomDropdown({
@@ -157,6 +156,13 @@ const KATEGORI_OPTIONS = [
   'Al Quran'
 ];
 
+// Filter status stok
+const STATUS_STOK_OPTIONS = [
+  'Semua Status',
+  'Tersedia',
+  'Tidak Tersedia'
+];
+
 // Data Modul
 const INITIAL_MODULS = [
   {
@@ -230,7 +236,7 @@ export default function KatalogModul() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedKategori, setSelectedKategori] = useState('Semua Jenis');
-  const [onlyAvailableStock, setOnlyAvailableStock] = useState(false);
+  const [selectedStatusStok, setSelectedStatusStok] = useState('Semua Status');
 
   // Cart State 
   const [cartItems, setCartItems] = useState(() => {
@@ -264,11 +270,14 @@ export default function KatalogModul() {
     }
   }, [cartItems]);
 
-  // Filter modul berdasarkan pencarian, kategori, dan stok tersedia
+  // Filter modul berdasarkan pencarian, kategori, dan status stok
   const filteredModuls = INITIAL_MODULS.filter((item) => {
     const matchSearch = item.nama.toLowerCase().includes(searchTerm.toLowerCase());
     const matchKategori = selectedKategori === 'Semua Jenis' || item.kategori === selectedKategori;
-    const matchStock = !onlyAvailableStock || item.stok > 0;
+    const matchStock =
+      selectedStatusStok === 'Semua Status' ||
+      (selectedStatusStok === 'Tersedia' && item.stok > 0) ||
+      (selectedStatusStok === 'Tidak Tersedia' && item.stok === 0);
     return matchSearch && matchKategori && matchStock;
   });
 
@@ -372,28 +381,15 @@ export default function KatalogModul() {
                 arrowColor="#1a3e2b"
               />
 
-              {/* Checkbox Stok Tersedia */}
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    size="small"
-                    checked={onlyAvailableStock}
-                    onChange={(e) => setOnlyAvailableStock(e.target.checked)}
-                    sx={{
-                      color: '#23573c',
-                      '&.Mui-checked': { color: '#23573c' },
-                      padding: '4px'
-                    }}
-                  />
-                }
-                label={
-                  <Typography
-                    sx={{ color: '#162a20', fontSize: '13px', fontWeight: 600, userSelect: 'none' }}
-                  >
-                    Stok Tersedia
-                  </Typography>
-                }
-                sx={{ ml: { xs: 0, sm: 0.5 }, mr: 0, userSelect: 'none' }}
+              {/* Dropdown Status Stok */}
+              <CustomDropdown
+                value={selectedStatusStok}
+                onChange={(val) => setSelectedStatusStok(val)}
+                options={STATUS_STOK_OPTIONS}
+                className="select-wrapper-responsive"
+                style={{ width: '160px' }}
+                selectStyle={styles.customSelect}
+                arrowColor="#1a3e2b"
               />
             </div>
           </div>
@@ -618,19 +614,23 @@ const styles = {
   coverWrapper: {
     position: 'relative',
     width: '100%',
-    aspectRatio: '1 / 1.38',
-    backgroundColor: '#f1f5f9',
+    height: '300px',
+    backgroundColor: '#f4f7f5',
     overflow: 'hidden',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 0,
+    padding: '6px 8px',
     boxSizing: 'border-box'
   },
   coverImage: {
-    width: '100%',
+    maxWidth: '100%',
+    maxHeight: '100%',
+    width: 'auto',
     height: '100%',
-    objectFit: 'cover',
+    objectFit: 'contain',
+    borderRadius: '6px',
+    boxShadow: '0 4px 14px rgba(0, 0, 0, 0.08)',
     display: 'block',
     transition: 'transform 0.35s ease'
   },
@@ -695,7 +695,9 @@ const styles = {
     fontWeight: '700',
     cursor: 'pointer',
     transition: 'all 0.15s ease',
-    fontFamily: 'inherit'
+    fontFamily: 'inherit',
+    minHeight: '38px',
+    boxSizing: 'border-box'
   },
   btnBeliLangsung: {
     flex: 0.85,
@@ -713,22 +715,26 @@ const styles = {
     cursor: 'pointer',
     transition: 'all 0.15s ease',
     boxShadow: '0 3px 8px rgba(35, 87, 60, 0.22)',
-    fontFamily: 'inherit'
+    fontFamily: 'inherit',
+    minHeight: '38px',
+    boxSizing: 'border-box'
   },
   btnStokHabis: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '11px 16px',
+    padding: '10px 12px',
     borderRadius: '10px',
     border: 'none',
     backgroundColor: '#e2e8f0',
     color: '#94a3b8',
-    fontSize: '14px',
+    fontSize: '12.5px',
     fontWeight: '700',
     marginTop: 'auto',
     cursor: 'not-allowed',
-    fontFamily: 'inherit'
+    fontFamily: 'inherit',
+    minHeight: '38px',
+    boxSizing: 'border-box'
   },
   emptyContainer: {
     gridColumn: '1 / -1',
