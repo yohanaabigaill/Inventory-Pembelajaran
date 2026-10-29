@@ -22,7 +22,7 @@ import coverMushafAshShahibA5 from '../../assets/mushaf_ash_shahib_a5.jpg';
 import contohBuktiTf from '../../assets/contoh bukti tf.jpeg';
 
 // Data pesanan demo
-const INITIAL_DEMO_PESANAN = [
+export const INITIAL_DEMO_PESANAN = [
   // Belum Bayar
   {
     id: 'ORD-73305405',
@@ -32,7 +32,7 @@ const INITIAL_DEMO_PESANAN = [
     statusPengiriman: null,
     statusColor: '#2563eb',
     statusBg: '#dbeafe',
-    namaPenerima: 'AHMAD FAUZI',
+    namaPenerima: 'Ahmad Fauzi',
     noHp: '081234567890',
     alamat: 'Jl. Melati No. 45, RT 02/RW 05, Pekanbaru',
     metodePengiriman: 'Via Kurir',
@@ -61,7 +61,7 @@ const INITIAL_DEMO_PESANAN = [
     statusPengiriman: null,
     statusColor: '#d97706',
     statusBg: '#fef3c7',
-    namaPenerima: 'YOHANA ABIGAIL',
+    namaPenerima: 'Yohana Abigail',
     noHp: '081298765432',
     alamat: 'Jl. Anggrek No. 12, Batam Center, Batam',
     metodePengiriman: 'Via Kurir',
@@ -98,7 +98,7 @@ const INITIAL_DEMO_PESANAN = [
     statusPengiriman: 'Perlu Dikirim',
     statusColor: '#d97706',
     statusBg: '#fef3c7',
-    namaPenerima: 'RIRIN ANISA',
+    namaPenerima: 'Ririn Anisa',
     noHp: '081377889900',
     alamat: 'Jl. Dahlia No. 18, RT 01/RW 03, Sukajadi, Pekanbaru',
     metodePengiriman: 'Via Kurir',
@@ -127,7 +127,7 @@ const INITIAL_DEMO_PESANAN = [
     statusPengiriman: 'Dikirim',
     statusColor: '#2563eb',
     statusBg: '#dbeafe',
-    namaPenerima: 'HENDRA PRATAMA',
+    namaPenerima: 'Hendra Pratama',
     noHp: '085211223344',
     alamat: 'Perumahan Graha Indah Blok C3 No. 5, Batam',
     metodePengiriman: 'Via Kurir',
@@ -164,7 +164,7 @@ const INITIAL_DEMO_PESANAN = [
     statusPengiriman: 'Selesai',
     statusColor: '#16a34a',
     statusBg: '#dcfce7',
-    namaPenerima: 'UST. RIDWAN KAMIL',
+    namaPenerima: 'Ust. Ridwan Kamil',
     noHp: '081122334455',
     alamat: 'Komp. Masjid Raya Baiturrahman, Batam',
     metodePengiriman: 'Ambil di RSQ Pusat',
@@ -193,7 +193,7 @@ const INITIAL_DEMO_PESANAN = [
     statusPengiriman: null,
     statusColor: '#dc2626',
     statusBg: '#fee2e2',
-    namaPenerima: 'DEWI LESTARI',
+    namaPenerima: 'Dewi Lestari',
     noHp: '081399887766',
     alamat: 'Jl. Merpati No. 7, Tiban, Batam',
     metodePengiriman: 'Via Kurir',
@@ -223,7 +223,7 @@ const INITIAL_DEMO_PESANAN = [
     statusPengiriman: null,
     statusColor: '#64748b',
     statusBg: '#f1f5f9',
-    namaPenerima: 'AHMAD FAUZI',
+    namaPenerima: 'Ahmad Fauzi',
     noHp: '081234567890',
     alamat: 'Jl. Melati No. 45, RT 02/RW 05, Pekanbaru',
     metodePengiriman: 'Via Kurir',
@@ -428,11 +428,8 @@ export default function PesananSaya() {
     }
     return INITIAL_DEMO_PESANAN;
   });
-  const [selectedOrderModal, setSelectedOrderModal] = useState(null);
-  const [cancellingOrder, setCancellingOrder] = useState(null);
 
-  // State bukti bayar
-  const [rincianProofFile, setRincianProofFile] = useState(null);
+  const [cancellingOrder, setCancellingOrder] = useState(null);
 
   // Toast
   const [notification, setNotification] = useState(null);
@@ -444,63 +441,6 @@ export default function PesananSaya() {
     notifTimerRef.current = setTimeout(() => {
       setNotification(null);
     }, 3500);
-  };
-
-
-
-  // Upload bukti transfer
-  const handleChooseProofForRincian = (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      showToast('Format file harus berupa JPG, JPEG, atau PNG', 'error');
-      e.target.value = '';
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      showToast('Ukuran file maksimal 5MB', 'error');
-      e.target.value = '';
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      setRincianProofFile(reader.result);
-      showToast('Bukti transfer berhasil dipilih', 'success');
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
-  };
-
-  // Simpan bukti transfer
-  const handleSimpanProofFromRincian = () => {
-    if (!rincianProofFile) {
-      showToast('Silakan pilih foto bukti transfer terlebih dahulu', 'error');
-      return;
-    }
-
-    const targetId = selectedOrderModal.id;
-    const updatedOrders = orders.map((ord) => {
-      if (ord.id === targetId) {
-        return {
-          ...ord,
-          buktiTf: rincianProofFile,
-          status: 'Menunggu Verifikasi',
-          statusPembayaran: 'Menunggu Verifikasi',
-          statusColor: '#d97706',
-          statusBg: '#fef3c7'
-        };
-      }
-      return ord;
-    });
-
-    setOrders(updatedOrders);
-    setSelectedOrderModal(null);
-    setRincianProofFile(null);
-    showToast('Bukti transfer berhasil disimpan', 'success');
   };
 
   // Batalkan pesanan
@@ -522,29 +462,15 @@ export default function PesananSaya() {
 
     setOrders(updatedOrders);
     setCancellingOrder(null);
-    if (selectedOrderModal && selectedOrderModal.id === targetId) {
-      setSelectedOrderModal({
-        ...selectedOrderModal,
-        status: 'Dibatalkan',
-        statusPembayaran: 'Dibatalkan',
-        statusColor: '#64748b',
-        statusBg: '#f1f5f9'
-      });
-      setRincianProofFile(null);
-
-      // Tutup modal setelah toast
-      setTimeout(() => {
-        setSelectedOrderModal((prev) => (prev && prev.id === targetId ? null : prev));
-      }, 1500);
-    }
     showToast('Pesanan berhasil dibatalkan', 'success');
   };
 
-  // Reset data dummy 
+  // Reset data dummy saat refresh
   useEffect(() => {
     window.scrollTo(0, 0);
     try {
       localStorage.removeItem('inventory_rsq_pesanan');
+      localStorage.removeItem('inventory_rsq_pesanan_list');
     } catch (e) {
       console.error(e);
     }
@@ -553,9 +479,9 @@ export default function PesananSaya() {
     }
   }, []);
 
-  // Kunci scroll background
+  // Kunci scroll background saat modal konfirmasi batal terbuka
   useEffect(() => {
-    if (selectedOrderModal || cancellingOrder) {
+    if (cancellingOrder) {
       document.body.style.overflow = 'hidden';
       document.documentElement.style.overflow = 'hidden';
     } else {
@@ -566,7 +492,7 @@ export default function PesananSaya() {
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
     };
-  }, [selectedOrderModal, cancellingOrder]);
+  }, [cancellingOrder]);
 
   const formatRupiah = (number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -727,7 +653,7 @@ export default function PesananSaya() {
           onToggleSidebar={() => setIsMobileSidebarOpen((prev) => !prev)}
         />
 
-        <main style={styles.contentBody}>
+        <main className="pesanan-content-body content-body-responsive" style={styles.contentBody}>
           {/* Toast */}
           {notification && (
             <div
@@ -747,59 +673,63 @@ export default function PesananSaya() {
           )}
 
           {/* Filter */}
-          <div style={styles.filterCard}>
-            <div style={styles.filterRow}>
-              {/* Search */}
-              <div style={styles.searchWrapper}>
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#5b7566"
-                  strokeWidth="2"
-                  style={styles.searchIcon}
+          <div className="pesanan-filter-card" style={styles.filterCard}>
+            {/* Search Bar (Baris 1) */}
+            <div className="pesanan-search-wrap" style={styles.searchWrapper}>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#5b7566"
+                strokeWidth="2"
+                style={styles.searchIcon}
+              >
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Cari no pesanan atau nama modul..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pesanan-search-input"
+                style={styles.searchInput}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  style={styles.clearSearchBtn}
                 >
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Cari nomor pesanan atau nama modul..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  style={styles.searchInput}
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery('')}
-                    style={styles.clearSearchBtn}
-                  >
-                    <CloseOutlinedIcon sx={{ fontSize: 14 }} />
-                  </button>
-                )}
-              </div>
+                  <CloseOutlinedIcon sx={{ fontSize: 14 }} />
+                </button>
+              )}
+            </div>
 
+            {/* Dropdown Filters (Baris 2) */}
+            <div className="pesanan-filter-bottom-row" style={styles.filterBottomRow}>
               {/* Status Pembayaran */}
-              <div style={styles.filterDropdownWrap}>
-                <span style={styles.filterLabel}>Status Pembayaran:</span>
+              <div className="pesanan-filter-item" style={styles.filterDropdownWrap}>
+                <span className="pesanan-filter-label" style={styles.filterLabel}>Status Pembayaran:</span>
                 <CustomDropdown
                   value={statusBayarFilter}
                   onChange={(val) => setStatusBayarFilter(val)}
                   options={STATUS_BAYAR_OPTIONS}
-                  style={{ minWidth: '175px' }}
+                  className="pesanan-dropdown-custom"
+                  style={{ flex: 1, minWidth: '130px' }}
                 />
               </div>
 
               {/* Status Pengiriman */}
-              <div style={styles.filterDropdownWrap}>
-                <span style={styles.filterLabel}>Status Pengiriman:</span>
+              <div className="pesanan-filter-item" style={styles.filterDropdownWrap}>
+                <span className="pesanan-filter-label" style={styles.filterLabel}>Status Pengiriman:</span>
                 <CustomDropdown
                   value={statusKirimFilter}
                   onChange={(val) => setStatusKirimFilter(val)}
                   options={STATUS_PENGIRIMAN_OPTIONS}
-                  style={{ minWidth: '165px' }}
+                  className="pesanan-dropdown-custom"
+                  style={{ flex: 1, minWidth: '130px' }}
                 />
               </div>
 
@@ -812,6 +742,7 @@ export default function PesananSaya() {
                     setStatusKirimFilter('Semua Status');
                     setSearchQuery('');
                   }}
+                  className="pesanan-btn-reset"
                   style={styles.btnResetFilter}
                 >
                   <CloseOutlinedIcon sx={{ fontSize: 13 }} />
@@ -855,8 +786,7 @@ export default function PesananSaya() {
                   <div
                     key={order.id}
                     onClick={() => {
-                      setSelectedOrderModal(order);
-                      setRincianProofFile(null);
+                      navigate(`/pesanan/${order.id}`, { state: { order } });
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.06)';
@@ -866,15 +796,17 @@ export default function PesananSaya() {
                       e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.02)';
                       e.currentTarget.style.borderColor = '#e2e8f0';
                     }}
+                    className="pesanan-order-card"
                     style={styles.orderCard}
                   >
                     {/* Header Card */}
-                    <div style={styles.orderCardHeader}>
-                      <div style={styles.orderCardHeaderLeft}>
-                        <span style={styles.orderNumberLabel}>No Pesanan:</span>
-                        <span style={styles.orderNumber}>{order.id}</span>
+                    <div className="pesanan-order-header" style={styles.orderCardHeader}>
+                      <div className="pesanan-order-header-left" style={styles.orderCardHeaderLeft}>
+                        <span className="pesanan-order-number-label" style={styles.orderNumberLabel}>No Pesanan:</span>
+                        <span className="pesanan-order-number" style={styles.orderNumber}>{order.id}</span>
                       </div>
                       <div
+                        className="pesanan-status-badge"
                         style={{
                           ...styles.statusBadge,
                           color: badge.color,
@@ -882,15 +814,14 @@ export default function PesananSaya() {
                           border: `1px solid ${badge.border}`
                         }}
                       >
-                        {badge.icon}
-                        <span>{order.status}</span>
+                        {order.status}
                       </div>
                     </div>
 
                     {/* Daftar item */}
-                    <div style={styles.orderItemsList}>
+                    <div className="pesanan-order-items" style={styles.orderItemsList}>
                       {order.items.map((item, idx) => (
-                        <div key={idx} style={styles.orderItemCardRow}>
+                        <div key={idx} className="pesanan-order-item-row" style={styles.orderItemCardRow}>
                           <img
                             src={item.cover || coverAsasi}
                             alt={item.nama}
@@ -902,7 +833,7 @@ export default function PesananSaya() {
                               {item.qty} x {formatRupiah(item.hargaJual)}
                             </div>
                           </div>
-                          <div style={styles.orderItemCardTotal}>
+                          <div className="pesanan-item-row-total" style={styles.orderItemCardTotal}>
                             {formatRupiah(item.hargaJual * item.qty)}
                           </div>
                         </div>
@@ -910,8 +841,8 @@ export default function PesananSaya() {
                     </div>
 
                     {/* Footer Card */}
-                    <div style={styles.orderCardFooter}>
-                      <div style={styles.footerTotalWrap}>
+                    <div className="pesanan-order-footer" style={styles.orderCardFooter}>
+                      <div className="pesanan-footer-total" style={styles.footerTotalWrap}>
                         <span style={styles.footerTotalLabel}>
                           Total:
                         </span>
@@ -919,7 +850,7 @@ export default function PesananSaya() {
                           {formatRupiah(order.totalHarga)}
                         </span>
                       </div>
-                      <div style={styles.footerActions}>
+                      <div className="pesanan-footer-actions" style={styles.footerActions}>
                         {(order.status === 'Belum Bayar' || order.statusPembayaran === 'Belum Bayar') && order.status !== 'Dibatalkan' && (
                           <button
                             type="button"
@@ -927,6 +858,7 @@ export default function PesananSaya() {
                               e.stopPropagation();
                               setCancellingOrder(order);
                             }}
+                            className="pesanan-btn-action"
                             style={styles.btnBatalkanPesananCard}
                           >
                             <span>Batalkan Pesanan</span>
@@ -939,6 +871,7 @@ export default function PesananSaya() {
                               e.stopPropagation();
                               handlePesanLagi(order);
                             }}
+                            className="pesanan-btn-action"
                             style={styles.btnPesanLagi}
                           >
                             <span>Pesan Lagi</span>
@@ -954,324 +887,7 @@ export default function PesananSaya() {
         </main>
       </div>
 
-      {/* Modal Detail */}
-      {selectedOrderModal && (
-        <div
-          style={styles.modalOverlay}
-          onClick={() => {
-            setSelectedOrderModal(null);
-            setRincianProofFile(null);
-          }}
-        >
-          <div
-            style={styles.modalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={styles.modalHeader}>
-              <div>
-                <h3 style={styles.modalTitle}>Rincian Pesanan</h3>
-                <span style={styles.modalSubtitle}>
-                  No Pesanan: {selectedOrderModal.id} • {selectedOrderModal.tanggal}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedOrderModal(null);
-                  setRincianProofFile(null);
-                }}
-                style={styles.modalCloseBtn}
-              >
-                <CloseOutlinedIcon sx={{ fontSize: 20 }} />
-              </button>
-            </div>
 
-            <div style={styles.modalBody}>
-              {/* Notif Ditolak */}
-              {(selectedOrderModal.status === 'Ditolak' || selectedOrderModal.statusPembayaran === 'Ditolak') && (
-                <div style={{
-                  backgroundColor: '#fef2f2',
-                  border: '1px solid #fecaca',
-                  borderRadius: '10px',
-                  padding: '12px 14px',
-                  marginBottom: '16px',
-                  display: 'flex',
-                  gap: '10px',
-                  alignItems: 'flex-start'
-                }}>
-                  <ErrorOutlineOutlinedIcon sx={{ fontSize: 20, color: '#dc2626', flexShrink: 0, marginTop: '1px' }} />
-                  <div>
-                    <div style={{ fontSize: '12.5px', fontWeight: '700', color: '#991b1b' }}>
-                      Status Pembayaran: Ditolak
-                    </div>
-                    <div style={{ fontSize: '12px', color: '#b91c1c', marginTop: '2px' }}>
-                      {selectedOrderModal.alasanPenolakan || 'Bukti transfer tidak valid atau dana belum masuk ke rekening kami.'}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Notif Dibatalkan */}
-              {(selectedOrderModal.status === 'Dibatalkan' || selectedOrderModal.statusPembayaran === 'Dibatalkan') && (
-                <div style={{
-                  backgroundColor: '#f8fafc',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '10px',
-                  padding: '12px 14px',
-                  marginBottom: '16px',
-                  display: 'flex',
-                  gap: '10px',
-                  alignItems: 'flex-start'
-                }}>
-                  <CancelOutlinedIcon sx={{ fontSize: 20, color: '#64748b', flexShrink: 0, marginTop: '1px' }} />
-                  <div>
-                    <div style={{ fontSize: '12.5px', fontWeight: '700', color: '#334155' }}>
-                      Status Pesanan: Dibatalkan
-                    </div>
-                    <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
-                      Pesanan ini telah dibatalkan.
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Info Pengiriman */}
-              <div style={styles.infoSection}>
-                <h4 style={styles.sectionTitle}>Informasi Pembeli & Pengiriman</h4>
-                <div style={styles.infoGrid}>
-                  <div>
-                    <span style={styles.infoLabel}>NAMA PEMBELI</span>
-                    <p style={styles.infoValue}>
-                      {selectedOrderModal.namaPenerima || 'Fulan bin Fulan'}
-                    </p>
-                  </div>
-                  <div>
-                    <span style={styles.infoLabel}>NO. HANDPHONE</span>
-                    <p style={styles.infoValue}>
-                      {selectedOrderModal.noHp || '081234567890'}
-                    </p>
-                  </div>
-                  <div>
-                    <span style={styles.infoLabel}>METODE PENGIRIMAN</span>
-                    <p style={styles.infoValue}>
-                      {selectedOrderModal.metodePengiriman || 'Via Kurir'}
-                    </p>
-                  </div>
-                  <div>
-                    <span style={styles.infoLabel}>METODE PEMBAYARAN</span>
-                    <p style={styles.infoValue}>
-                      {selectedOrderModal.metodeBayar || 'Transfer Bank'}
-                    </p>
-                  </div>
-                  <div style={{ gridColumn: '1 / -1' }}>
-                    <span style={styles.infoLabel}>
-                      {selectedOrderModal.metodePengiriman === 'Ambil di RSQ Pusat'
-                        ? 'LOKASI PENGAMBILAN'
-                        : selectedOrderModal.metodePengiriman === 'Titip ke Ustazah'
-                          ? 'KETERANGAN TITIP USTAZAH'
-                          : 'ALAMAT PENGIRIMAN'}
-                    </span>
-                    <p style={styles.infoValue}>
-                      {selectedOrderModal.alamat ||
-                        'Jl. Melati No. 45, RT 02/RW 05, Sukajadi, Pekanbaru'}
-                    </p>
-                  </div>
-                  {(!selectedOrderModal.metodeBayar || selectedOrderModal.metodeBayar === 'Transfer Bank') && (
-                    <div style={styles.bankInfoCardDetail}>
-                      <span style={{ fontSize: '12.5px', fontWeight: '800', color: '#166534' }}>
-                        BANK SYARIAH INDONESIA (BSI)
-                      </span>
-                      <div style={{ fontSize: '16px', fontWeight: '800', color: '#0f291e', letterSpacing: '0.8px' }}>
-                        1155770003
-                      </div>
-                      <div style={{ fontSize: '12px', color: '#475569' }}>
-                        a.n. <strong>Rumah Sahabat Quran Batam</strong>
-                      </div>
-
-                      {/* Bukti Transfer */}
-                      {selectedOrderModal.buktiTf ? (
-                        <div style={styles.detailBuktiBox}>
-                          <div style={styles.detailBuktiHeader}>
-                            <span style={styles.detailBuktiTitle}>Bukti Transfer</span>
-                          </div>
-                          <img
-                            src={selectedOrderModal.buktiTf}
-                            alt="Bukti Transfer"
-                            style={styles.detailBuktiImg}
-                            onClick={() => window.open(selectedOrderModal.buktiTf, '_blank')}
-                          />
-                        </div>
-                      ) : selectedOrderModal.status === 'Belum Bayar' ? (
-                        rincianProofFile ? (
-                          <div style={styles.detailBuktiBox}>
-                            <div style={styles.detailBuktiHeader}>
-                              <span style={styles.detailBuktiTitle}>Bukti Transfer</span>
-                              <div style={{ display: 'flex', gap: '6px' }}>
-                                <label style={styles.btnGantiBuktiSmall}>
-                                  Ganti Foto
-                                  <input
-                                    type="file"
-                                    accept="image/jpeg,image/png,image/jpg,image/webp"
-                                    style={{ display: 'none' }}
-                                    onChange={handleChooseProofForRincian}
-                                  />
-                                </label>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setRincianProofFile(null);
-                                    showToast('Bukti transfer berhasil dihapus', 'success');
-                                  }}
-                                  style={{
-                                    ...styles.btnGantiBuktiSmall,
-                                    borderColor: '#fecaca',
-                                    color: '#dc2626',
-                                    backgroundColor: '#fff5f5'
-                                  }}
-                                >
-                                  Hapus
-                                </button>
-                              </div>
-                            </div>
-                            <img
-                              src={rincianProofFile}
-                              alt="Bukti Transfer"
-                              style={styles.detailBuktiImg}
-                              onClick={() => window.open(rincianProofFile, '_blank')}
-                            />
-                          </div>
-                        ) : (
-                          <div style={styles.detailBelumBayarSection}>
-                            <div style={{ fontSize: '12.5px', fontWeight: '700', color: '#166534' }}>
-                              Belum Ada Bukti Pembayaran
-                            </div>
-                            <p style={{ fontSize: '11.5px', color: '#475569', margin: '2px 0 10px' }}>
-                              Silakan transfer ke nomor rekening BSI di atas dan unggah bukti transfer agar pesanan dapat diverifikasi oleh admin.
-                            </p>
-                            <label style={styles.uploadTfDropzone}>
-                              <input
-                                type="file"
-                                accept="image/jpeg,image/png,image/jpg,image/webp"
-                                style={{ display: 'none' }}
-                                onChange={handleChooseProofForRincian}
-                              />
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#23573c" strokeWidth="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                <polyline points="17 8 12 3 7 8" />
-                                <line x1="12" y1="3" x2="12" y2="15" />
-                              </svg>
-                              <div style={styles.uploadTfTextWrap}>
-                                <span style={styles.uploadTfPromptBold}>Klik untuk unggah struk / bukti transfer</span>
-                                <span style={styles.uploadTfPromptSub}>Format: JPG, JPEG, PNG (Maks. 5MB)</span>
-                              </div>
-                            </label>
-                          </div>
-                        )
-                      ) : null}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Daftar Modul */}
-              <div style={styles.infoSection}>
-                <h4 style={styles.sectionTitle}>Daftar Modul</h4>
-                <div style={styles.modalItemsList}>
-                  {selectedOrderModal.items.map((it, idx) => (
-                    <div key={idx} style={styles.modalItemRow}>
-                      <img
-                        src={it.cover || coverAsasi}
-                        alt={it.nama}
-                        style={styles.modalItemThumb}
-                      />
-                      <div style={{ flex: 1 }}>
-                        <div style={styles.modalItemTitle}>{it.nama}</div>
-                        <div style={styles.modalItemSub}>
-                          {it.qty} x {formatRupiah(it.hargaJual)}
-                        </div>
-                      </div>
-                      <div style={styles.modalItemTotal}>
-                        {formatRupiah(it.hargaJual * it.qty)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Ringkasan Biaya */}
-              {(() => {
-                const ongkir = selectedOrderModal.biayaKirim !== undefined
-                  ? selectedOrderModal.biayaKirim
-                  : (selectedOrderModal.metodePengiriman === 'Via Kurir' ? 10000 : 0);
-
-                return (
-                  <div style={styles.summaryBox}>
-                    <div style={styles.summaryItem}>
-                      <span>Biaya Pengiriman</span>
-                      {ongkir > 0 ? (
-                        <span style={{ fontWeight: '700', color: '#0f172a' }}>{formatRupiah(ongkir)}</span>
-                      ) : (
-                        <span style={{ color: '#16a34a', fontWeight: '600' }}>Gratis</span>
-                      )}
-                    </div>
-                    <div style={styles.summaryDivider} />
-                    <div style={styles.summaryTotalRow}>
-                      <span>Total Pembayaran</span>
-                      <span style={styles.summaryTotalVal}>
-                        {formatRupiah(selectedOrderModal.totalHarga)}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-
-            <div style={styles.modalFooter}>
-              {(selectedOrderModal.status === 'Belum Bayar' || selectedOrderModal.statusPembayaran === 'Belum Bayar') && selectedOrderModal.status !== 'Dibatalkan' ? (
-                <div style={styles.modalFooterBelumBayar}>
-                  <button
-                    type="button"
-                    onClick={() => setCancellingOrder(selectedOrderModal)}
-                    style={styles.btnBatalkanPesananModal}
-                  >
-                    Batalkan Pesanan
-                  </button>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedOrderModal(null);
-                        setRincianProofFile(null);
-                      }}
-                      style={styles.btnBatalModal}
-                    >
-                      Batal
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleSimpanProofFromRincian}
-                      style={styles.btnSimpanModal}
-                    >
-                      Simpan
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedOrderModal(null);
-                    setRincianProofFile(null);
-                  }}
-                  style={styles.btnTutupModalPrimary}
-                >
-                  Tutup
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Modal Batal */}
       {cancellingOrder && (
@@ -1348,18 +964,24 @@ const styles = {
     borderRadius: '16px',
     padding: '16px 20px',
     border: '1px solid #e2e8f0',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+    boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '14px'
   },
-  filterRow: {
+  filterBottomRow: {
     display: 'flex',
     alignItems: 'center',
-    gap: '20px',
-    flexWrap: 'wrap'
+    gap: '16px',
+    width: '100%',
+    boxSizing: 'border-box'
   },
   searchWrapper: {
     position: 'relative',
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
+    width: '100%',
+    boxSizing: 'border-box'
   },
   searchIcon: {
     position: 'absolute',
@@ -1367,8 +989,8 @@ const styles = {
     pointerEvents: 'none'
   },
   searchInput: {
-    width: '380px',
-    maxWidth: '100%',
+    width: '100%',
+    boxSizing: 'border-box',
     padding: '10px 34px 10px 38px',
     fontSize: '13px',
     border: '1px solid #23573c',
@@ -1376,8 +998,7 @@ const styles = {
     outline: 'none',
     backgroundColor: '#f6faf7',
     fontFamily: "'Poppins', sans-serif",
-    color: '#1a3e2b',
-    boxSizing: 'border-box'
+    color: '#1a3e2b'
   },
   clearSearchBtn: {
     position: 'absolute',
@@ -1394,7 +1015,9 @@ const styles = {
   filterDropdownWrap: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px'
+    gap: '10px',
+    flex: 1,
+    minWidth: 0
   },
   filterLabel: {
     fontSize: '13px',
@@ -1457,13 +1080,17 @@ const styles = {
     letterSpacing: '0.2px'
   },
   statusBadge: {
-    display: 'flex',
+    display: 'inline-flex',
     alignItems: 'center',
-    gap: '6px',
-    padding: '4px 12px',
-    borderRadius: '20px',
-    fontSize: '12px',
-    fontWeight: '700'
+    justifyContent: 'center',
+    padding: '0 12px',
+    height: '28px',
+    borderRadius: '6px',
+    fontSize: '11.5px',
+    fontWeight: '700',
+    letterSpacing: '0.4px',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
   },
   orderItemsList: {
     padding: '16px 20px',
@@ -1617,210 +1244,6 @@ const styles = {
     padding: '16px',
     overscrollBehavior: 'contain'
   },
-  modalContent: {
-    backgroundColor: '#ffffff',
-    borderRadius: '18px',
-    width: '560px',
-    maxWidth: '100%',
-    maxHeight: '90vh',
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    boxShadow: '0 20px 40px rgba(0,0,0,0.25)',
-    overscrollBehavior: 'contain'
-  },
-  modalHeader: {
-    padding: '18px 24px',
-    borderBottom: '1px solid #e2e8f0',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#f8fafc'
-  },
-  modalTitle: {
-    fontSize: '16.5px',
-    fontWeight: '700',
-    color: '#0f172a',
-    margin: 0
-  },
-  modalSubtitle: {
-    fontSize: '12px',
-    color: '#64748b',
-    marginTop: '3px',
-    display: 'block'
-  },
-  modalCloseBtn: {
-    border: 'none',
-    backgroundColor: 'transparent',
-    fontSize: '18px',
-    color: '#64748b',
-    cursor: 'pointer',
-    padding: '4px'
-  },
-  modalBody: {
-    padding: '20px 24px',
-    overflowY: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-    overscrollBehavior: 'contain'
-  },
-  infoSection: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '10px'
-  },
-  sectionTitle: {
-    fontSize: '14px',
-    fontWeight: '700',
-    color: '#0f172a',
-    margin: 0
-  },
-  infoGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '12px',
-    backgroundColor: '#f8fafc',
-    padding: '14px',
-    borderRadius: '10px',
-    border: '1px solid #e2e8f0'
-  },
-  infoLabel: {
-    fontSize: '11.5px',
-    fontWeight: '600',
-    color: '#64748b',
-    display: 'block',
-    marginBottom: '2px',
-    letterSpacing: '0.2px'
-  },
-  infoValue: {
-    fontSize: '13px',
-    fontWeight: '600',
-    color: '#0f172a',
-    margin: '2px 0 0 0'
-  },
-  modalItemsList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '10px'
-  },
-  modalItemRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    padding: '10px 12px',
-    borderRadius: '8px',
-    backgroundColor: '#f8fafc',
-    border: '1px solid #e2e8f0'
-  },
-  modalItemThumb: {
-    width: '40px',
-    height: '54px',
-    borderRadius: '4px',
-    objectFit: 'cover'
-  },
-  modalItemTitle: {
-    fontSize: '13.5px',
-    fontWeight: '700',
-    color: '#0f172a'
-  },
-  modalItemSub: {
-    fontSize: '12px',
-    color: '#64748b'
-  },
-  modalItemTotal: {
-    fontSize: '14px',
-    fontWeight: '700',
-    color: '#23573c'
-  },
-  summaryBox: {
-    backgroundColor: '#eaf7ef',
-    borderRadius: '10px',
-    padding: '14px 16px',
-    border: '1px solid #c7d9cd',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px'
-  },
-  summaryItem: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    fontSize: '13px',
-    color: '#334155'
-  },
-  summaryDivider: {
-    height: '1px',
-    backgroundColor: '#c7d9cd',
-    margin: '4px 0'
-  },
-  summaryTotalRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    fontSize: '15px',
-    fontWeight: '800',
-    color: '#0f291e'
-  },
-  summaryTotalVal: {
-    color: '#23573c',
-    fontSize: '16.5px'
-  },
-  modalFooter: {
-    padding: '14px 24px',
-    borderTop: '1px solid #e2e8f0',
-    display: 'flex',
-    justifyContent: 'flex-end',
-    backgroundColor: '#f8fafc'
-  },
-  btnBatalModal: {
-    padding: '8px 18px',
-    borderRadius: '6px',
-    border: '1.5px solid #23573c',
-    backgroundColor: '#ffffff',
-    color: '#23573c',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease'
-  },
-  btnSimpanModal: {
-    padding: '8px 20px',
-    borderRadius: '6px',
-    backgroundColor: '#23573c',
-    color: '#ffffff',
-    border: 'none',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease'
-  },
-  modalFooterBelumBayar: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%'
-  },
-  btnBatalkanPesananModal: {
-    padding: '8px 16px',
-    borderRadius: '6px',
-    border: '1.5px solid #dc2626',
-    backgroundColor: '#ffffff',
-    color: '#dc2626',
-    fontSize: '12.5px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease'
-  },
-  btnBatalkanPesananCard: {
-    padding: '7px 14px',
-    borderRadius: '6px',
-    border: '1.5px solid #dc2626',
-    backgroundColor: '#ffffff',
-    color: '#dc2626',
-    fontSize: '12px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease'
-  },
   modalContentSimpleReject: {
     backgroundColor: '#ffffff',
     borderRadius: '12px',
@@ -1844,6 +1267,16 @@ const styles = {
     color: '#dc2626',
     margin: 0
   },
+  modalCloseBtn: {
+    border: 'none',
+    backgroundColor: 'transparent',
+    color: '#64748b',
+    cursor: 'pointer',
+    padding: '4px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
   simpleModalBody: {
     fontSize: '13.5px',
     color: '#334155'
@@ -1858,6 +1291,17 @@ const styles = {
     gap: '10px',
     marginTop: '16px'
   },
+  btnBatalModal: {
+    padding: '8px 18px',
+    borderRadius: '6px',
+    border: '1.5px solid #cbd5e1',
+    backgroundColor: '#ffffff',
+    color: '#475569',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.15s ease'
+  },
   btnConfirmBatal: {
     padding: '8px 18px',
     borderRadius: '6px',
@@ -1867,173 +1311,6 @@ const styles = {
     fontSize: '13px',
     fontWeight: '600',
     cursor: 'pointer'
-  },
-  btnTutupModalPrimary: {
-    padding: '8px 20px',
-    borderRadius: '6px',
-    backgroundColor: '#23573c',
-    color: '#ffffff',
-    border: 'none',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease'
-  },
-  btnTutupModal: {
-    padding: '8px 22px',
-    borderRadius: '8px',
-    backgroundColor: '#23573c',
-    color: '#ffffff',
-    border: 'none',
-    fontSize: '13px',
-    fontWeight: '700',
-    cursor: 'pointer'
-  },
-  methodBadge: {
-    fontSize: '11px',
-    fontWeight: '600',
-    color: '#0f291e',
-    backgroundColor: '#eaf7ef',
-    border: '1px solid #c7d9cd',
-    padding: '2px 8px',
-    borderRadius: '6px'
-  },
-  btnUploadBukti: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '8px 16px',
-    borderRadius: '8px',
-    border: 'none',
-    backgroundColor: '#ea580c',
-    color: '#ffffff',
-    fontSize: '12.5px',
-    fontWeight: '700',
-    cursor: 'pointer',
-    boxShadow: '0 2px 6px rgba(234, 88, 12, 0.25)'
-  },
-  btnGantiBuktiSmall: {
-    padding: '3px 10px',
-    borderRadius: '6px',
-    border: '1px solid #23573c',
-    backgroundColor: '#ffffff',
-    color: '#23573c',
-    fontSize: '11px',
-    fontWeight: '700',
-    cursor: 'pointer'
-  },
-  bankInfoCardDetail: {
-    gridColumn: '1 / -1',
-    backgroundColor: '#f0fdf4',
-    padding: '12px 14px',
-    borderRadius: '10px',
-    border: '1px solid #bbf7d0',
-    marginTop: '2px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '3px'
-  },
-  detailBuktiBox: {
-    borderTop: '1px dashed #bbf7d0',
-    paddingTop: '10px',
-    marginTop: '8px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px'
-  },
-  detailBuktiHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between'
-  },
-  detailBuktiTitle: {
-    fontSize: '12px',
-    fontWeight: '700',
-    color: '#166534'
-  },
-  detailBuktiImg: {
-    width: '100%',
-    maxHeight: '180px',
-    objectFit: 'contain',
-    borderRadius: '6px',
-    border: '1px solid #e2e8f0',
-    backgroundColor: '#ffffff',
-    cursor: 'pointer'
-  },
-  detailBelumBayarSection: {
-    borderTop: '1px dashed #bbf7d0',
-    paddingTop: '10px',
-    marginTop: '8px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    width: '100%',
-    boxSizing: 'border-box'
-  },
-  uploadTfDropzone: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    padding: '10px 14px',
-    borderRadius: '8px',
-    backgroundColor: '#ffffff',
-    border: '1.5px dashed #86efac',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease',
-    width: '100%',
-    boxSizing: 'border-box'
-  },
-  uploadTfTextWrap: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px'
-  },
-  uploadTfPromptBold: {
-    fontSize: '12px',
-    fontWeight: '700',
-    color: '#166534'
-  },
-  uploadTfPromptSub: {
-    fontSize: '10.5px',
-    color: '#64748b'
-  },
-  uploadModalContent: {
-    backgroundColor: '#ffffff',
-    borderRadius: '18px',
-    width: '480px',
-    maxWidth: '100%',
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    boxShadow: '0 20px 40px rgba(0,0,0,0.25)'
-  },
-  uploadModalBody: {
-    padding: '20px 24px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px'
-  },
-  modalBankBox: {
-    padding: '12px 14px',
-    borderRadius: '10px',
-    backgroundColor: '#f0fdf4',
-    border: '1px solid #bbf7d0',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '3px'
-  },
-  uploadModalDropzone: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '8px',
-    padding: '24px 16px',
-    borderRadius: '12px',
-    backgroundColor: '#f8faf9',
-    border: '2px dashed #86efac',
-    cursor: 'pointer',
-    textAlign: 'center'
   },
   toast: {
     position: 'fixed',

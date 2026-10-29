@@ -1149,7 +1149,7 @@ select option:active {
 
 @media (max-width: 1024px) {
   .checkout-action-btn-group {
-    flex-direction: column !important;
+    flex-direction: column-reverse !important;
     gap: 8px !important;
     align-items: stretch !important;
   }
@@ -1173,3 +1173,273 @@ select option:active {
 }
 
 
+
+.pesanan-filter-bottom-row {
+  display: flex !important;
+  width: 100% !important;
+  gap: 16px !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+}
+
+.pesanan-filter-item {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.pesanan-dropdown-custom {
+  flex: 1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* iPad, Tablets & iPad Pro 13 (<= 1368px) */
+@media (max-width: 1368px) {
+  .pesanan-content-body {
+    padding: 20px 20px 36px !important;
+  }
+
+  .pesanan-filter-card {
+    padding: 16px 20px !important;
+    gap: 14px !important;
+  }
+
+  .pesanan-search-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .pesanan-filter-bottom-row {
+    display: flex !important;
+    width: 100% !important;
+    gap: 16px !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
+  }
+
+  .pesanan-filter-item {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+
+  .pesanan-dropdown-custom {
+    flex: 1 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .pesanan-btn-reset {
+    flex: none !important;
+    white-space: nowrap !important;
+  }
+
+}
+
+/* Mobile & HP (<= 640px) */
+@media (max-width: 640px) {
+  .pesanan-content-body {
+    padding: 14px 12px 30px !important;
+    gap: 14px !important;
+  }
+
+  .pesanan-filter-card {
+    padding: 14px 14px !important;
+    border-radius: 14px !important;
+    gap: 12px !important;
+  }
+
+  .pesanan-search-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .pesanan-search-input {
+    width: 100% !important;
+    font-size: 12.5px !important;
+    padding: 10px 32px 10px 36px !important;
+  }
+
+  .pesanan-filter-bottom-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .pesanan-filter-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 5px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    flex: none !important;
+  }
+
+  .pesanan-filter-label {
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    color: #475569 !important;
+  }
+
+  .pesanan-dropdown-custom {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .pesanan-btn-reset {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 9px 12px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Order Card */
+  .pesanan-order-card {
+    border-radius: 12px !important;
+  }
+
+  .pesanan-order-header {
+    padding: 11px 13px !important;
+    gap: 6px !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+
+  .pesanan-order-header-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+    flex-shrink: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  .pesanan-order-number-label {
+    font-size: 11.5px !important;
+    color: #64748b !important;
+    white-space: nowrap !important;
+  }
+
+  .pesanan-order-number {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.1px !important;
+    white-space: nowrap !important;
+  }
+
+  .pesanan-status-badge {
+    height: 25px !important;
+    padding: 0 8px !important;
+    font-size: 10.5px !important;
+    letter-spacing: 0.2px !important;
+    border-radius: 5px !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .pesanan-order-items {
+    padding: 12px 14px !important;
+    gap: 10px !important;
+  }
+
+  .pesanan-order-item-row {
+    padding: 10px 12px !important;
+    gap: 10px !important;
+  }
+
+  .pesanan-order-footer {
+    padding: 12px 14px !important;
+    gap: 10px !important;
+  }
+
+  .pesanan-btn-action {
+    width: 100% !important;
+    text-align: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+  }
+
+}
+
+/* ========================================================
+   DETAIL PESANAN PAGE RESPONSIVE
+   ======================================================== */
+.detail-pesanan-main-container {
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .detail-pesanan-main-container {
+    padding: 16px 14px 60px !important;
+  }
+
+  .detail-info-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .detail-header-status-card {
+    padding: 12px 14px !important;
+  }
+
+  .detail-header-top-row {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    gap: 10px !important;
+  }
+
+  .detail-header-order-id-row {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 2px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .detail-header-order-id-label,
+  .detail-header-order-id-value,
+  .detail-header-order-date-label,
+  .detail-header-order-date-value,
+  .detail-status-badge {
+    white-space: nowrap !important;
+  }
+
+  .detail-item-row {
+    padding: 10px 12px !important;
+    gap: 12px !important;
+  }
+
+  .detail-status-badge {
+    height: 25px !important;
+    padding: 0 8px !important;
+    font-size: 10.5px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .detail-bottom-actions {
+    flex-direction: column-reverse !important;
+    align-items: stretch !important;
+  }
+
+  .detail-bottom-actions > button,
+  .detail-bottom-actions-right,
+  .detail-bottom-actions-right > button {
+    width: 100% !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .detail-pesanan-main-container {
+    padding: 14px 10px 50px !important;
+  }
+}

@@ -385,12 +385,6 @@ export default function Checkout() {
                 {fromSource === 'katalog' ? 'Kembali ke Katalog' : 'Kembali ke Keranjang'}
               </span>
             </button>
-            <div style={styles.pageTitleWrap}>
-              <h1 style={styles.pageTitle}>Konfirmasi Pemesanan Modul</h1>
-              <p className="checkout-page-subtitle" style={styles.pageSubtitle}>
-                Periksa kembali data pengiriman, metode pembayaran, dan rincian modul yang Anda pesan sebelum memproses pesanan.
-              </p>
-            </div>
           </div>
 
           {checkoutItems.length === 0 ? (
@@ -775,7 +769,6 @@ export default function Checkout() {
                               type="button"
                               onClick={handleCopyRekening}
                               style={styles.btnSalinRekening}
-                              title="Salin No Rekening"
                             >
                               <ContentCopyOutlinedIcon sx={{ fontSize: 14 }} />
                               <span>{copiedBank ? 'Tersalin!' : 'Salin'}</span>
@@ -801,7 +794,6 @@ export default function Checkout() {
                                 alt="Bukti Transfer"
                                 style={styles.proofPreviewImg}
                                 onClick={() => setShowLightbox(true)}
-                                title="Klik untuk melihat gambar penuh"
                               />
                               <div style={styles.zoomBadge}>
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.5">
@@ -982,25 +974,6 @@ export default function Checkout() {
                   {/* Tombol Buat Pesanan */}
                   <div className="checkout-action-btn-group" style={styles.actionButtonGroup}>
                     <button
-                      id="btn-selesaikan-pesanan"
-                      type="button"
-                      className="btn-checkout-confirm"
-                      onClick={handleConfirmOrder}
-                      disabled={isSubmitting}
-                      style={{
-                        ...styles.btnConfirmOrder,
-                        ...(isSubmitting
-                          ? {
-                              opacity: 0.82,
-                              cursor: 'not-allowed'
-                            }
-                          : {})
-                      }}
-                    >
-                      <ShoppingBagOutlinedIcon sx={{ fontSize: 20 }} />
-                      <span>Buat Pesanan Sekarang</span>
-                    </button>
-                    <button
                       type="button"
                       className="btn-checkout-cancel"
                       disabled={isSubmitting}
@@ -1019,6 +992,25 @@ export default function Checkout() {
                     >
                       Batal
                     </button>
+                    <button
+                      id="btn-selesaikan-pesanan"
+                      type="button"
+                      className="btn-checkout-confirm"
+                      onClick={handleConfirmOrder}
+                      disabled={isSubmitting}
+                      style={{
+                        ...styles.btnConfirmOrder,
+                        ...(isSubmitting
+                          ? {
+                              opacity: 0.82,
+                              cursor: 'not-allowed'
+                            }
+                          : {})
+                      }}
+                    >
+                      <ShoppingBagOutlinedIcon sx={{ fontSize: 20 }} />
+                      <span>Buat Pesanan Sekarang</span>
+                    </button>
                   </div>
                 </div>
             </div>
@@ -1036,7 +1028,6 @@ export default function Checkout() {
               type="button"
               onClick={() => setShowLightbox(false)}
               style={styles.lightboxCloseBtn}
-              title="Tutup"
             >
               ✕
             </button>
@@ -1679,8 +1670,8 @@ const styles = {
   },
   summaryItemTotalRight: {
     fontSize: '14.5px',
-    fontWeight: '800',
-    color: '#1b4332',
+    fontWeight: '700',
+    color: '#23573c',
     whiteSpace: 'nowrap',
     flexShrink: 0,
     textAlign: 'right'
@@ -1735,19 +1726,22 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    fontSize: '12.5px'
+    fontSize: '13.5px'
   },
   calcLabel: {
-    color: '#64748b'
+    color: '#475569',
+    fontWeight: '500',
+    fontSize: '13.5px'
   },
   calcValue: {
-    color: '#0f172a',
-    fontWeight: '600'
+    fontSize: '14.5px',
+    fontWeight: '700',
+    color: '#23573c'
   },
   freeShippingTag: {
     color: '#16a34a',
     fontWeight: '700',
-    fontSize: '12px'
+    fontSize: '13px'
   },
   calcDivider: {
     height: '1px',
@@ -1761,7 +1755,7 @@ const styles = {
     paddingTop: '4px'
   },
   totalPaymentLabel: {
-    fontSize: '13px',
+    fontSize: '14px',
     fontWeight: '700',
     color: '#0f172a',
     display: 'block'
