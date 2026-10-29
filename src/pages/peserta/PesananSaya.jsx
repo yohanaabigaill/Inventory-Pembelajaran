@@ -540,8 +540,9 @@ export default function PesananSaya() {
     showToast('Pesanan berhasil dibatalkan', 'success');
   };
 
-  // Reset data dummy
+  // Reset data dummy 
   useEffect(() => {
+    window.scrollTo(0, 0);
     try {
       localStorage.removeItem('inventory_rsq_pesanan');
     } catch (e) {
@@ -1067,8 +1068,8 @@ export default function PesananSaya() {
                       {selectedOrderModal.metodePengiriman === 'Ambil di RSQ Pusat'
                         ? 'LOKASI PENGAMBILAN'
                         : selectedOrderModal.metodePengiriman === 'Titip ke Ustazah'
-                        ? 'KETERANGAN TITIP USTAZAH'
-                        : 'ALAMAT PENGIRIMAN'}
+                          ? 'KETERANGAN TITIP USTAZAH'
+                          : 'ALAMAT PENGIRIMAN'}
                     </span>
                     <p style={styles.infoValue}>
                       {selectedOrderModal.alamat ||
