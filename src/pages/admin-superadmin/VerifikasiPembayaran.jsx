@@ -3,6 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import Navbar from '../../components/Navbar';
 import contohBuktiTf from '../../assets/contoh bukti tf.jpeg';
+import logoRsq from '../../assets/logo rsq.jpeg';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import html2pdf from 'html2pdf.js';
 
 // Icons
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
@@ -337,6 +342,661 @@ const STATS_CONFIG = [
   { key: 'totalBelumBayar', label: 'Belum Bayar', status: 'Belum Bayar', border: '#2563eb', color: '#2563eb', bg: '#dbeafe', icon: AccessTimeOutlinedIcon }
 ];
 
+const CALENDAR_MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
+const CALENDAR_SHORT_MONTHS = [
+  'Jan', 'Feb', 'Mar', 'Apr',
+  'May', 'Jun', 'Jul', 'Aug',
+  'Sep', 'Oct', 'Nov', 'Dec'
+];
+
+const CALENDAR_DAY_NAMES = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+
+// Kalender Responsive
+function LaporanPengirimanDatePickerInput({
+  value,
+  onChange,
+  onOpen,
+  onClose,
+  alignRight = false,
+  placeholder = 'dd/mm/yyyy'
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMonthYearOpen, setIsMonthYearOpen] = useState(false);
+  const [computedAlignRight, setComputedAlignRight] = useState(alignRight);
+  const containerRef = useRef(null);
+  const activeYearRef = useRef(null);
+
+  const [viewYear, setViewYear] = useState(() => {
+    if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return parseInt(value.slice(0, 4), 10);
+    }
+    return new Date().getFullYear();
+  });
+
+  const [viewMonth, setViewMonth] = useState(() => {
+    if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return parseInt(value.slice(5, 7), 10) - 1;
+    }
+    return new Date().getMonth();
+  });
+
+  const [expandedYear, setExpandedYear] = useState(viewYear);
+
+  useEffect(() => {
+    if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      const parts = value.split('-').map(Number);
+      setViewYear(parts[0]);
+      setViewMonth(parts[1] - 1);
+      setExpandedYear(parts[0]);
+    }
+  }, [value]);
+
+  useEffect(() => {
+    setExpandedYear(viewYear);
+  }, [viewYear, isMonthYearOpen]);
+
+  useEffect(() => {
+    if (isMonthYearOpen && activeYearRef.current) {
+      activeYearRef.current.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  }, [isMonthYearOpen, expandedYear]);
+
+  useEffect(() => {
+    if (isOpen && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      if (alignRight || window.innerWidth - rect.left < 285) {
+        setComputedAlignRight(true);
+      } else {
+        setComputedAlignRight(false);
+      }
+    }
+  }, [isOpen, alignRight]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+        setIsMonthYearOpen(false);
+        onClose?.();
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [onClose]);
+
+  const prevMonth = (e) => {
+    e.stopPropagation();
+    setIsMonthYearOpen(false);
+    if (viewMonth === 0) {
+      setViewMonth(11);
+      setViewYear((y) => y - 1);
+    } else {
+      setViewMonth((m) => m - 1);
+    }
+  };
+
+  const nextMonth = (e) => {
+    e.stopPropagation();
+    setIsMonthYearOpen(false);
+    if (viewMonth === 11) {
+      setViewMonth(0);
+      setViewYear((y) => y + 1);
+    } else {
+      setViewMonth((m) => m + 1);
+    }
+  };
+
+  const handleSelectDay = (day) => {
+    const mStr = String(viewMonth + 1).padStart(2, '0');
+    const dStr = String(day).padStart(2, '0');
+    onChange(`${viewYear}-${mStr}-${dStr}`);
+    setIsOpen(false);
+    onClose?.();
+  };
+
+  const handleSelectPrevMonthDay = (day) => {
+    let y = viewYear;
+    let m = viewMonth - 1;
+    if (m < 0) { m = 11; y -= 1; }
+    const mStr = String(m + 1).padStart(2, '0');
+    const dStr = String(day).padStart(2, '0');
+    onChange(`${y}-${mStr}-${dStr}`);
+    setIsOpen(false);
+    onClose?.();
+  };
+
+  const handleSelectNextMonthDay = (day) => {
+    let y = viewYear;
+    let m = viewMonth + 1;
+    if (m > 11) { m = 0; y += 1; }
+    const mStr = String(m + 1).padStart(2, '0');
+    const dStr = String(day).padStart(2, '0');
+    onChange(`${y}-${mStr}-${dStr}`);
+    setIsOpen(false);
+    onClose?.();
+  };
+
+  const handleSetToday = (e) => {
+    e.stopPropagation();
+    setIsMonthYearOpen(false);
+    const now = new Date();
+    const yStr = now.getFullYear();
+    const mStr = String(now.getMonth() + 1).padStart(2, '0');
+    const dStr = String(now.getDate()).padStart(2, '0');
+    onChange(`${yStr}-${mStr}-${dStr}`);
+    setViewYear(now.getFullYear());
+    setViewMonth(now.getMonth());
+    setIsOpen(false);
+    onClose?.();
+  };
+
+  const handleClear = (e) => {
+    e.stopPropagation();
+    setIsMonthYearOpen(false);
+    onChange('');
+    setIsOpen(false);
+    onClose?.();
+  };
+
+  const formatDisplay = (dStr) => {
+    if (!dStr) return '';
+    try {
+      const [y, m, d] = dStr.split('-');
+      if (!y || !m || !d) return dStr;
+      return `${String(parseInt(d, 10)).padStart(2, '0')}/${String(parseInt(m, 10)).padStart(2, '0')}/${y}`;
+    } catch {
+      return dStr;
+    }
+  };
+
+  const firstDayOfWeek = new Date(viewYear, viewMonth, 1).getDay();
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const daysInPrevMonth = new Date(viewYear, viewMonth, 0).getDate();
+
+  const prevDays = [];
+  for (let i = 0; i < firstDayOfWeek; i++) {
+    prevDays.push(daysInPrevMonth - firstDayOfWeek + i + 1);
+  }
+
+  const currentDays = [];
+  for (let i = 1; i <= daysInMonth; i++) {
+    currentDays.push(i);
+  }
+
+  const remainingCells = 42 - (prevDays.length + currentDays.length);
+  const nextDays = [];
+  for (let i = 1; i <= remainingCells; i++) {
+    nextDays.push(i);
+  }
+
+  const yearRange = [];
+  for (let y = Math.min(2020, viewYear - 3); y <= Math.max(2035, viewYear + 6); y++) {
+    yearRange.push(y);
+  }
+
+  let selY = null, selM = null, selD = null;
+  if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const parts = value.split('-').map(Number);
+    selY = parts[0];
+    selM = parts[1] - 1;
+    selD = parts[2];
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className="laporan-datepicker-input-wrapper"
+      onClick={() => {
+        setIsOpen((prev) => {
+          const next = !prev;
+          if (next) onOpen?.();
+          else onClose?.();
+          return next;
+        });
+        setIsMonthYearOpen(false);
+      }}
+      style={{
+        position: 'relative',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '6px',
+        flex: 1,
+        minWidth: 0,
+        cursor: 'pointer',
+        userSelect: 'none'
+      }}
+    >
+      <span
+        style={{
+          fontSize: '13px',
+          fontFamily: 'inherit',
+          color: '#1a3e2b',
+          fontWeight: '500',
+          whiteSpace: 'nowrap',
+          letterSpacing: '0.2px'
+        }}
+      >
+        {formatDisplay(value) || placeholder}
+      </span>
+
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 20 20"
+        fill="none"
+        stroke="#4a5568"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        style={{ flexShrink: 0, opacity: 0.85 }}
+      >
+        <rect x="2.5" y="4" width="15" height="13" rx="2" fill="#ffffff" />
+        <line x1="2.5" y1="8" x2="17.5" y2="8" stroke="#4a5568" strokeWidth="1.5" />
+        <line x1="6" y1="2" x2="6" y2="4.5" stroke="#4a5568" strokeWidth="1.5" />
+        <line x1="14" y1="2" x2="14" y2="4.5" stroke="#4a5568" strokeWidth="1.5" />
+        <circle cx="6" cy="11" r="0.75" fill="#4a5568" stroke="none" />
+        <circle cx="10" cy="11" r="0.75" fill="#4a5568" stroke="none" />
+        <circle cx="14" cy="11" r="0.75" fill="#4a5568" stroke="none" />
+        <circle cx="6" cy="14" r="0.75" fill="#4a5568" stroke="none" />
+        <circle cx="10" cy="14" r="0.75" fill="#4a5568" stroke="none" />
+        <circle cx="14" cy="14" r="0.75" fill="#4a5568" stroke="none" />
+      </svg>
+
+      {isOpen && (
+        <div
+          className="laporan-calendar-popover"
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 8px)',
+            left: computedAlignRight ? 'auto' : 0,
+            right: computedAlignRight ? 0 : 'auto',
+            width: '272px',
+            backgroundColor: '#ffffff',
+            borderRadius: '8px',
+            border: '1px solid #dadce0',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.16)',
+            padding: '16px 14px 12px',
+            boxSizing: 'border-box',
+            zIndex: 10050,
+            userSelect: 'none',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif'
+          }}
+        >
+          {/* Header Kalender */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '12px'
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setIsMonthYearOpen((prev) => !prev)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                background: 'none',
+                border: 'none',
+                padding: '2px 4px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                fontWeight: '700',
+                color: '#202124',
+                transition: 'background-color 0.15s'
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f3f4')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+            >
+              <span>{CALENDAR_MONTH_NAMES[viewMonth]} {viewYear}</span>
+              <span
+                style={{
+                  fontSize: '9px',
+                  color: '#3c4043',
+                  display: 'inline-block',
+                  transform: isMonthYearOpen ? 'rotate(180deg)' : 'none',
+                  transition: 'transform 0.15s ease'
+                }}
+              >
+                ▼
+              </span>
+            </button>
+
+            {!isMonthYearOpen && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <button
+                  type="button"
+                  onClick={prevMonth}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '28px',
+                    height: '28px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    color: '#202124',
+                    transition: 'background-color 0.15s'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f3f4')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="19" x2="12" y2="5" />
+                    <polyline points="5 12 12 5 19 12" />
+                  </svg>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={nextMonth}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '28px',
+                    height: '28px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    color: '#202124',
+                    transition: 'background-color 0.15s'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f3f4')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <polyline points="19 12 12 19 5 12" />
+                  </svg>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {isMonthYearOpen ? (
+            <div
+              style={{
+                maxHeight: '270px',
+                overflowY: 'auto',
+                paddingRight: '2px',
+                borderTop: '1px solid #f1f3f4'
+              }}
+            >
+              {yearRange.map((y) => {
+                const isExpanded = y === expandedYear;
+                return (
+                  <div key={y} ref={isExpanded ? activeYearRef : null}>
+                    <div
+                      onClick={() => setExpandedYear(y)}
+                      style={{
+                        padding: '8px 12px',
+                        fontSize: '13.5px',
+                        fontWeight: isExpanded ? '600' : '400',
+                        color: '#202124',
+                        backgroundColor: isExpanded ? '#f1f3f4' : 'transparent',
+                        borderBottom: '1px solid #e8eaed',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isExpanded) e.currentTarget.style.backgroundColor = '#f8faf9';
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isExpanded) e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                    >
+                      {y}
+                    </div>
+
+                    {isExpanded && (
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(4, 1fr)',
+                          gap: '10px 4px',
+                          padding: '12px 6px 14px',
+                          backgroundColor: '#ffffff',
+                          borderBottom: '1px solid #e8eaed'
+                        }}
+                      >
+                        {CALENDAR_SHORT_MONTHS.map((mShort, mIdx) => {
+                          const isSelectedMonth =
+                            (selY === y && selM === mIdx) || (y === viewYear && mIdx === viewMonth);
+
+                          return (
+                            <button
+                              key={mShort}
+                              type="button"
+                              onClick={() => {
+                                setViewYear(y);
+                                setViewMonth(mIdx);
+                                setIsMonthYearOpen(false);
+                              }}
+                              style={{
+                                height: '32px',
+                                width: '46px',
+                                margin: '0 auto',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '13px',
+                                fontWeight: isSelectedMonth ? '700' : '400',
+                                color: isSelectedMonth ? '#ffffff' : '#202124',
+                                backgroundColor: isSelectedMonth ? '#3c4043' : 'transparent',
+                                border: isSelectedMonth ? '2px solid #202124' : 'none',
+                                borderRadius: '3px',
+                                cursor: 'pointer',
+                                boxSizing: 'border-box',
+                                transition: 'background-color 0.15s ease'
+                              }}
+                              onMouseEnter={(e) => {
+                                if (!isSelectedMonth) e.currentTarget.style.backgroundColor = '#f1f3f4';
+                              }}
+                              onMouseLeave={(e) => {
+                                if (!isSelectedMonth) e.currentTarget.style.backgroundColor = 'transparent';
+                              }}
+                            >
+                              {mShort}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <>
+              {/* Nama Hari */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(7, 1fr)',
+                  textAlign: 'center',
+                  marginBottom: '10px'
+                }}
+              >
+                {CALENDAR_DAY_NAMES.map((d) => (
+                  <div
+                    key={d}
+                    style={{
+                      fontSize: '12.5px',
+                      fontWeight: '500',
+                      color: '#202124'
+                    }}
+                  >
+                    {d}
+                  </div>
+                ))}
+              </div>
+
+              {/* Grid Tanggal */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(7, 1fr)',
+                  rowGap: '6px',
+                  columnGap: '2px',
+                  textAlign: 'center'
+                }}
+              >
+                {prevDays.map((d, i) => (
+                  <button
+                    key={`prev-${i}`}
+                    type="button"
+                    onClick={() => handleSelectPrevMonthDay(d)}
+                    style={{
+                      height: '28px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '13px',
+                      color: '#70757a',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      borderRadius: '3px'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f3f4')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                  >
+                    {d}
+                  </button>
+                ))}
+
+                {currentDays.map((d) => {
+                  const isSelected = selY === viewYear && selM === viewMonth && selD === d;
+
+                  return (
+                    <button
+                      key={`day-${d}`}
+                      type="button"
+                      onClick={() => handleSelectDay(d)}
+                      style={{
+                        height: '28px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '13px',
+                        fontWeight: isSelected ? '700' : '400',
+                        borderRadius: '3px',
+                        border: isSelected ? '2px solid #202124' : 'none',
+                        backgroundColor: isSelected ? '#3c4043' : 'transparent',
+                        color: isSelected ? '#ffffff' : '#202124',
+                        cursor: 'pointer',
+                        boxSizing: 'border-box',
+                        transition: 'background-color 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isSelected) e.currentTarget.style.backgroundColor = '#f1f3f4';
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                    >
+                      {d}
+                    </button>
+                  );
+                })}
+
+                {nextDays.map((d, i) => (
+                  <button
+                    key={`next-${i}`}
+                    type="button"
+                    onClick={() => handleSelectNextMonthDay(d)}
+                    style={{
+                      height: '28px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '13px',
+                      color: '#70757a',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      borderRadius: '3px'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f3f4')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginTop: '16px',
+                  paddingTop: '6px'
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={handleClear}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    color: '#1a73e8',
+                    cursor: 'pointer',
+                    padding: '4px 6px',
+                    borderRadius: '4px'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f3f4')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
+                  Clear
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSetToday}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    color: '#1a73e8',
+                    cursor: 'pointer',
+                    padding: '4px 6px',
+                    borderRadius: '4px'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f3f4')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
+                  Today
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function VerifikasiPembayaran() {
   const navigate = useNavigate();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -348,6 +1008,8 @@ export default function VerifikasiPembayaran() {
   const [statusFilter, setStatusFilter] = useState('Semua Status');
   const [metodeFilter, setMetodeFilter] = useState('Semua Metode');
   const [startDate, setStartDate] = useState('');
+  const startDatePickerRef = useRef(null);
+  const endDatePickerRef = useRef(null);
   const [endDate, setEndDate] = useState('');
   const [isDateFocused, setIsDateFocused] = useState(false);
   const [isDateHovered, setIsDateHovered] = useState(false);
@@ -359,6 +1021,7 @@ export default function VerifikasiPembayaran() {
 
   // Modal State
   const [selectedDetail, setSelectedDetail] = useState(null);
+  const [selectedKwitansi, setSelectedKwitansi] = useState(null);
   const [approvingOrder, setApprovingOrder] = useState(null);
   const [rejectingOrder, setRejectingOrder] = useState(null);
   const [alasanTolak, setAlasanTolak] = useState('');
@@ -397,6 +1060,86 @@ export default function VerifikasiPembayaran() {
   }, []);
 
   // Format Rupiah
+  const terbilang = (nominal) => {
+    const angka = Math.floor(Math.abs(Number(nominal) || 0));
+    const bilangan = ['', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam', 'Tujuh', 'Delapan', 'Sembilan', 'Sepuluh', 'Sebelas'];
+    if (angka < 12) return bilangan[angka];
+    if (angka < 20) return terbilang(angka - 10) + ' Belas';
+    if (angka < 100) return terbilang(Math.floor(angka / 10)) + ' Puluh' + (angka % 10 !== 0 ? ' ' + terbilang(angka % 10) : '');
+    if (angka < 200) return 'Seratus' + (angka % 100 !== 0 ? ' ' + terbilang(angka % 100) : '');
+    if (angka < 1000) return terbilang(Math.floor(angka / 100)) + ' Ratus' + (angka % 100 !== 0 ? ' ' + terbilang(angka % 100) : '');
+    if (angka < 2000) return 'Seribu' + (angka % 1000 !== 0 ? ' ' + terbilang(angka % 1000) : '');
+    if (angka < 1000000) return terbilang(Math.floor(angka / 1000)) + ' Ribu' + (angka % 1000 !== 0 ? ' ' + terbilang(angka % 1000) : '');
+    if (angka < 1000000000) return terbilang(Math.floor(angka / 1000000)) + ' Juta' + (angka % 1000000 !== 0 ? ' ' + terbilang(angka % 1000000) : '');
+    return terbilang(Math.floor(angka / 1000000000)) + ' Miliar' + (angka % 1000000000 !== 0 ? ' ' + terbilang(angka % 1000000000) : '');
+  };
+
+  // Cetak / Unduh PDF Kwitansi
+  const handlePrintKwitansi = () => {
+    const element = document.getElementById('printable-kwitansi');
+    if (!element) return;
+    const nomorKwitansi = selectedKwitansi
+      ? 'KWT-' + (selectedKwitansi.id || '').replace(/^ORD-/, '')
+      : 'Kuitansi';
+
+    // Buat clone offscreen khusus untuk PDF agar tampilan website tidak berubah sama sekali,
+    // namun di hasil PDF tulisannya melebar ke ujung kiri & kanan secara proporsional
+    const offscreen = document.createElement('div');
+    offscreen.style.position = 'fixed';
+    offscreen.style.left = '-9999px';
+    offscreen.style.top = '0';
+    offscreen.style.width = '700px';
+    offscreen.style.backgroundColor = '#ffffff';
+    offscreen.style.zIndex = '-9999';
+
+    const clone = element.cloneNode(true);
+    clone.style.width = '700px';
+    clone.style.maxWidth = '700px';
+    clone.style.padding = '0';
+    clone.style.margin = '0';
+    clone.style.boxShadow = 'none';
+    clone.style.border = 'none';
+
+    offscreen.appendChild(clone);
+    document.body.appendChild(offscreen);
+
+    const opt = {
+      margin: [12, 20, 12, 20],
+      filename: nomorKwitansi + '.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, width: 700 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    const cleanup = () => {
+      if (document.body.contains(offscreen)) {
+        document.body.removeChild(offscreen);
+      }
+    };
+
+    try {
+      const exporter = typeof html2pdf === 'function' ? html2pdf : (html2pdf && html2pdf.default ? html2pdf.default : window.html2pdf);
+      if (typeof exporter === 'function') {
+        exporter()
+          .set(opt)
+          .from(clone)
+          .save()
+          .then(cleanup)
+          .catch((err) => {
+            console.error('Error in save:', err);
+            cleanup();
+          });
+      } else {
+        cleanup();
+        window.print();
+      }
+    } catch (err) {
+      console.error('Error generating PDF:', err);
+      cleanup();
+      window.print();
+    }
+  };
+
   const formatRupiah = (number) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -686,34 +1429,25 @@ export default function VerifikasiPembayaran() {
                   className="date-range-responsive"
                 >
                   <CalendarTodayOutlinedIcon sx={{ color: '#23573c', fontSize: 18, flexShrink: 0 }} />
-                  <input
-                    type="date"
+                  <LaporanPengirimanDatePickerInput
                     value={startDate}
-                    max={endDate || undefined}
-                    onChange={(e) => {
-                      setStartDate(e.target.value);
+                    onChange={(val) => {
+                      setStartDate(val);
                       setCurrentPage(1);
                     }}
-                    onClick={(e) => {
-                      try { e.target.showPicker?.(); } catch { }
-                    }}
-                    style={styles.dateInput}
-                    className="date-input-clean"
+                    onOpen={() => setIsDateFocused(true)}
+                    onClose={() => setIsDateFocused(false)}
                   />
                   <span style={styles.dateSeparator}>s/d</span>
-                  <input
-                    type="date"
+                  <LaporanPengirimanDatePickerInput
                     value={endDate}
-                    min={startDate || undefined}
-                    onChange={(e) => {
-                      setEndDate(e.target.value);
+                    onChange={(val) => {
+                      setEndDate(val);
                       setCurrentPage(1);
                     }}
-                    onClick={(e) => {
-                      try { e.target.showPicker?.(); } catch { }
-                    }}
-                    style={styles.dateInput}
-                    className="date-input-clean"
+                    onOpen={() => setIsDateFocused(true)}
+                    onClose={() => setIsDateFocused(false)}
+                    alignRight={true}
                   />
                   {(startDate || endDate) && (
                     <button
@@ -1029,6 +1763,157 @@ export default function VerifikasiPembayaran() {
         </div>
       )}
 
+      {/* Modal Pratinjau Kuitansi */}
+      {selectedKwitansi && (
+        <div style={{ ...styles.modalOverlay, zIndex: 10002 }} onClick={() => setSelectedKwitansi(null)}>
+          <div
+            style={styles.kwitansiModalContainer}
+            onClick={(e) => e.stopPropagation()}
+            className="kwitansi-modal-wrapper"
+          >
+            {/* Action Bar (Download PDF) */}
+            <div style={styles.kwitansiActionBar} className="no-print">
+              <span style={{ fontWeight: '700', fontSize: '15px', color: '#1a3e2b' }}>Pratinjau Kuitansi</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={handlePrintKwitansi}
+                  style={styles.btnDownloadPdf}
+                  title="Unduh sebagai file PDF atau Cetak Kuitansi"
+                >
+                  <FileDownloadOutlinedIcon sx={{ fontSize: 19 }} />
+                  <span>Unduh Kuitansi (PDF)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedKwitansi(null)}
+                  style={styles.modalCloseBtn}
+                >
+                  <CloseOutlinedIcon sx={{ fontSize: 20 }} />
+                </button>
+              </div>
+            </div>
+
+            <div id="printable-kwitansi" style={styles.kwitansiPaper} className="printable-kwitansi-sheet">
+              <div style={styles.kwitansiHeader}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <img src={logoRsq} alt="Logo RSQ" style={styles.kwitansiLogo} />
+                  <div>
+                    <div style={styles.kwitansiBrandName}>RUMAH SAHABAT QUR'AN</div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={styles.kwitansiDivider} />
+
+              <h2 style={styles.kwitansiTitle}>Kuitansi/Bukti Pembayaran</h2>
+              <table style={styles.kwitansiMetaTable}>
+                <tbody>
+                  <tr>
+                    <td style={styles.metaLabelCol}>Nomor</td>
+                    <td style={styles.metaColonCol}>:</td>
+                    <td style={styles.metaValueCol}>
+                      {`KWT/${(selectedKwitansi.id || '').replace(/^ORD-/, '')}`}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={styles.metaLabelCol}>Nama Pembeli</td>
+                    <td style={styles.metaColonCol}>:</td>
+                    <td style={styles.metaValueCol}>
+                      {selectedKwitansi.namaPembeli}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={styles.metaLabelCol}>Total Tagihan</td>
+                    <td style={styles.metaColonCol}>:</td>
+                    <td style={styles.metaValueCol}>
+                      {formatRupiah(selectedKwitansi.totalBayar)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={styles.metaLabelCol}>Tanggal Pemesanan</td>
+                    <td style={styles.metaColonCol}>:</td>
+                    <td style={styles.metaValueCol}>
+                      {formatTanggal(selectedKwitansi.tanggal)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={styles.metaLabelCol}>Tanggal Pembayaran</td>
+                    <td style={styles.metaColonCol}>:</td>
+                    <td style={styles.metaValueCol}>
+                      {formatTanggal(selectedKwitansi.tanggal)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={styles.metaLabelCol}>Pembayaran Terverifikasi</td>
+                    <td style={styles.metaColonCol}>:</td>
+                    <td style={styles.metaValueCol}>
+                      {formatTanggal(selectedKwitansi.tanggal)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={{ ...styles.metaLabelCol, verticalAlign: 'top' }}>Untuk Pembayaran</td>
+                    <td style={{ ...styles.metaColonCol, verticalAlign: 'top' }}>:</td>
+                    <td style={styles.metaValueCol}>
+                      Pembayaran modul pembelajaran yang dipesan melalui Sistem Inventory RSQ dengan nomor pesanan {selectedKwitansi.id}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              {/* Diterbitkan Atas Nama */}
+              <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '28px' }}>
+                <div style={{ textAlign: 'left', minWidth: '220px' }}>
+                  <div style={{ fontSize: '12.5px', color: '#334155' }}>Diterbitkan Atas Nama</div>
+                  <div style={{ fontSize: '13.5px', fontWeight: '700', color: '#0f172a', marginTop: '3px' }}>
+                    RUMAH SAHABAT QUR'AN
+                  </div>
+                  
+                  {/* Ruang Tanda Tangan */}
+                  <div style={{ height: '90px' }} />
+
+                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a', textDecoration: 'underline' }}>
+                    Ekowati
+                  </div>
+                  <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '2px' }}>Bendahara RSQ Pusat</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @media print {
+          body * {
+            visibility: hidden !important;
+          }
+          #printable-kwitansi, #printable-kwitansi * {
+            visibility: visible !important;
+          }
+          #printable-kwitansi {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            max-width: none !important;
+            box-shadow: none !important;
+            border: none !important;
+            background: #ffffff !important;
+            z-index: 9999999 !important;
+          }
+          .no-print {
+            display: none !important;
+          }
+          @page {
+            size: A4 portrait;
+            margin: 10mm;
+          }
+        }
+      `}</style>
+
       {/* Modal Detail */}
       {selectedDetail && (
         <div style={styles.modalOverlay} onClick={handleCloseDetailModal}>
@@ -1225,7 +2110,27 @@ export default function VerifikasiPembayaran() {
                 {selectedDetail.status === 'Menunggu Verifikasi' ? 'Batal' : 'Tutup'}
               </button>
 
-              {/* Tombol Aksi */}
+              {selectedDetail.status === 'Disetujui' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const detail = selectedDetail;
+                    setSelectedDetail(null);
+                    setSelectedKwitansi(detail);
+                  }}
+                  style={styles.btnModalKwitansi}
+                >
+                  <ReceiptLongOutlinedIcon sx={{ fontSize: 18 }} />
+                  <span>Lihat Kuitansi</span>
+                </button>
+              )}
+              {/*
+                </button>
+              )}
+
+              </button>
+
+              */}{/* Tombol Aksi */}
               {selectedDetail.status === 'Menunggu Verifikasi' && (
                 <>
                   <button
@@ -2018,6 +2923,248 @@ const styles = {
     fontSize: '14px',
     fontWeight: '700',
     color: '#334155'
+  },
+  btnTableKwitansi: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '6px 12px',
+    backgroundColor: '#e8f5ed',
+    color: '#166534',
+    border: '1px solid #bbf7d0',
+    borderRadius: '8px',
+    fontSize: '12.5px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease'
+  },
+  btnModalKwitansi: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '10px 18px',
+    backgroundColor: '#23573c',
+    color: '#ffffff',
+    border: 'none',
+    borderRadius: '10px',
+    fontSize: '13.5px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    boxShadow: '0 2px 8px rgba(35, 87, 60, 0.25)'
+  },
+  kwitansiModalContainer: {
+    backgroundColor: '#f1f5f9',
+    borderRadius: '16px',
+    maxWidth: '600px',
+    width: '95%',
+    maxHeight: '92vh',
+    display: 'flex',
+    flexDirection: 'column',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    overflow: 'hidden'
+  },
+  kwitansiActionBar: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '14px 24px',
+    backgroundColor: '#ffffff',
+    borderBottom: '1px solid #e2e8f0',
+    boxSizing: 'border-box'
+  },
+  btnDownloadPdf: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '9px 18px',
+    backgroundColor: '#23573c',
+    color: '#ffffff',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '13.5px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    boxShadow: '0 2px 8px rgba(35, 87, 60, 0.25)',
+    transition: 'background-color 0.2s ease'
+  },
+  kwitansiPaper: {
+    backgroundColor: '#ffffff',
+    margin: '20px auto',
+    padding: '24px 30px',
+    width: '100%',
+    maxWidth: '540px',
+    boxSizing: 'border-box',
+    borderRadius: '4px',
+    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+    overflowY: 'auto',
+    fontFamily: "'Times New Roman', Times, serif, 'Poppins', sans-serif"
+  },
+  kwitansiHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '16px'
+  },
+  kwitansiLogo: {
+    width: '68px',
+    height: '68px',
+    objectFit: 'contain'
+  },
+  kwitansiBrandName: {
+    fontSize: '20px',
+    fontWeight: '800',
+    color: '#1a3e2b',
+    letterSpacing: '0.5px',
+    fontFamily: "'Poppins', sans-serif"
+  },
+  kwitansiBrandSub: {
+    fontSize: '11px',
+    color: '#64748b',
+    fontFamily: "'Poppins', sans-serif"
+  },
+  kwitansiDocType: {
+    fontSize: '18px',
+    fontWeight: '800',
+    color: '#0f172a',
+    letterSpacing: '1px'
+  },
+  kwitansiDocDate: {
+    fontSize: '11.5px',
+    color: '#64748b',
+    marginTop: '2px'
+  },
+  kwitansiDivider: {
+    height: '2px',
+    backgroundColor: '#1a3e2b',
+    margin: '14px 0 16px',
+    width: '100%'
+  },
+  kwitansiTitle: {
+    fontSize: '18px',
+    fontWeight: '700',
+    color: '#0f172a',
+    margin: '0 0 16px 0',
+    textAlign: 'left'
+  },
+  kwitansiMetaTable: {
+    width: '100%',
+    borderCollapse: 'collapse',
+    fontSize: '13px',
+    lineHeight: '1.7',
+    color: '#1e293b'
+  },
+  metaLabelCol: {
+    width: '210px',
+    color: '#475569',
+    fontWeight: '500',
+    padding: '3px 0'
+  },
+  metaColonCol: {
+    width: '14px',
+    color: '#475569',
+    fontWeight: '600',
+    padding: '3px 0',
+    textAlign: 'center'
+  },
+  metaValueCol: {
+    color: '#0f172a',
+    padding: '3px 0'
+  },
+  kwitansiItemTable: {
+    width: '100%',
+    borderCollapse: 'collapse',
+    fontSize: '12.5px',
+    marginTop: '4px'
+  },
+  kwitansiItemThRow: {
+    backgroundColor: '#f8fafc',
+    borderTop: '1px solid #cbd5e1',
+    borderBottom: '1px solid #cbd5e1'
+  },
+  kwitansiItemTh: {
+    padding: '8px 10px',
+    fontWeight: '700',
+    color: '#334155',
+    fontSize: '12px',
+    textTransform: 'uppercase'
+  },
+  kwitansiItemTr: {
+    borderBottom: '1px solid #e2e8f0'
+  },
+  kwitansiItemTd: {
+    padding: '8px 10px',
+    color: '#1e293b'
+  },
+  kwitansiGrandTotalLabel: {
+    padding: '10px',
+    fontWeight: '800',
+    textAlign: 'right',
+    color: '#0f172a',
+    fontSize: '13px',
+    borderTop: '2px solid #0f172a'
+  },
+  kwitansiGrandTotalValue: {
+    padding: '10px',
+    fontWeight: '800',
+    textAlign: 'right',
+    color: '#166534',
+    fontSize: '14px',
+    borderTop: '2px solid #0f172a'
+  },
+  kwitansiLunasBanner: {
+    backgroundColor: '#f0fdf4',
+    borderLeft: '4px solid #16a34a',
+    padding: '12px 18px',
+    borderRadius: '4px',
+    margin: '18px 0',
+    boxSizing: 'border-box'
+  },
+  kwitansiLunasNominal: {
+    fontSize: '19px',
+    fontWeight: '800',
+    color: '#15803d',
+    margin: '2px 0'
+  },
+  kwitansiLunasTerbilang: {
+    fontSize: '12px',
+    fontStyle: 'italic',
+    color: '#166534',
+    fontWeight: '500'
+  },
+  kwitansiFooterSign: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginTop: '22px',
+    paddingTop: '10px'
+  },
+  kwitansiStampBox: {
+    height: '60px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: '6px 0'
+  },
+  kwitansiStampBadge: {
+    border: '2px solid #16a34a',
+    color: '#16a34a',
+    padding: '4px 14px',
+    borderRadius: '6px',
+    transform: 'rotate(-5deg)',
+    display: 'inline-flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    backgroundColor: 'rgba(22, 163, 74, 0.05)'
+  },
+  kwitansiBottomUrlRow: {
+    marginTop: '36px',
+    paddingTop: '8px',
+    borderTop: '1px solid #f1f5f9',
+    display: 'flex',
+    justifyContent: 'space-between',
+    fontSize: '10px',
+    color: '#94a3b8'
   },
   mobileTotalValue: {
     fontSize: '14px',
