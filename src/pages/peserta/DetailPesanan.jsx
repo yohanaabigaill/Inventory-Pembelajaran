@@ -17,6 +17,7 @@ import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
 import ZoomInOutlinedIcon from '@mui/icons-material/ZoomInOutlined';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import html2pdf from 'html2pdf.js';
 import logoRsq from '../../assets/logo rsq.jpeg';
 
@@ -36,6 +37,7 @@ export default function DetailPesanan() {
   const [isCancelling, setIsCancelling] = useState(false);
   const [newProofFile, setNewProofFile] = useState(null);
   const [showKwitansiModal, setShowKwitansiModal] = useState(false);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 
   // Toast
   const [notification, setNotification] = useState(null);
@@ -78,7 +80,7 @@ export default function DetailPesanan() {
 
   // Kunci scroll saat lightbox atau modal batal atau modal kuitansi terbuka
   useEffect(() => {
-    if (showLightbox || isCancelling || showKwitansiModal) {
+    if (showLightbox || isCancelling || showKwitansiModal || showInvoiceModal) {
       document.body.style.overflow = 'hidden';
       document.documentElement.style.overflow = 'hidden';
     } else {
@@ -89,7 +91,7 @@ export default function DetailPesanan() {
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
     };
-  }, [showLightbox, isCancelling, showKwitansiModal]);
+  }, [showLightbox, isCancelling, showKwitansiModal, showInvoiceModal]);
 
   const formatRupiah = (number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -124,7 +126,85 @@ export default function DetailPesanan() {
     }
   };
 
-  // Unduh PDF Kwitansi
+  // Unduh PDF Kuitansi
+  const terbilang = (nominal) => {
+    const angka = Math.floor(Math.abs(Number(nominal) || 0));
+    const bilangan = ['', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam', 'Tujuh', 'Delapan', 'Sembilan', 'Sepuluh', 'Sebelas'];
+    if (angka < 12) return bilangan[angka];
+    if (angka < 20) return terbilang(angka - 10) + ' Belas';
+    if (angka < 100) return terbilang(Math.floor(angka / 10)) + ' Puluh' + (angka % 10 !== 0 ? ' ' + terbilang(angka % 10) : '');
+    if (angka < 200) return 'Seratus' + (angka % 100 !== 0 ? ' ' + terbilang(angka % 100) : '');
+    if (angka < 1000) return terbilang(Math.floor(angka / 100)) + ' Ratus' + (angka % 100 !== 0 ? ' ' + terbilang(angka % 100) : '');
+    if (angka < 2000) return 'Seribu' + (angka % 1000 !== 0 ? ' ' + terbilang(angka % 1000) : '');
+    if (angka < 1000000) return terbilang(Math.floor(angka / 1000)) + ' Ribu' + (angka % 1000 !== 0 ? ' ' + terbilang(angka % 1000) : '');
+    if (angka < 1000000000) return terbilang(Math.floor(angka / 1000000)) + ' Juta' + (angka % 1000000 !== 0 ? ' ' + terbilang(angka % 1000000) : '');
+    return terbilang(Math.floor(angka / 1000000000)) + ' Miliar' + (angka % 1000000000 !== 0 ? ' ' + terbilang(angka % 1000000000) : '');
+  };
+
+  // Unduh PDF Invoice
+  const handlePrintInvoice = () => {
+    const element = document.getElementById('printable-invoice');
+    if (!element) return;
+    const nomorInvoice = order
+      ? 'INV-' + (order.id || '').replace(/^ORD-/, '')
+      : 'Invoice';
+
+    const offscreen = document.createElement('div');
+    offscreen.style.position = 'fixed';
+    offscreen.style.left = '-9999px';
+    offscreen.style.top = '0';
+    offscreen.style.width = '700px';
+    offscreen.style.backgroundColor = '#ffffff';
+    offscreen.style.zIndex = '-9999';
+
+    const clone = element.cloneNode(true);
+    clone.style.width = '700px';
+    clone.style.maxWidth = '700px';
+    clone.style.padding = '0';
+    clone.style.margin = '0';
+    clone.style.boxShadow = 'none';
+    clone.style.border = 'none';
+
+    offscreen.appendChild(clone);
+    document.body.appendChild(offscreen);
+
+    const opt = {
+      margin: [12, 18, 12, 18],
+      filename: nomorInvoice + '.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, width: 700 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    const cleanup = () => {
+      if (document.body.contains(offscreen)) {
+        document.body.removeChild(offscreen);
+      }
+    };
+
+    try {
+      const exporter = typeof html2pdf === 'function' ? html2pdf : (html2pdf && html2pdf.default ? html2pdf.default : window.html2pdf);
+      if (typeof exporter === 'function') {
+        exporter()
+          .set(opt)
+          .from(clone)
+          .save()
+          .then(cleanup)
+          .catch((err) => {
+            console.error('Error in save:', err);
+            cleanup();
+          });
+      } else {
+        cleanup();
+        window.print();
+      }
+    } catch (err) {
+      console.error('Error generating PDF:', err);
+      cleanup();
+      window.print();
+    }
+  };
+
   const handlePrintKwitansi = () => {
     const element = document.getElementById('printable-kwitansi');
     if (!element) return;
@@ -394,7 +474,30 @@ export default function DetailPesanan() {
   }
 
   const badge = getStatusBadge(order.status);
+  // Kuitansi hanya muncul jika pembayaran lunas
   const hasKwitansi = isKwitansiAvailable(order.status, order.statusPengiriman);
+  // Invoice muncul pada status perlu dikirim, diproses, dikirim, selesai
+  const hasInvoice = !['dibatalkan', 'pesanan dibatalkan', 'ditolak', 'pembayaran ditolak'].includes(
+    (order.status || '').toLowerCase().trim()
+  ) && !['dibatalkan', 'ditolak'].includes(
+    (order.statusPembayaran || '').toLowerCase().trim()
+  );
+  const isOrderPaid = [
+    'perlu dikirim',
+    'diproses',
+    'dikirim',
+    'selesai',
+    'disetujui'
+  ].includes((order.status || '').toLowerCase().trim()) ||
+  [
+    'perlu dikirim',
+    'diproses',
+    'dikirim',
+    'selesai',
+    'disetujui'
+  ].includes((order.statusPengiriman || '').toLowerCase().trim()) ||
+  order.statusPembayaran === 'Disetujui';
+
   const isBelumBayar =
     (order.status === 'Belum Bayar' || order.statusPembayaran === 'Belum Bayar') &&
     order.status !== 'Dibatalkan';
@@ -471,6 +574,16 @@ export default function DetailPesanan() {
                   <span className="detail-header-order-id-value" style={styles.headerOrderIdValue}>{order.id}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                  {hasInvoice && (
+                    <button
+                      type="button"
+                      onClick={() => setShowInvoiceModal(true)}
+                      style={styles.btnLihatInvoiceHeader}
+                    >
+                      <DescriptionOutlinedIcon sx={{ fontSize: 18 }} />
+                      <span>Lihat Invoice</span>
+                    </button>
+                  )}
                   {hasKwitansi && (
                     <button
                       type="button"
@@ -839,6 +952,224 @@ export default function DetailPesanan() {
         </div>
       )}
 
+      {/* Modal Pratinjau Invoice */}
+      {showInvoiceModal && (
+        <div style={{ ...styles.modalOverlay, zIndex: 999999, backgroundColor: 'rgba(0, 0, 0, 0.45)' }} onClick={() => setShowInvoiceModal(false)}>
+          <div
+            style={styles.kwitansiModalContainer}
+            onClick={(e) => e.stopPropagation()}
+            className="kwitansi-modal-wrapper"
+          >
+            {/* Action Bar (Download PDF) */}
+            <div style={styles.kwitansiActionBar} className="no-print">
+              <span style={{ fontWeight: '700', fontSize: '15px', color: '#1a3e2b' }}>Pratinjau Invoice</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={handlePrintInvoice}
+                  style={styles.btnDownloadPdf}
+                >
+                  <FileDownloadOutlinedIcon sx={{ fontSize: 19 }} />
+                  <span>Unduh Invoice (PDF)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowInvoiceModal(false)}
+                  style={styles.modalCloseBtn}
+                >
+                  <CloseOutlinedIcon sx={{ fontSize: 20 }} />
+                </button>
+              </div>
+            </div>
+
+            <div id="printable-invoice" style={styles.kwitansiPaper} className="printable-kwitansi-sheet">
+              {/* Header Dokumen */}
+              <div style={styles.kwitansiHeader}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <img src={logoRsq} alt="Logo RSQ" style={styles.kwitansiLogo} />
+                  <div>
+                    <div style={styles.kwitansiBrandName}>RUMAH SAHABAT QUR'AN</div>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={styles.kwitansiDocType}>INVOICE</div>
+                  <div style={styles.invoiceDocNumber}>
+                    NO: INV/{(order.id || '').replace(/^ORD-/, '')}
+                  </div>
+                  <div style={{ ...styles.kwitansiDocDate, fontSize: '11px', whiteSpace: 'nowrap' }}>
+                    Tanggal Dokumen : {formatTanggal(order.tanggal)}
+                  </div>
+                </div>
+              </div>
+
+              <div style={styles.kwitansiDivider} />
+
+              {/* Data Penyedia & Pembeli */}
+              <div style={styles.invoicePartiesGrid}>
+                <div style={styles.invoicePartyCol}>
+                  <div style={styles.invoicePartyHeader}>Dari</div>
+                  <table style={styles.invoicePartyTable}>
+                    <tbody>
+                      <tr>
+                        <td style={styles.invoicePartyLabel}>Nama Penyedia</td>
+                        <td style={styles.invoicePartyColon}>:</td>
+                        <td style={styles.invoicePartyValue}>RUMAH SAHABAT QUR'AN</td>
+                      </tr>
+                      <tr>
+                        <td style={styles.invoicePartyLabel}>Alamat</td>
+                        <td style={styles.invoicePartyColon}>:</td>
+                        <td style={styles.invoicePartyValue}>Tiban Bukit Asri B no.20 RT 1 RW X</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div style={styles.invoicePartyCol}>
+                  <div style={styles.invoicePartyHeader}>Untuk</div>
+                  <table style={styles.invoicePartyTable}>
+                    <tbody>
+                      <tr>
+                        <td style={styles.invoicePartyLabel}>Nama Pembeli</td>
+                        <td style={styles.invoicePartyColon}>:</td>
+                        <td style={styles.invoicePartyValue}>
+                          {order.namaPenerima || order.namaPembeli || 'Fulan bin Fulan'}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={styles.invoicePartyLabel}>No. HP / WA</td>
+                        <td style={styles.invoicePartyColon}>:</td>
+                        <td style={styles.invoicePartyValue}>{order.noHp || '-'}</td>
+                      </tr>
+                      <tr>
+                        <td style={styles.invoicePartyLabel}>Alamat</td>
+                        <td style={styles.invoicePartyColon}>:</td>
+                        <td style={styles.invoicePartyValue}>{order.alamat || '-'}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Data Pembayaran & Pengiriman */}
+              <div style={styles.invoiceMetaBar}>
+                <div style={{ flex: 1, minWidth: '200px' }}>
+                  <span style={styles.invoiceMetaBarLabel}>Pembayaran:</span>
+                  <span style={styles.invoiceMetaBarValue}>
+                    {order.metodeBayar || 'Transfer Bank (BSI)'}
+                  </span>
+                </div>
+                <div style={{ flex: 1, minWidth: '200px' }}>
+                  <span style={styles.invoiceMetaBarLabel}>Metode Pengiriman:</span>
+                  <span style={styles.invoiceMetaBarValue}>
+                    {order.metodePengiriman || 'Via Kurir'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Tabel Rincian Modul */}
+              <div style={{ position: 'relative', marginTop: '16px' }}>
+                <div style={styles.invoiceRincianHeading}>Rincian Modul</div>
+
+                <table style={styles.invoiceItemTable}>
+                  <thead>
+                    <tr style={styles.invoiceThRow}>
+                      <th style={{ ...styles.invoiceTh, textAlign: 'left' }}>Judul Modul</th>
+                      <th style={{ ...styles.invoiceTh, textAlign: 'center', width: '90px' }}>Jumlah</th>
+                      <th style={{ ...styles.invoiceTh, textAlign: 'right', width: '130px' }}>Harga Satuan</th>
+                      <th style={{ ...styles.invoiceTh, textAlign: 'right', width: '140px' }}>Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(order.items || []).map((item, idx) => (
+                      <tr key={idx} style={styles.invoiceTr}>
+                        <td style={{ ...styles.invoiceTd, textAlign: 'left' }}>{item.nama}</td>
+                        <td style={{ ...styles.invoiceTd, textAlign: 'center' }}>{item.qty}</td>
+                        <td style={{ ...styles.invoiceTd, textAlign: 'right' }}>
+                          {formatRupiah(item.hargaJual || 0)}
+                        </td>
+                        <td style={{ ...styles.invoiceTd, textAlign: 'right', fontWeight: '700', color: '#0f172a' }}>
+                          {formatRupiah((item.hargaJual || 0) * (item.qty || 1))}
+                        </td>
+                      </tr>
+                    ))}
+
+                    {/* Biaya Kurir jika ada */}
+                    {ongkir > 0 && (
+                      <tr style={styles.invoiceTr}>
+                        <td style={{ ...styles.invoiceTd, textAlign: 'left' }}>Biaya Kurir</td>
+                        <td style={{ ...styles.invoiceTd, textAlign: 'center' }}>-</td>
+                        <td style={{ ...styles.invoiceTd, textAlign: 'right' }}>
+                          {formatRupiah(ongkir)}
+                        </td>
+                        <td style={{ ...styles.invoiceTd, textAlign: 'right', fontWeight: '700', color: '#0f172a' }}>
+                          {formatRupiah(ongkir)}
+                        </td>
+                      </tr>
+                    )}
+
+                    {/* Baris Total */}
+                    <tr>
+                      <td colSpan={2} style={{ padding: '16px 12px 6px', border: 'none' }}></td>
+                      <td style={styles.invoiceTotalLabel}>
+                        Total:
+                      </td>
+                      <td style={styles.invoiceTotalValue}>
+                        {formatRupiah(order.totalHarga || order.totalBayar || 0)}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Banner Status Pembayaran */}
+              {isOrderPaid ? (
+                <div style={styles.invoicePaidBanner}>
+                  <div style={styles.invoicePaidBannerHead}>
+                    Pembayaran Lunas dengan Nominal:
+                  </div>
+                  <div style={styles.invoicePaidBannerNominal}>
+                    {formatRupiah(order.totalHarga || order.totalBayar || 0)}
+                  </div>
+                  <div style={styles.invoicePaidBannerTerbilang}>
+                    {terbilang(order.totalHarga || order.totalBayar || 0)} Rupiah
+                  </div>
+                </div>
+              ) : (
+                <div style={styles.invoiceUnpaidBanner}>
+                  <div style={styles.invoiceUnpaidBannerHead}>
+                    Total Tagihan Pembayaran:
+                  </div>
+                  <div style={styles.invoiceUnpaidBannerNominal}>
+                    {formatRupiah(order.totalHarga || order.totalBayar || 0)}
+                  </div>
+                  <div style={styles.invoiceUnpaidBannerTerbilang}>
+                    {terbilang(order.totalHarga || order.totalBayar || 0)} Rupiah
+                  </div>
+                </div>
+              )}
+
+              {/* Diterbitkan Atas Nama */}
+              <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '24px' }}>
+                <div style={{ textAlign: 'left', minWidth: '220px' }}>
+                  <div style={{ fontSize: '12px', color: '#334155' }}>Diterbitkan Atas Nama</div>
+                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a', marginTop: '2px' }}>
+                    RUMAH SAHABAT QUR'AN
+                  </div>
+                  
+                  {/* Ruang Tanda Tangan */}
+                  <div style={{ height: '70px' }} />
+
+                  <div style={{ fontSize: '12.5px', fontWeight: '700', color: '#0f172a', textDecoration: 'underline' }}>
+                    Ekowati
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>Bendahara RSQ Pusat</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal Pratinjau Kuitansi */}
       {showKwitansiModal && (
         <div style={{ ...styles.modalOverlay, zIndex: 999999, backgroundColor: 'rgba(0, 0, 0, 0.45)' }} onClick={() => setShowKwitansiModal(false)}>
@@ -963,10 +1294,12 @@ export default function DetailPesanan() {
           body * {
             visibility: hidden !important;
           }
-          #printable-kwitansi, #printable-kwitansi * {
+          #printable-kwitansi, #printable-kwitansi *,
+          #printable-invoice, #printable-invoice * {
             visibility: visible !important;
           }
-          #printable-kwitansi {
+          #printable-kwitansi,
+          #printable-invoice {
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
@@ -1838,6 +2171,204 @@ const styles = {
   metaValueCol: {
     color: '#0f172a',
     padding: '3px 0'
+  },
+  btnLihatInvoiceHeader: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '7px 16px',
+    backgroundColor: '#23573c',
+    color: '#ffffff',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '13px',
+    fontWeight: '700',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    boxShadow: '0 2px 6px rgba(35, 87, 60, 0.25)'
+  },
+  invoiceDocNumber: {
+    fontSize: '12px',
+    fontWeight: '700',
+    color: '#0f172a',
+    marginTop: '3px'
+  },
+  invoicePartiesGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '24px',
+    marginBottom: '16px',
+    fontSize: '12px',
+    lineHeight: '1.6'
+  },
+  invoicePartyCol: {
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  invoicePartyHeader: {
+    fontWeight: '700',
+    fontSize: '13px',
+    color: '#0f172a',
+    marginBottom: '6px'
+  },
+  invoicePartyTable: {
+    width: '100%',
+    borderCollapse: 'collapse'
+  },
+  invoicePartyLabel: {
+    color: '#475569',
+    width: '95px',
+    padding: '2px 0',
+    verticalAlign: 'top',
+    fontSize: '11.5px'
+  },
+  invoicePartyColon: {
+    width: '10px',
+    textAlign: 'center',
+    padding: '2px 0',
+    verticalAlign: 'top',
+    color: '#475569'
+  },
+  invoicePartyValue: {
+    color: '#0f172a',
+    padding: '2px 0',
+    verticalAlign: 'top',
+    fontSize: '11.5px'
+  },
+  invoiceMetaBar: {
+    display: 'flex',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '16px',
+    padding: '8px 12px',
+    backgroundColor: '#f8fafc',
+    border: '1px solid #e2e8f0',
+    borderRadius: '6px',
+    fontSize: '12px',
+    marginBottom: '14px'
+  },
+  invoiceMetaBarLabel: {
+    fontWeight: '700',
+    color: '#475569',
+    marginRight: '6px'
+  },
+  invoiceMetaBarValue: {
+    color: '#0f172a',
+    fontWeight: '600'
+  },
+  lunasWatermarkStamp: {
+    position: 'absolute',
+    top: '40%',
+    left: '50%',
+    transform: 'translate(-50%, -50%) rotate(-18deg)',
+    border: '4px double rgba(234, 88, 12, 0.28)',
+    borderRadius: '12px',
+    padding: '8px 36px',
+    color: 'rgba(234, 88, 12, 0.28)',
+    fontSize: '52px',
+    fontWeight: '900',
+    letterSpacing: '8px',
+    pointerEvents: 'none',
+    userSelect: 'none',
+    fontFamily: "'Arial Black', Impact, sans-serif",
+    zIndex: 2,
+    textTransform: 'uppercase'
+  },
+  invoiceRincianHeading: {
+    fontSize: '15px',
+    fontWeight: '700',
+    color: '#1a3e2b',
+    marginBottom: '10px',
+    letterSpacing: '-0.2px'
+  },
+  invoiceItemTable: {
+    width: '100%',
+    borderCollapse: 'collapse',
+    fontSize: '12.5px',
+    border: 'none'
+  },
+  invoiceThRow: {
+    backgroundColor: '#f8fafc'
+  },
+  invoiceTh: {
+    padding: '9px 12px',
+    border: 'none',
+    fontWeight: '700',
+    color: '#334155',
+    fontSize: '12.5px'
+  },
+  invoiceTr: {
+    borderBottom: '1px solid #f1f5f9'
+  },
+  invoiceTd: {
+    padding: '11px 12px',
+    border: 'none',
+    color: '#334155',
+    fontSize: '12.5px'
+  },
+  invoiceTotalLabel: {
+    padding: '16px 12px 6px',
+    textAlign: 'right',
+    fontWeight: '700',
+    fontSize: '13.5px',
+    color: '#0f172a',
+    border: 'none'
+  },
+  invoiceTotalValue: {
+    padding: '16px 12px 6px',
+    textAlign: 'right',
+    fontWeight: '700',
+    fontSize: '15px',
+    color: '#166534',
+    border: 'none'
+  },
+  invoicePaidBanner: {
+    marginTop: '16px',
+    borderLeft: '4px solid #16a34a',
+    backgroundColor: '#f0fdf4',
+    padding: '10px 14px',
+    borderRadius: '0 8px 8px 0'
+  },
+  invoicePaidBannerHead: {
+    fontSize: '11.5px',
+    color: '#166534',
+    fontWeight: '600'
+  },
+  invoicePaidBannerNominal: {
+    fontSize: '18px',
+    fontWeight: '800',
+    color: '#166534',
+    marginTop: '2px'
+  },
+  invoicePaidBannerTerbilang: {
+    fontSize: '12px',
+    fontStyle: 'italic',
+    color: '#15803d',
+    marginTop: '2px'
+  },
+  invoiceUnpaidBanner: {
+    marginTop: '16px',
+    borderLeft: '4px solid #d97706',
+    backgroundColor: '#fffbeb',
+    padding: '10px 14px',
+    borderRadius: '0 8px 8px 0'
+  },
+  invoiceUnpaidBannerHead: {
+    fontSize: '11.5px',
+    color: '#92400e',
+    fontWeight: '600'
+  },
+  invoiceUnpaidBannerNominal: {
+    fontSize: '18px',
+    fontWeight: '800',
+    color: '#b45309',
+    marginTop: '2px'
+  },
+  invoiceUnpaidBannerTerbilang: {
+    fontSize: '12px',
+    fontStyle: 'italic',
+    color: '#92400e',
+    marginTop: '2px'
   },
   btnLihatKwitansiHeader: {
     display: 'inline-flex',
