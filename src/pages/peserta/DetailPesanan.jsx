@@ -15,6 +15,10 @@ import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
 import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
 import ZoomInOutlinedIcon from '@mui/icons-material/ZoomInOutlined';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import html2pdf from 'html2pdf.js';
+import logoRsq from '../../assets/logo rsq.jpeg';
 
 // Covers
 import coverAsasi from '../../assets/asasi.jpg';
@@ -31,6 +35,7 @@ export default function DetailPesanan() {
   const [lightboxImg, setLightboxImg] = useState('');
   const [isCancelling, setIsCancelling] = useState(false);
   const [newProofFile, setNewProofFile] = useState(null);
+  const [showKwitansiModal, setShowKwitansiModal] = useState(false);
 
   // Toast
   const [notification, setNotification] = useState(null);
@@ -71,9 +76,9 @@ export default function DetailPesanan() {
     }
   }, [id, order]);
 
-  // Kunci scroll saat lightbox atau modal batal terbuka
+  // Kunci scroll saat lightbox atau modal batal atau modal kuitansi terbuka
   useEffect(() => {
-    if (showLightbox || isCancelling) {
+    if (showLightbox || isCancelling || showKwitansiModal) {
       document.body.style.overflow = 'hidden';
       document.documentElement.style.overflow = 'hidden';
     } else {
@@ -84,7 +89,7 @@ export default function DetailPesanan() {
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
     };
-  }, [showLightbox, isCancelling]);
+  }, [showLightbox, isCancelling, showKwitansiModal]);
 
   const formatRupiah = (number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -92,6 +97,112 @@ export default function DetailPesanan() {
       currency: 'IDR',
       maximumFractionDigits: 0
     }).format(number);
+  };
+
+  const formatTanggal = (dateStr) => {
+    if (!dateStr) return '-';
+    try {
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      if (dateStr.includes('/')) {
+        const datePart = dateStr.split(' ')[0];
+        const parts = datePart.split('/');
+        if (parts.length === 3) {
+          const [d, m, y] = parts;
+          return `${parseInt(d, 10)} ${monthNames[parseInt(m, 10) - 1] || m} ${y}`;
+        }
+      }
+      if (dateStr.includes('-')) {
+        const datePart = dateStr.split(' ')[0];
+        const [year, month, day] = datePart.split('-');
+        if (year && month && day) {
+          return `${parseInt(day, 10)} ${monthNames[parseInt(month, 10) - 1] || month} ${year}`;
+        }
+      }
+      return dateStr;
+    } catch {
+      return dateStr;
+    }
+  };
+
+  // Unduh PDF Kwitansi
+  const handlePrintKwitansi = () => {
+    const element = document.getElementById('printable-kwitansi');
+    if (!element) return;
+    const nomorKwitansi = order
+      ? 'KWT-' + (order.id || '').replace(/^ORD-/, '')
+      : 'Kuitansi';
+
+    const offscreen = document.createElement('div');
+    offscreen.style.position = 'fixed';
+    offscreen.style.left = '-9999px';
+    offscreen.style.top = '0';
+    offscreen.style.width = '700px';
+    offscreen.style.backgroundColor = '#ffffff';
+    offscreen.style.zIndex = '-9999';
+
+    const clone = element.cloneNode(true);
+    clone.style.width = '700px';
+    clone.style.maxWidth = '700px';
+    clone.style.padding = '0';
+    clone.style.margin = '0';
+    clone.style.boxShadow = 'none';
+    clone.style.border = 'none';
+
+    offscreen.appendChild(clone);
+    document.body.appendChild(offscreen);
+
+    const opt = {
+      margin: [12, 20, 12, 20],
+      filename: nomorKwitansi + '.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, width: 700 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    const cleanup = () => {
+      if (document.body.contains(offscreen)) {
+        document.body.removeChild(offscreen);
+      }
+    };
+
+    try {
+      const exporter = typeof html2pdf === 'function' ? html2pdf : (html2pdf && html2pdf.default ? html2pdf.default : window.html2pdf);
+      if (typeof exporter === 'function') {
+        exporter()
+          .set(opt)
+          .from(clone)
+          .save()
+          .then(cleanup)
+          .catch((err) => {
+            console.error('Error in save:', err);
+            cleanup();
+          });
+      } else {
+        cleanup();
+        window.print();
+      }
+    } catch (err) {
+      console.error('Error generating PDF:', err);
+      cleanup();
+      window.print();
+    }
+  };
+
+  const isKwitansiAvailable = (status, statusPengiriman) => {
+    const s = (status || '').toLowerCase().trim();
+    const sp = (statusPengiriman || '').toLowerCase().trim();
+    if (
+      s === 'belum bayar' ||
+      s === 'menunggu verifikasi' ||
+      s === 'ditolak' ||
+      s === 'pembayaran ditolak' ||
+      s === 'dibatalkan' ||
+      s === 'pesanan dibatalkan'
+    ) {
+      return false;
+    }
+    const allowed = ['perlu dikirim', 'diproses', 'dikirim', 'selesai', 'disetujui'];
+    return allowed.includes(s) || allowed.includes(sp);
   };
 
   const getStatusBadge = (status) => {
@@ -283,6 +394,7 @@ export default function DetailPesanan() {
   }
 
   const badge = getStatusBadge(order.status);
+  const hasKwitansi = isKwitansiAvailable(order.status, order.statusPengiriman);
   const isBelumBayar =
     (order.status === 'Belum Bayar' || order.statusPembayaran === 'Belum Bayar') &&
     order.status !== 'Dibatalkan';
@@ -358,16 +470,28 @@ export default function DetailPesanan() {
                   <span className="detail-header-order-id-label" style={styles.headerOrderIdLabel}>NO PESANAN</span>
                   <span className="detail-header-order-id-value" style={styles.headerOrderIdValue}>{order.id}</span>
                 </div>
-                <div
-                  className="detail-status-badge"
-                  style={{
-                    ...styles.statusBadge,
-                    color: badge.color,
-                    backgroundColor: badge.bg,
-                    border: `1px solid ${badge.border}`
-                  }}
-                >
-                  {order.status}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                  {hasKwitansi && (
+                    <button
+                      type="button"
+                      onClick={() => setShowKwitansiModal(true)}
+                      style={styles.btnLihatKwitansiHeader}
+                    >
+                      <ReceiptLongOutlinedIcon sx={{ fontSize: 18 }} />
+                      <span>Lihat Kuitansi</span>
+                    </button>
+                  )}
+                  <div
+                    className="detail-status-badge"
+                    style={{
+                      ...styles.statusBadge,
+                      color: badge.color,
+                      backgroundColor: badge.bg,
+                      border: `1px solid ${badge.border}`
+                    }}
+                  >
+                    {order.status}
+                  </div>
                 </div>
               </div>
 
@@ -714,6 +838,156 @@ export default function DetailPesanan() {
           </div>
         </div>
       )}
+
+      {/* Modal Pratinjau Kuitansi */}
+      {showKwitansiModal && (
+        <div style={{ ...styles.modalOverlay, zIndex: 999999, backgroundColor: 'rgba(0, 0, 0, 0.45)' }} onClick={() => setShowKwitansiModal(false)}>
+          <div
+            style={styles.kwitansiModalContainer}
+            onClick={(e) => e.stopPropagation()}
+            className="kwitansi-modal-wrapper"
+          >
+            {/* Action Bar (Download PDF) */}
+            <div style={styles.kwitansiActionBar} className="no-print">
+              <span style={{ fontWeight: '700', fontSize: '15px', color: '#1a3e2b' }}>Pratinjau Kuitansi</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={handlePrintKwitansi}
+                  style={styles.btnDownloadPdf}
+                >
+                  <FileDownloadOutlinedIcon sx={{ fontSize: 19 }} />
+                  <span>Unduh Kuitansi (PDF)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowKwitansiModal(false)}
+                  style={styles.modalCloseBtn}
+                >
+                  <CloseOutlinedIcon sx={{ fontSize: 20 }} />
+                </button>
+              </div>
+            </div>
+
+            <div id="printable-kwitansi" style={styles.kwitansiPaper} className="printable-kwitansi-sheet">
+              <div style={styles.kwitansiHeader}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <img src={logoRsq} alt="Logo RSQ" style={styles.kwitansiLogo} />
+                  <div>
+                    <div style={styles.kwitansiBrandName}>RUMAH SAHABAT QUR'AN</div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={styles.kwitansiDivider} />
+
+              <h2 style={styles.kwitansiTitle}>Kuitansi/Bukti Pembayaran</h2>
+              <table style={styles.kwitansiMetaTable}>
+                <tbody>
+                  <tr>
+                    <td style={styles.metaLabelCol}>Nomor</td>
+                    <td style={styles.metaColonCol}>:</td>
+                    <td style={styles.metaValueCol}>
+                      {`KWT/${(order.id || '').replace(/^ORD-/, '')}`}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={styles.metaLabelCol}>Nama Pembeli</td>
+                    <td style={styles.metaColonCol}>:</td>
+                    <td style={styles.metaValueCol}>
+                      {order.namaPenerima || order.namaPembeli || 'Fulan bin Fulan'}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={styles.metaLabelCol}>Total Tagihan</td>
+                    <td style={styles.metaColonCol}>:</td>
+                    <td style={styles.metaValueCol}>
+                      {formatRupiah(order.totalHarga || order.totalBayar || 0)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={styles.metaLabelCol}>Tanggal Pemesanan</td>
+                    <td style={styles.metaColonCol}>:</td>
+                    <td style={styles.metaValueCol}>
+                      {formatTanggal(order.tanggal)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={styles.metaLabelCol}>Tanggal Pembayaran</td>
+                    <td style={styles.metaColonCol}>:</td>
+                    <td style={styles.metaValueCol}>
+                      {formatTanggal(order.tanggal)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={styles.metaLabelCol}>Pembayaran Terverifikasi</td>
+                    <td style={styles.metaColonCol}>:</td>
+                    <td style={styles.metaValueCol}>
+                      {formatTanggal(order.tanggal)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={{ ...styles.metaLabelCol, verticalAlign: 'top' }}>Untuk Pembayaran</td>
+                    <td style={{ ...styles.metaColonCol, verticalAlign: 'top' }}>:</td>
+                    <td style={styles.metaValueCol}>
+                      Pembayaran modul pembelajaran yang dipesan melalui Sistem Inventory RSQ dengan nomor pesanan {order.id}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              {/* Diterbitkan Atas Nama */}
+              <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '28px' }}>
+                <div style={{ textAlign: 'left', minWidth: '220px' }}>
+                  <div style={{ fontSize: '12.5px', color: '#334155' }}>Diterbitkan Atas Nama</div>
+                  <div style={{ fontSize: '13.5px', fontWeight: '700', color: '#0f172a', marginTop: '3px' }}>
+                    RUMAH SAHABAT QUR'AN
+                  </div>
+                  
+                  {/* Ruang Tanda Tangan */}
+                  <div style={{ height: '90px' }} />
+
+                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a', textDecoration: 'underline' }}>
+                    Ekowati
+                  </div>
+                  <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '2px' }}>Bendahara RSQ Pusat</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @media print {
+          body * {
+            visibility: hidden !important;
+          }
+          #printable-kwitansi, #printable-kwitansi * {
+            visibility: visible !important;
+          }
+          #printable-kwitansi {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            max-width: none !important;
+            box-shadow: none !important;
+            border: none !important;
+            background: #ffffff !important;
+            z-index: 9999999 !important;
+          }
+          .no-print {
+            display: none !important;
+          }
+          @page {
+            size: A4 portrait;
+            margin: 10mm;
+          }
+        }
+      `}</style>
     </div>
   );
 }
@@ -1462,5 +1736,122 @@ const styles = {
     maxWidth: '100%',
     maxHeight: '75vh',
     objectFit: 'contain'
+  },
+  kwitansiModalContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: '16px',
+    maxWidth: '600px',
+    width: '95%',
+    maxHeight: '92vh',
+    display: 'flex',
+    flexDirection: 'column',
+    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)',
+    overflow: 'hidden'
+  },
+  kwitansiActionBar: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '14px 24px',
+    backgroundColor: '#ffffff',
+    borderBottom: '1px solid #e2e8f0',
+    boxSizing: 'border-box'
+  },
+  btnDownloadPdf: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '9px 18px',
+    backgroundColor: '#23573c',
+    color: '#ffffff',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '13.5px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    boxShadow: '0 2px 8px rgba(35, 87, 60, 0.25)',
+    transition: 'background-color 0.2s ease'
+  },
+  kwitansiPaper: {
+    backgroundColor: '#ffffff',
+    margin: '0 auto',
+    padding: '20px 30px 28px',
+    width: '100%',
+    maxWidth: '560px',
+    boxSizing: 'border-box',
+    borderRadius: '0 0 16px 16px',
+    boxShadow: 'none',
+    overflowY: 'auto',
+    fontFamily: "'Times New Roman', Times, serif, 'Poppins', sans-serif"
+  },
+  kwitansiHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '16px'
+  },
+  kwitansiLogo: {
+    width: '68px',
+    height: '68px',
+    objectFit: 'contain'
+  },
+  kwitansiBrandName: {
+    fontSize: '20px',
+    fontWeight: '800',
+    color: '#1a3e2b',
+    letterSpacing: '0.5px',
+    fontFamily: "'Poppins', sans-serif"
+  },
+  kwitansiDivider: {
+    height: '2px',
+    backgroundColor: '#1a3e2b',
+    margin: '14px 0 16px',
+    width: '100%'
+  },
+  kwitansiTitle: {
+    fontSize: '18px',
+    fontWeight: '700',
+    color: '#0f172a',
+    margin: '0 0 16px 0',
+    textAlign: 'left'
+  },
+  kwitansiMetaTable: {
+    width: '100%',
+    borderCollapse: 'collapse',
+    fontSize: '13px',
+    lineHeight: '1.7',
+    color: '#1e293b'
+  },
+  metaLabelCol: {
+    width: '210px',
+    color: '#475569',
+    fontWeight: '500',
+    padding: '3px 0'
+  },
+  metaColonCol: {
+    width: '14px',
+    color: '#475569',
+    fontWeight: '600',
+    padding: '3px 0',
+    textAlign: 'center'
+  },
+  metaValueCol: {
+    color: '#0f172a',
+    padding: '3px 0'
+  },
+  btnLihatKwitansiHeader: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '7px 16px',
+    backgroundColor: '#23573c',
+    color: '#ffffff',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '13px',
+    fontWeight: '700',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    boxShadow: '0 2px 6px rgba(35, 87, 60, 0.25)'
   }
 };
