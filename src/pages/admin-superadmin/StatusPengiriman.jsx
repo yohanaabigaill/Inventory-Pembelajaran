@@ -13,7 +13,6 @@ import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
 import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
 
 // Konstanta
@@ -58,7 +57,6 @@ const INITIAL_PENGIRIMAN = [
     metode: 'Via Kurir',
     ongkirFlat: ONGKIR_FLAT_KURIR,
     alamat: 'Jl. Hang Kesturi, Nongsa',
-    noKwitansi: '',
     ustazahNama: '',
     lokasiAmbil: '',
     tanggalKirim: '',
@@ -76,7 +74,6 @@ const INITIAL_PENGIRIMAN = [
     metode: 'Ambil di RSQ Pusat',
     ongkirFlat: 0,
     alamat: 'Komplek Griya Indah Blok C3',
-    noKwitansi: '',
     ustazahNama: '',
     lokasiAmbil: 'Kantor RSQ Pusat',
     tanggalKirim: '',
@@ -94,7 +91,6 @@ const INITIAL_PENGIRIMAN = [
     metode: 'Titip ke Ustazah',
     ongkirFlat: 0,
     alamat: 'Kavling Baru, Batu Aji',
-    noKwitansi: '',
     ustazahNama: 'Ustazah Fatimah Azzahra',
     lokasiAmbil: '',
     tanggalKirim: '',
@@ -111,7 +107,6 @@ const INITIAL_PENGIRIMAN = [
     metode: 'Via Kurir',
     ongkirFlat: ONGKIR_FLAT_KURIR,
     alamat: 'Perumhan Taman Raya Blok B',
-    noKwitansi: '',
     ustazahNama: '',
     lokasiAmbil: '',
     tanggalKirim: '2026-10-11',
@@ -129,7 +124,6 @@ const INITIAL_PENGIRIMAN = [
     metode: 'Ambil di RSQ Pusat',
     ongkirFlat: 0,
     alamat: 'Perumahan Green Vienna Blok D',
-    noKwitansi: '',
     ustazahNama: '',
     lokasiAmbil: 'Kantor RSQ Pusat',
     tanggalKirim: '2026-10-12',
@@ -146,7 +140,6 @@ const INITIAL_PENGIRIMAN = [
     metode: 'Titip ke Ustazah',
     ongkirFlat: 0,
     alamat: 'Jl. Sukajadi No. 102, Sukasari',
-    noKwitansi: '',
     ustazahNama: 'Ustazah Maryam S.Pd.I',
     lokasiAmbil: '',
     tanggalKirim: '2026-10-13',
@@ -164,7 +157,6 @@ const INITIAL_PENGIRIMAN = [
     metode: 'Via Kurir',
     ongkirFlat: ONGKIR_FLAT_KURIR,
     alamat: 'Jl. Antapani Raya No. 15',
-    noKwitansi: 'KWT-2026-007',
     ustazahNama: '',
     lokasiAmbil: '',
     tanggalKirim: '2026-10-10',
@@ -184,7 +176,6 @@ const INITIAL_PENGIRIMAN = [
     metode: 'Ambil di RSQ Pusat',
     ongkirFlat: 0,
     alamat: 'Komp. Margahayu Kencana Blok B2',
-    noKwitansi: 'KWT-2026-008',
     ustazahNama: '',
     lokasiAmbil: 'Kantor RSQ Pusat',
     tanggalKirim: '2026-10-09',
@@ -1037,8 +1028,6 @@ function DetailPengirimanModal({
   onSave,
   onPreviewProof
 }) {
-  const [isCopied, setIsCopied] = useState(false);
-
   const subtotalModul = useMemo(() => {
     return (selectedDetail.itemModul || []).reduce(
       (sum, item) => sum + (item.harga || 0) * (item.qty || 1),
@@ -1057,44 +1046,9 @@ function DetailPengirimanModal({
     ? ['Perlu Dikirim', 'Dikirim']
     : ['Dikirim', 'Selesai'];
 
-  const handleCopyKwitansi = async (kwitansi) => {
-    if (!kwitansi) return;
-    let success = false;
-    try {
-      if (navigator?.clipboard?.writeText) {
-        await navigator.clipboard.writeText(kwitansi);
-        success = true;
-      }
-    } catch {
-      // Fallback
-    }
-
-    if (!success) {
-      try {
-        const tempInput = document.createElement('textarea');
-        tempInput.value = kwitansi;
-        tempInput.setAttribute('readonly', '');
-        tempInput.style.position = 'absolute';
-        tempInput.style.left = '-9999px';
-        document.body.appendChild(tempInput);
-        tempInput.select();
-        document.execCommand('copy');
-        document.body.removeChild(tempInput);
-        success = true;
-      } catch { }
-    }
-
-    if (success) {
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    }
-  };
-
   const handleStatusChange = (newStatus) => {
     setSelectedDetail((prev) => {
       const today = new Date().toISOString().split('T')[0];
-      const autoKwitansi =
-        prev.noKwitansi || (prev.id ? prev.id.replace('ORD', 'KWT') : 'KWT-2026-001');
       const autoBuktiSampai =
         prev.buktiSampai || { fotoUrl: buktiSampaiImg };
 
@@ -1103,8 +1057,6 @@ function DetailPengirimanModal({
         status: newStatus,
         tanggalKirim:
           newStatus === 'Dikirim' && !prev.tanggalKirim ? today : prev.tanggalKirim,
-        noKwitansi:
-          newStatus === 'Selesai' ? autoKwitansi : prev.noKwitansi,
         buktiSampai:
           newStatus === 'Selesai' ? autoBuktiSampai : prev.buktiSampai
       };
@@ -1211,45 +1163,7 @@ function DetailPengirimanModal({
                 </div>
               )}
 
-              {selectedDetail.status === 'Selesai' && (
-                <div style={{ gridColumn: 'span 2' }}>
-                  <span style={styles.detailFieldLabel}>No. Kwitansi</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
-                    <input
-                      type="text"
-                      placeholder="Masukkan no. kwitansi..."
-                      value={selectedDetail.noKwitansi || ''}
-                      onChange={(e) =>
-                        setSelectedDetail((prev) => ({ ...prev, noKwitansi: e.target.value }))
-                      }
-                      style={styles.metaTextInput}
-                    />
-                    {selectedDetail.noKwitansi && (
-                      <button
-                        id="btn-copy-kwitansi"
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCopyKwitansi(selectedDetail.noKwitansi);
-                        }}
-                        style={isCopied ? styles.btnCopySuccess : styles.btnCopyResiSimple}
-                      >
-                        {isCopied ? (
-                          <>
-                            <CheckCircleOutlinedIcon sx={{ fontSize: 13, color: '#16a34a' }} />
-                            <span style={{ color: '#16a34a', fontWeight: '700' }}>Tersalin!</span>
-                          </>
-                        ) : (
-                          <>
-                            <ContentCopyOutlinedIcon sx={{ fontSize: 13 }} />
-                            <span>Salin</span>
-                          </>
-                        )}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
+              
             </div>
           </div>
 
