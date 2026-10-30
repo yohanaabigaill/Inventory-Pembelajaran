@@ -160,7 +160,9 @@ export default function DetailPesanan() {
     const clone = element.cloneNode(true);
     clone.style.width = '700px';
     clone.style.maxWidth = '700px';
-    clone.style.padding = '0';
+    clone.style.padding = '8px 14px';
+    clone.style.boxSizing = 'border-box';
+    clone.style.overflow = 'visible';
     clone.style.margin = '0';
     clone.style.boxShadow = 'none';
     clone.style.border = 'none';
@@ -172,8 +174,9 @@ export default function DetailPesanan() {
       margin: [12, 18, 12, 18],
       filename: nomorInvoice + '.pdf',
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, width: 700 },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      html2canvas: { scale: 2, useCORS: true, width: 700, letterRendering: true, scrollX: 0, scrollY: 0 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
     const cleanup = () => {
@@ -223,7 +226,9 @@ export default function DetailPesanan() {
     const clone = element.cloneNode(true);
     clone.style.width = '700px';
     clone.style.maxWidth = '700px';
-    clone.style.padding = '0';
+    clone.style.padding = '8px 14px';
+    clone.style.boxSizing = 'border-box';
+    clone.style.overflow = 'visible';
     clone.style.margin = '0';
     clone.style.boxShadow = 'none';
     clone.style.border = 'none';
@@ -235,8 +240,9 @@ export default function DetailPesanan() {
       margin: [12, 20, 12, 20],
       filename: nomorKwitansi + '.pdf',
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, width: 700 },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      html2canvas: { scale: 2, useCORS: true, width: 700, letterRendering: true, scrollX: 0, scrollY: 0 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
     const cleanup = () => {
@@ -1149,8 +1155,8 @@ export default function DetailPesanan() {
               )}
 
               {/* Diterbitkan Atas Nama */}
-              <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '24px' }}>
-                <div style={{ textAlign: 'left', minWidth: '220px' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '24px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                <div style={{ textAlign: 'left', minWidth: '220px', paddingLeft: '4px' }}>
                   <div style={{ fontSize: '12px', color: '#334155' }}>Diterbitkan Atas Nama</div>
                   <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a', marginTop: '2px' }}>
                     RUMAH SAHABAT QUR'AN
@@ -1159,10 +1165,10 @@ export default function DetailPesanan() {
                   {/* Ruang Tanda Tangan */}
                   <div style={{ height: '70px' }} />
 
-                  <div style={{ fontSize: '12.5px', fontWeight: '700', color: '#0f172a', textDecoration: 'underline' }}>
-                    Ekowati
+                  <div><span style={{ display: 'inline-block', borderBottom: '1.5px solid #0f172a', paddingBottom: '3px', fontSize: '12.5px', fontWeight: '700', color: '#0f172a', lineHeight: '1.4' }}>
+                    Ekowati</span>
                   </div>
-                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>Bendahara RSQ Pusat</div>
+                  <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '6px', lineHeight: '1.6', letterSpacing: '0.3px', paddingLeft: '2px' }}>Bendahara RSQ Pusat</div>
                 </div>
               </div>
             </div>
@@ -1268,8 +1274,8 @@ export default function DetailPesanan() {
               </table>
 
               {/* Diterbitkan Atas Nama */}
-              <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '28px' }}>
-                <div style={{ textAlign: 'left', minWidth: '220px' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '28px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                <div style={{ textAlign: 'left', minWidth: '220px', paddingLeft: '4px' }}>
                   <div style={{ fontSize: '12.5px', color: '#334155' }}>Diterbitkan Atas Nama</div>
                   <div style={{ fontSize: '13.5px', fontWeight: '700', color: '#0f172a', marginTop: '3px' }}>
                     RUMAH SAHABAT QUR'AN
@@ -1278,10 +1284,10 @@ export default function DetailPesanan() {
                   {/* Ruang Tanda Tangan */}
                   <div style={{ height: '90px' }} />
 
-                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a', textDecoration: 'underline' }}>
-                    Ekowati
+                  <div><span style={{ display: 'inline-block', borderBottom: '1.5px solid #0f172a', paddingBottom: '3px', fontSize: '13px', fontWeight: '700', color: '#0f172a', lineHeight: '1.4' }}>
+                    Ekowati</span>
                   </div>
-                  <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '2px' }}>Bendahara RSQ Pusat</div>
+                  <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '6px', lineHeight: '1.6', letterSpacing: '0.3px', paddingLeft: '2px' }}>Bendahara RSQ Pusat</div>
                 </div>
               </div>
             </div>
