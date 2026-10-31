@@ -516,6 +516,9 @@ export default function StokOpname() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  // Checkbox pilihan modul
+  const [selectedItemIds, setSelectedItemIds] = useState(new Set());
+
   const [notification, setNotification] = useState(null);
   const toastTimeoutRef = useRef(null);
 
@@ -587,6 +590,8 @@ export default function StokOpname() {
   const isPeriodDitolak = statusPeriode === 'Ditolak' || currentModulList.some((it) => it.status === 'Ditolak');
   const isPeriodMenunggu = statusPeriode === 'Menunggu Verifikasi' || (!isPeriodDitolak && currentModulList.every((it) => it.status === 'Menunggu Verifikasi'));
   const isPeriodDisetujui = statusPeriode === 'Disetujui' || (!isPeriodDitolak && !isPeriodMenunggu && currentModulList.every((it) => it.status === 'Disetujui'));
+  const isPeriodDisabled = isPeriodDisetujui || isPeriodMenunggu || (isPastMonth && !isPeriodDitolak);
+
 
   // Handler Perubahan Input Fisik (jika modul ditolak)
   const handleFisikChange = (id, val) => {
@@ -611,7 +616,7 @@ export default function StokOpname() {
           return {
             ...item,
             inputFisik: numericVal,
-            status: numericVal === '' && item.status === 'Draf' ? 'Belum Diinput' : item.status
+            status: numericVal === '' ? 'Belum Diinput' : 'Sudah Diinput'
           };
         }
         return item;
@@ -671,6 +676,66 @@ export default function StokOpname() {
       return matchCat && matchSearch;
     });
   }, [currentModulList, selectedCategory, searchQuery]);
+
+  const selectableItems = useMemo(() => {
+    if (isPeriodDisabled) return [];
+    return filteredData.filter((it) => !it.isLocked && it.status !== 'Disetujui');
+  }, [filteredData, isPeriodDisabled]);
+
+  const isAllSelectableChecked =
+    selectableItems.length > 0 && selectableItems.every((it) => selectedItemIds.has(it.id));
+  const isSelectAllDisabled = isPeriodDisabled || selectableItems.length === 0;
+
+  // Reset centang ketika periode berganti atau filter berubah
+  useEffect(() => {
+    setSelectedItemIds(new Set());
+  }, [selectedMonthKey, isPeriodDisabled]);
+
+  // Sesuaikan stok fisik dengan stok sistem untuk baris yang dicentang
+  const handleSamakanDenganSistem = () => {
+    if (isPeriodDisabled) return;
+
+    // Jika tidak ada yang dicentang, tampilkan notifikasi peringatan
+    if (selectedItemIds.size === 0) {
+      showToast('Centang modul di tabel untuk menyesuaikan stok.', 'error');
+      return;
+    }
+
+    const targetIds = Array.from(selectedItemIds);
+
+    setMonthlyData((prev) => {
+      const existing = prev[selectedMonthKey] || {
+        statusPeriode: 'Belum Diinput',
+        catatanPenolakan: '',
+        tanggalVerifikasi: null,
+        items: createDefaultModulData('Belum Diinput')
+      };
+      const itemsList = Array.isArray(existing) ? existing : existing.items;
+      const targetSet = new Set(targetIds);
+
+      const updatedItems = itemsList.map((item) => {
+        if (targetSet.has(item.id)) {
+          if (item.isLocked || item.status === 'Disetujui' || item.status === 'Menunggu Verifikasi') {
+            return item;
+          }
+          return {
+            ...item,
+            inputFisik: item.stokSistem,
+            status: 'Sudah Diinput'
+          };
+        }
+        return item;
+      });
+
+      return {
+        ...prev,
+        [selectedMonthKey]: Array.isArray(existing)
+          ? updatedItems
+          : { ...existing, items: updatedItems }
+      };
+    });
+
+    };
 
   // Pagination
   const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
@@ -765,7 +830,7 @@ export default function StokOpname() {
     if (isPeriodDitolak) {
       showToast('Revisi stok opname berhasil diajukan ulang ke Super Admin!', 'success');
     } else {
-      showToast('Pengajuan verifikasi stok opname berhasil diajukan! Status diubah menjadi Menunggu Verifikasi.', 'success');
+      showToast('Stok opname berhasil diajukan!', 'success');
     }
   };
 
@@ -781,6 +846,8 @@ export default function StokOpname() {
         return <span style={styles.badgeDitolak}>Ditolak</span>;
       case 'Draf':
         return <span style={styles.badgeDraf}>Draf</span>;
+      case 'Sudah Diinput':
+        return <span style={styles.badgeSudahDiinput}>Sudah Diinput</span>;
       case 'Belum Diinput':
       default:
         return <span style={styles.badgeBelumDiinput}>{status || 'Belum Diinput'}</span>;
@@ -875,38 +942,35 @@ export default function StokOpname() {
               />
             </div>
 
-            {/* Tombol Simpan Draf dan Ajukan Verifikasi */}
-            <div className="bottom-actions-responsive" style={styles.bottomActions}>
+            {/* Tombol Sesuaikan Stok dan Simpan Draf */}
+            <div className="bottom-actions-responsive" style={{ ...styles.bottomActions, marginLeft: 'auto' }}>
               <button
-                disabled={isPeriodDisetujui || isPeriodMenunggu || (isPastMonth && !isPeriodDitolak)}
+                type="button"
+                disabled={isPeriodDisabled}
+                onClick={handleSamakanDenganSistem}
+                style={{
+                  ...styles.btnSamakan,
+                  ...(isPeriodDisabled ? styles.btnActionDisabled : {})
+                }}
+              >
+                <CheckCircleOutlinedIcon sx={{ fontSize: 18 }} />
+                <span>
+                  {selectedItemIds.size > 0
+                    ? `Sesuaikan Stok (${selectedItemIds.size})`
+                    : 'Sesuaikan Stok'}
+                </span>
+              </button>
+
+              <button
+                disabled={isPeriodDisabled}
                 onClick={handleSimpanDraf}
                 style={{
                   ...styles.btnDraf,
-                  ...(isPeriodDisetujui || isPeriodMenunggu || (isPastMonth && !isPeriodDitolak) ? styles.btnActionDisabled : {})
+                  ...(isPeriodDisabled ? styles.btnActionDisabled : {})
                 }}
               >
                 <SaveOutlinedIcon sx={{ fontSize: 18 }} />
                 <span>Simpan Draf</span>
-              </button>
-              <button
-                disabled={isPeriodDisetujui || isPeriodMenunggu || (isPastMonth && !isPeriodDitolak)}
-                onClick={handleAjukanVerifikasi}
-                style={{
-                  ...styles.btnAjukan,
-                  ...(isPeriodDisetujui || isPeriodMenunggu || (isPastMonth && !isPeriodDitolak) ? styles.btnActionDisabled : {}),
-                  ...(isPeriodDitolak ? { backgroundColor: '#23573c', color: '#ffffff' } : {})
-                }}
-              >
-                <SendOutlinedIcon sx={{ fontSize: 16 }} />
-                <span>
-                  {isPeriodDitolak
-                    ? 'Ajukan Verifikasi Ulang'
-                    : isPeriodMenunggu
-                    ? 'Menunggu Verifikasi'
-                    : isPeriodDisetujui
-                    ? 'Telah Disetujui'
-                    : 'Ajukan Verifikasi'}
-                </span>
               </button>
             </div>
           </div>
@@ -941,23 +1005,65 @@ export default function StokOpname() {
             <div style={styles.tableResponsive}>
               <table style={styles.table}>
                 <colgroup>
-                  <col style={{ width: '50px' }} />
-                  <col style={{ width: '270px' }} />
-                  <col style={{ width: '160px' }} />
+                  <col style={{ width: '70px' }} />
+                  <col style={{ width: '45px' }} />
+                  <col style={{ width: '260px' }} />
+                  <col style={{ width: '155px' }} />
                   <col style={{ width: '105px' }} />
                   <col style={{ width: '105px' }} />
                   <col style={{ width: '85px' }} />
-                  <col style={{ width: '200px' }} />
+                  <col style={{ width: '190px' }} />
                 </colgroup>
                 <thead>
                   <tr style={styles.thRow}>
-                    <th style={{ ...styles.th, width: '50px', textAlign: 'center' }}>NO</th>
-                    <th style={{ ...styles.th, width: '270px', paddingLeft: '16px' }}>JUDUL MODUL</th>
-                    <th style={{ ...styles.th, width: '160px' }}>JENIS</th>
+                    {/* CHECKBOX SEMUA */}
+                    <th style={{ ...styles.th, width: '70px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                      <label
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          cursor: isSelectAllDisabled ? 'not-allowed' : 'pointer',
+                          margin: 0,
+                          userSelect: 'none',
+                          opacity: isSelectAllDisabled ? 0.5 : 1
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          disabled={isSelectAllDisabled}
+                          checked={isAllSelectableChecked}
+                          onChange={(e) => {
+                            if (isSelectAllDisabled) return;
+                            if (e.target.checked) {
+                              const next = new Set(selectedItemIds);
+                              selectableItems.forEach((it) => next.add(it.id));
+                              setSelectedItemIds(next);
+                            } else {
+                              const next = new Set(selectedItemIds);
+                              selectableItems.forEach((it) => next.delete(it.id));
+                              setSelectedItemIds(next);
+                            }
+                          }}
+                          style={{
+                            cursor: isSelectAllDisabled ? 'not-allowed' : 'pointer',
+                            width: '16px',
+                            height: '16px',
+                            accentColor: '#23573c'
+                          }}
+                        />
+                        <span style={{ fontSize: '11.5px', fontWeight: '700', color: '#23573c', letterSpacing: '0.3px' }}>
+                          SEMUA
+                        </span>
+                      </label>
+                    </th>
+                    <th style={{ ...styles.th, width: '45px', textAlign: 'center' }}>NO</th>
+                    <th style={{ ...styles.th, width: '260px', paddingLeft: '16px' }}>JUDUL MODUL</th>
+                    <th style={{ ...styles.th, width: '155px' }}>JENIS</th>
                     <th style={{ ...styles.th, width: '105px', textAlign: 'center' }}>STOK SISTEM</th>
                     <th style={{ ...styles.th, width: '105px', textAlign: 'center' }}>INPUT FISIK</th>
                     <th style={{ ...styles.th, width: '85px', textAlign: 'center' }}>SELISIH</th>
-                    <th style={{ ...styles.th, width: '200px', textAlign: 'center', paddingRight: '20px' }}>STATUS</th>
+                    <th style={{ ...styles.th, width: '190px', textAlign: 'center', paddingRight: '20px' }}>STATUS</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -985,6 +1091,41 @@ export default function StokOpname() {
                                 : 'transparent'
                           }}
                         >
+                          {/* CHECKBOX */}
+                          <td style={{ ...styles.td, textAlign: 'center' }}>
+                            {(() => {
+                              const isLocked = item.isLocked || item.status === 'Disetujui';
+                              const isWaiting = item.status === 'Menunggu Verifikasi';
+                              const isRejected = item.status === 'Ditolak';
+                              const isItemDisabled = isLocked || isWaiting || (isPastMonth && !isRejected);
+
+                              return (
+                                <input
+                                  type="checkbox"
+                                  disabled={isItemDisabled}
+                                  checked={selectedItemIds.has(item.id)}
+                                  onChange={(e) => {
+                                    if (isItemDisabled) return;
+                                    const next = new Set(selectedItemIds);
+                                    if (e.target.checked) {
+                                      next.add(item.id);
+                                    } else {
+                                      next.delete(item.id);
+                                    }
+                                    setSelectedItemIds(next);
+                                  }}
+                                  style={{
+                                    cursor: isItemDisabled ? 'not-allowed' : 'pointer',
+                                    width: '16px',
+                                    height: '16px',
+                                    accentColor: '#23573c',
+                                    opacity: isItemDisabled ? 0.45 : 1
+                                  }}
+                                />
+                              );
+                            })()}
+                          </td>
+
                           {/* NO */}
                           <td style={{ ...styles.td, textAlign: 'center', fontWeight: '600', color: '#64748b' }}>
                             {rowNumber}
@@ -1072,7 +1213,7 @@ export default function StokOpname() {
                     })
                   ) : (
                     <tr>
-                      <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#64748b', fontSize: '14px' }}>
+                      <td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: '#64748b', fontSize: '14px' }}>
                         Tidak ada modul yang cocok dengan pencarian.
                       </td>
                     </tr>
@@ -1081,39 +1222,63 @@ export default function StokOpname() {
               </table>
             </div>
 
-            {/* Pagination */}
+            {/* Pagination & Tombol Ajukan Verifikasi di Ujung Kanan Bawah */}
             <div className="pagination-responsive" style={styles.cardFooter}>
-              <div style={styles.pageInfo}>
-                {filteredData.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} - {Math.min(currentPage * itemsPerPage, filteredData.length)} dari {filteredData.length}
-              </div>
-              <div style={styles.paginationButtons}>
-                <button
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  style={{ ...styles.btnPageArrow, opacity: currentPage === 1 ? 0.4 : 1 }}
-                >
-                  &lt;
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                <div style={styles.pageInfo}>
+                  {filteredData.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} - {Math.min(currentPage * itemsPerPage, filteredData.length)} dari {filteredData.length}
+                </div>
+                <div style={styles.paginationButtons}>
                   <button
-                    key={num}
-                    onClick={() => setCurrentPage(num)}
-                    style={{
-                      ...styles.btnPageNum,
-                      ...(currentPage === num ? styles.btnPageNumActive : {})
-                    }}
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    style={{ ...styles.btnPageArrow, opacity: currentPage === 1 ? 0.4 : 1 }}
                   >
-                    {num}
+                    &lt;
                   </button>
-                ))}
-                <button
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  style={{ ...styles.btnPageArrow, opacity: currentPage === totalPages ? 0.4 : 1 }}
-                >
-                  &gt;
-                </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+                    <button
+                      key={num}
+                      onClick={() => setCurrentPage(num)}
+                      style={{
+                        ...styles.btnPageNum,
+                        ...(currentPage === num ? styles.btnPageNumActive : {})
+                      }}
+                    >
+                      {num}
+                    </button>
+                  ))}
+                  <button
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    style={{ ...styles.btnPageArrow, opacity: currentPage === totalPages ? 0.4 : 1 }}
+                  >
+                    &gt;
+                  </button>
+                </div>
               </div>
+
+              {/* Tombol Ajukan Verifikasi di Ujung Kanan Bawah */}
+              <button
+                disabled={isPeriodDisetujui || isPeriodMenunggu || (isPastMonth && !isPeriodDitolak)}
+                onClick={handleAjukanVerifikasi}
+                style={{
+                  ...styles.btnAjukan,
+                  ...(isPeriodDisetujui || isPeriodMenunggu || (isPastMonth && !isPeriodDitolak) ? styles.btnActionDisabled : {}),
+                  ...(isPeriodDitolak ? { backgroundColor: '#23573c', color: '#ffffff' } : {})
+                }}
+              >
+                <SendOutlinedIcon sx={{ fontSize: 16 }} />
+                <span>
+                  {isPeriodDitolak
+                    ? 'Ajukan Verifikasi Ulang'
+                    : isPeriodMenunggu
+                    ? 'Menunggu Verifikasi'
+                    : isPeriodDisetujui
+                    ? 'Telah Disetujui'
+                    : 'Ajukan Verifikasi'}
+                </span>
+              </button>
             </div>
           </div>
         </main>
@@ -1229,6 +1394,21 @@ const styles = {
     gap: '10px',
     flexWrap: 'nowrap',
     flexShrink: 0
+  },
+  btnSamakan: {
+    backgroundColor: '#ffffff',
+    color: '#23573c',
+    border: '1px solid #23573c',
+    padding: '10px 18px',
+    borderRadius: '8px',
+    fontSize: '13.5px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap',
+    transition: 'all 0.15s ease'
   },
   btnDraf: {
     backgroundColor: '#ffffff',
@@ -1478,6 +1658,23 @@ const styles = {
     fontWeight: '700',
     letterSpacing: '0.4px',
     border: '1px solid #0284c7',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
+  },
+  badgeSudahDiinput: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '105px',
+    height: '28px',
+    padding: '0 12px',
+    backgroundColor: '#ecfdf5',
+    color: '#047857',
+    borderRadius: '6px',
+    fontSize: '11.5px',
+    fontWeight: '700',
+    letterSpacing: '0.4px',
+    border: '1px solid #10b981',
     whiteSpace: 'nowrap',
     boxSizing: 'border-box'
   },
