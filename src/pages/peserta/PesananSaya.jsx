@@ -742,7 +742,7 @@ export default function PesananSaya() {
                     setStatusKirimFilter('Semua Status');
                     setSearchQuery('');
                   }}
-                  className="pesanan-btn-reset"
+                  className="pesanan-btn-reset btn-secondary-outline"
                   style={styles.btnResetFilter}
                 >
                   <CloseOutlinedIcon sx={{ fontSize: 13 }} />
@@ -772,6 +772,7 @@ export default function PesananSaya() {
                     setSearchQuery('');
                     navigate('/katalog-modul');
                   }}
+                  className="btn-primary-green"
                   style={styles.btnExplore}
                 >
                   Buka Katalog Modul
@@ -858,7 +859,7 @@ export default function PesananSaya() {
                               e.stopPropagation();
                               setCancellingOrder(order);
                             }}
-                            className="pesanan-btn-action"
+                            className="pesanan-btn-action btn-danger-outline-soft"
                             style={styles.btnBatalkanPesananCard}
                           >
                             <span>Batalkan Pesanan</span>
@@ -871,7 +872,7 @@ export default function PesananSaya() {
                               e.stopPropagation();
                               handlePesanLagi(order);
                             }}
-                            className="pesanan-btn-action"
+                            className="pesanan-btn-action btn-primary-green"
                             style={styles.btnPesanLagi}
                           >
                             <span>Pesan Lagi</span>
@@ -904,6 +905,7 @@ export default function PesananSaya() {
               <button
                 type="button"
                 onClick={() => setCancellingOrder(null)}
+                className="btn-modal-close-icon"
                 style={styles.modalCloseBtn}
               >
                 <CloseOutlinedIcon sx={{ fontSize: 20 }} />
@@ -920,6 +922,7 @@ export default function PesananSaya() {
               <button
                 type="button"
                 onClick={() => setCancellingOrder(null)}
+                className="btn-secondary-outline"
                 style={styles.btnBatalModal}
               >
                 Batal
@@ -927,6 +930,7 @@ export default function PesananSaya() {
               <button
                 type="button"
                 onClick={() => handleConfirmBatalPesanan(cancellingOrder)}
+                className="btn-danger-red"
                 style={styles.btnConfirmBatal}
               >
                 Ya, Batalkan
@@ -1167,9 +1171,9 @@ const styles = {
   btnBatalkanPesananCard: {
     padding: '7px 16px',
     borderRadius: '8px',
-    border: '1.5px solid #ef4444',
-    backgroundColor: '#ffffff',
-    color: '#ef4444',
+    border: '1.5px solid #f87171',
+    backgroundColor: '#fff5f5',
+    color: '#dc2626',
     fontSize: '12.5px',
     fontWeight: '600',
     cursor: 'pointer',

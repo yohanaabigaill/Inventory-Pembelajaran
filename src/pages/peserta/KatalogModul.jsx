@@ -18,6 +18,7 @@ import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import AddShoppingCartOutlinedIcon from '@mui/icons-material/AddShoppingCartOutlined';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
+import Skeleton from '@mui/material/Skeleton';
 
 // Custom Dropdown
 function CustomDropdown({
@@ -236,6 +237,14 @@ export default function KatalogModul() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedKategori, setSelectedKategori] = useState('Semua Jenis');
   const [selectedStatusStok, setSelectedStatusStok] = useState('Semua Status');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Cart State 
   const [cartItems, setCartItems] = useState(() => {
@@ -397,7 +406,26 @@ export default function KatalogModul() {
 
           {/* Grid Modul */}
           <div className="catalog-grid-responsive" style={styles.catalogGrid}>
-            {filteredModuls.map((item) => {
+            {isLoading ? (
+              Array.from({ length: 6 }).map((_, idx) => (
+                <div key={idx} style={styles.modulCard}>
+                  <div style={{ ...styles.coverWrapper, padding: 0 }}>
+                    <Skeleton variant="rectangular" width="100%" height={300} animation="wave" sx={{ bgcolor: '#e5e7eb' }} />
+                  </div>
+                  <div style={styles.cardContent}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <Skeleton variant="text" width="40%" height={18} animation="wave" />
+                      <Skeleton variant="text" width="25%" height={18} animation="wave" />
+                    </div>
+                    <Skeleton variant="text" width="85%" height={26} sx={{ my: 0.5 }} animation="wave" />
+                    <Skeleton variant="text" width="50%" height={22} sx={{ mb: 1.5 }} animation="wave" />
+                    <Skeleton variant="rectangular" width="100%" height={40} sx={{ borderRadius: '10px', bgcolor: '#e5e7eb' }} animation="wave" />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <>
+                {filteredModuls.map((item) => {
               return (
                 <div
                   key={item.id}
@@ -449,6 +477,7 @@ export default function KatalogModul() {
                         <button
                           type="button"
                           onClick={() => handleAddToCart(item)}
+                          className="btn-secondary-outline"
                           style={styles.btnTambahKeranjang}
                         >
                           <AddShoppingCartOutlinedIcon sx={{ fontSize: 18 }} />
@@ -459,6 +488,7 @@ export default function KatalogModul() {
                         <button
                           type="button"
                           onClick={() => handleBuyNow(item)}
+                          className="btn-primary-green"
                           style={styles.btnBeliLangsung}
                         >
                           <LocalMallOutlinedIcon sx={{ fontSize: 17 }} />
@@ -477,6 +507,8 @@ export default function KatalogModul() {
                   Tidak ada modul yang sesuai dengan pencarian.
                 </p>
               </div>
+            )}
+              </>
             )}
           </div>
         </main>

@@ -1247,14 +1247,46 @@ function DetailPengirimanModal({
           {(selectedDetail.status === 'Selesai' || selectedDetail.status === 'Terkirim') && (
             <div style={styles.detailSection}>
               <div style={styles.detailSectionTitle}>Foto Bukti Diterima</div>
-              <div style={styles.detailReceiptWrapper}>
-                <img
-                  src={selectedDetail.buktiSampai?.fotoUrl || buktiSampaiImg}
-                  alt="Foto Bukti Diterima"
-                  style={{ ...styles.detailReceiptImg, cursor: 'pointer' }}
-                  onClick={() => onPreviewProof(selectedDetail.buktiSampai?.fotoUrl || buktiSampaiImg)}
-                />
-              </div>
+              {selectedDetail.buktiSampai?.fotoUrl ? (
+                <div style={styles.detailReceiptWrapper}>
+                  <img
+                    src={selectedDetail.buktiSampai.fotoUrl}
+                    alt="Foto Bukti Diterima"
+                    style={{ ...styles.detailReceiptImg, cursor: 'pointer' }}
+                    onClick={() => onPreviewProof(selectedDetail.buktiSampai.fotoUrl)}
+                  />
+                  {selectedDetail.buktiSampai?.catatan && (
+                    <div style={{ marginTop: '8px', fontSize: '12.5px', color: '#475569', fontStyle: 'italic' }}>
+                      Catatan: "{selectedDetail.buktiSampai.catatan}"
+                    </div>
+                  )}
+                  {selectedDetail.buktiSampai?.tanggal && (
+                    <div style={{ marginTop: '4px', fontSize: '11px', color: '#64748b' }}>
+                      Waktu Konfirmasi: {selectedDetail.buktiSampai.tanggal}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div style={{
+                  padding: '12px 14px',
+                  backgroundColor: '#f0fdf4',
+                  border: '1px solid #bbf7d0',
+                  borderRadius: '8px',
+                  fontSize: '12.5px',
+                  color: '#166534',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <CheckCircleOutlinedIcon sx={{ fontSize: 18, color: '#16a34a' }} />
+                  <div>
+                    <span style={{ fontWeight: '600' }}>Dikonfirmasi Selesai</span>
+                    <span style={{ display: 'block', fontSize: '11.5px', color: '#15803d', marginTop: '2px' }}>
+                      {selectedDetail.buktiSampai?.catatan || 'Peserta menyelesaikan pesanan tanpa mengunggah foto (opsional).'}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
