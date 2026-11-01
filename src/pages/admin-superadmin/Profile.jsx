@@ -309,6 +309,7 @@ export default function Profile() {
                     id="btn-edit-profile"
                     type="button"
                     onClick={handleOpenEdit}
+                    className="btn-primary-green"
                     style={styles.btnPrimary}
                   >
                     Edit Profil
@@ -323,9 +324,9 @@ export default function Profile() {
                     id="btn-back-profile"
                     type="button"
                     onClick={handleCancel}
+                    className="btn-secondary-outline"
                     style={styles.backBtn}
                     aria-label="Kembali"
-                    title="Kembali ke Profil"
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M19 12H5M12 19l-7-7 7-7"/>
@@ -353,7 +354,6 @@ export default function Profile() {
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         style={styles.cameraBadgeBtn}
-                        title="Pilih Foto Baru"
                         aria-label="Pilih Foto Baru"
                       >
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
@@ -376,6 +376,7 @@ export default function Profile() {
                         id="btn-choose-photo"
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
+                        className="btn-secondary-outline"
                         style={styles.btnChoosePhoto}
                       >
                         Pilih Foto
@@ -391,6 +392,7 @@ export default function Profile() {
                               return updated;
                             });
                           }}
+                          className="btn-danger-red"
                           style={styles.btnDeletePhoto}
                         >
                           Hapus Foto
@@ -561,12 +563,14 @@ export default function Profile() {
                     <button
                       type="button"
                       onClick={handleCancel}
+                      className="btn-secondary-outline"
                       style={styles.btnSecondary}
                     >
                       Batal
                     </button>
                     <button
                       type="submit"
+                      className="btn-primary-green"
                       style={styles.btnPrimary}
                     >
                       Simpan

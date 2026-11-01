@@ -202,6 +202,7 @@ export default function Dashboard() {
                                 <button
                                   type="button"
                                   onClick={() => navigate('/modul-masuk')}
+                                  className="btn-primary-green"
                                   style={styles.btnRestockTable}
                                 >
                                   <AddCircleOutlineOutlinedIcon sx={{ fontSize: 16 }} />
@@ -223,6 +224,7 @@ export default function Dashboard() {
                       <button
                         type="button"
                         onClick={() => setIsExpandedLowStock((prev) => !prev)}
+                        className="btn-secondary-outline"
                         style={styles.btnViewMore}
                       >
                         <span>

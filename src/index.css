@@ -47,7 +47,238 @@ body,
   background: #23573c;
 }
 
-/* Button */
+/* Admin & Superadmin Efek Hover */
+
+button {
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:hover:not(:disabled) {
+  filter: brightness(0.92);
+  transform: translateY(-1px);
+}
+
+button:active:not(:disabled) {
+  filter: brightness(0.85);
+  transform: translateY(0) scale(0.98);
+}
+
+button:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.5 !important;
+  filter: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Primary Green Buttons (Tambah Modul, Tambah Baris, Simpan, Setujui, Ajukan, Profil Simpan) */
+.btn-primary-green,
+.btn-add-responsive,
+.btn-tambah-baris-responsive,
+.btn-simpan-responsive,
+.laporan-export-btn {
+  background-color: #23573c !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(35, 87, 60, 0.25) !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.btn-primary-green:hover:not(:disabled),
+.btn-add-responsive:hover:not(:disabled),
+.btn-tambah-baris-responsive:hover:not(:disabled),
+.btn-simpan-responsive:hover:not(:disabled),
+.laporan-export-btn:hover:not(:disabled) {
+  background-color: #1b4530 !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 18px rgba(27, 69, 48, 0.38) !important;
+  transform: translateY(-2px) !important;
+  filter: none !important;
+}
+
+.btn-primary-green:active:not(:disabled),
+.btn-add-responsive:active:not(:disabled),
+.btn-tambah-baris-responsive:active:not(:disabled),
+.btn-simpan-responsive:active:not(:disabled),
+.laporan-export-btn:active:not(:disabled) {
+  background-color: #143525 !important;
+  box-shadow: 0 2px 6px rgba(27, 69, 48, 0.25) !important;
+  transform: translateY(0) scale(0.99) !important;
+}
+
+/* Tombol Kirim Verifikasi (Pending / Belum Semua Diverifikasi - Abu-abu dengan hover) */
+.btn-kirim-pending {
+  background-color: #94a3b8 !important;
+  color: #ffffff !important;
+  border: none !important;
+  opacity: 0.8 !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 6px rgba(148, 163, 184, 0.2) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.btn-kirim-pending:hover:not(:disabled) {
+  background-color: #64748b !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  box-shadow: 0 5px 15px rgba(100, 116, 139, 0.35) !important;
+  transform: translateY(-2px) !important;
+  filter: none !important;
+}
+
+.btn-kirim-pending:active:not(:disabled) {
+  background-color: #475569 !important;
+  box-shadow: 0 2px 6px rgba(100, 116, 139, 0.2) !important;
+  transform: translateY(0) scale(0.99) !important;
+}
+
+/* Secondary / Outline / Cancel Buttons (Batal, Simpan Draf, Pilih Foto, Lihat Selengkapnya) */
+.btn-secondary-outline,
+.btn-batal-responsive {
+  background-color: #ffffff !important;
+  color: #23573c !important;
+  border: 1px solid #23573c !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.btn-secondary-outline:hover:not(:disabled),
+.btn-batal-responsive:hover:not(:disabled) {
+  background-color: #eef7f2 !important;
+  border-color: #1b4530 !important;
+  color: #1b4530 !important;
+  box-shadow: 0 3px 10px rgba(35, 87, 60, 0.15) !important;
+  transform: translateY(-1px) !important;
+  filter: none !important;
+}
+
+.btn-secondary-outline:active:not(:disabled),
+.btn-batal-responsive:active:not(:disabled) {
+  background-color: #dceee4 !important;
+  transform: translateY(0) !important;
+}
+
+/* Danger / Red Buttons (Hapus, Tolak) */
+.btn-danger-red {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25) !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.btn-danger-red:hover:not(:disabled) {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 18px rgba(220, 38, 38, 0.38) !important;
+  transform: translateY(-2px) !important;
+  filter: none !important;
+}
+
+.btn-danger-red:active:not(:disabled) {
+  background-color: #b91c1c !important;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25) !important;
+  transform: translateY(0) scale(0.99) !important;
+}
+
+/* Danger Soft Red Buttons (Tolak in VerifikasiStokOpname) */
+.btn-danger-soft {
+  background-color: #fef2f2 !important;
+  color: #dc2626 !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.btn-danger-soft:hover:not(:disabled) {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3) !important;
+  transform: translateY(-1px) !important;
+  filter: none !important;
+}
+
+.btn-danger-soft:active:not(:disabled) {
+  background-color: #b91c1c !important;
+  transform: translateY(0) !important;
+}
+
+/* Action Icon Buttons: Edit & Detail */
+.btn-action-edit,
+.btn-action-detail {
+  background-color: #f0f5f2 !important;
+  color: #23573c !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.btn-action-edit:hover:not(:disabled),
+.btn-action-detail:hover:not(:disabled) {
+  background-color: #23573c !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(35, 87, 60, 0.3) !important;
+  transform: translateY(-1px) scale(1.08) !important;
+  filter: none !important;
+}
+
+.btn-action-edit:active:not(:disabled),
+.btn-action-detail:active:not(:disabled) {
+  background-color: #1b4530 !important;
+  transform: translateY(0) scale(1) !important;
+}
+
+/* Action Icon Buttons Delete */
+.btn-action-delete {
+  background-color: #fef2f2 !important;
+  color: #ef4444 !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.btn-action-delete:hover:not(:disabled) {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
+  transform: translateY(-1px) scale(1.08) !important;
+  filter: none !important;
+}
+
+.btn-action-delete:active:not(:disabled) {
+  background-color: #dc2626 !important;
+  transform: translateY(0) scale(1) !important;
+}
+
+/* Tab Navigation Buttons */
+.tab-button-item {
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.tab-button-item:hover:not(.active):not(:disabled) {
+  background-color: #eaf3ed !important;
+  color: #1d4632 !important;
+  transform: translateY(-1px) !important;
+  filter: none !important;
+}
+
+/* Close & Lightbox Icons */
+.btn-modal-close-icon {
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-modal-close-icon:hover {
+  background-color: #fee2e2 !important;
+  color: #ef4444 !important;
+  transform: scale(1.1) !important;
+  filter: none !important;
+}
 select:focus {
   border-color: #23573c !important;
   outline: 2px solid rgba(35, 87, 60, 0.25) !important;
@@ -140,6 +371,13 @@ select option:active {
     cursor: pointer;
     padding: 4px;
     margin-right: 8px;
+    border-radius: 6px;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+  }
+
+  .hamburger-btn:hover {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    transform: scale(1.05);
   }
 
   .mobile-close-btn {
@@ -152,6 +390,13 @@ select option:active {
     color: #5b7566;
     cursor: pointer;
     padding: 4px;
+    border-radius: 6px;
+    transition: color 0.15s ease, transform 0.15s ease;
+  }
+
+  .mobile-close-btn:hover {
+    color: #dc2626 !important;
+    transform: scale(1.1);
   }
 
   .sidebar-backdrop {
@@ -465,8 +710,15 @@ select option:active {
 }
 
 .btn-page-num:hover:not(.active) {
-  background-color: #f1f5f3 !important;
-  border-color: #c7d9cd !important;
+  background-color: #eaf3ed !important;
+  border-color: #23573c !important;
+  color: #23573c !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn-page-num.active:hover {
+  background-color: #1b4530 !important;
+  transform: translateY(-1px) !important;
 }
 
 .btn-page-num.active {
@@ -496,8 +748,10 @@ select option:active {
 }
 
 .btn-page-arrow:hover:not(:disabled) {
-  background-color: #f1f5f3 !important;
-  border-color: #c7d9cd !important;
+  background-color: #eaf3ed !important;
+  border-color: #23573c !important;
+  color: #23573c !important;
+  transform: translateY(-1px) !important;
 }
 
 .btn-page-arrow:disabled {
@@ -1367,9 +1621,7 @@ select option:active {
 
 }
 
-/* ========================================================
-   DETAIL PESANAN PAGE RESPONSIVE
-   ======================================================== */
+/* DETAIL PESANAN PAGE RESPONSIVE */
 .detail-pesanan-main-container {
   box-sizing: border-box;
 }

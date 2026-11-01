@@ -621,7 +621,7 @@ export default function DataModul() {
             </div>
 
             {/* Tombol Tambah */}
-            <button onClick={handleOpenAdd} className="btn-add-responsive" style={styles.btnAdd}>
+            <button onClick={handleOpenAdd} className="btn-add-responsive btn-primary-green" style={styles.btnAdd}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
@@ -709,7 +709,7 @@ export default function DataModul() {
                           <div style={styles.actionFlex}>
                             <button
                               onClick={() => handleOpenEdit(item)}
-                              title="Edit Modul"
+                              className="btn-action-edit"
                               style={styles.btnActionEdit}
                             >
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -719,7 +719,7 @@ export default function DataModul() {
                             </button>
                             <button
                               onClick={() => handleRequestDelete(item.id)}
-                              title="Hapus Modul"
+                              className="btn-action-delete"
                               style={styles.btnActionDelete}
                             >
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -753,6 +753,7 @@ export default function DataModul() {
                 <button
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  className="btn-page-arrow"
                   style={{
                     ...styles.btnPageArrowWhite,
                     opacity: currentPage === 1 ? 0.4 : 1,
@@ -765,6 +766,7 @@ export default function DataModul() {
                   <button
                     key={num}
                     onClick={() => setCurrentPage(num)}
+                    className={`btn-page-num ${currentPage === num ? 'active' : ''}`}
                     style={currentPage === num ? styles.btnPageNumGreen : styles.btnPageNumWhite}
                   >
                     {num}
@@ -773,6 +775,7 @@ export default function DataModul() {
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  className="btn-page-arrow"
                   style={{
                     ...styles.btnPageArrowWhite,
                     opacity: currentPage === totalPages ? 0.4 : 1,
@@ -947,10 +950,10 @@ export default function DataModul() {
 
               {/* Tombol Simpan dan Batal */}
               <div style={styles.modalFooterBar}>
-                <button type="button" onClick={handleCloseModal} style={styles.btnModalCancel}>
+                <button type="button" onClick={handleCloseModal} className="btn-secondary-outline" style={styles.btnModalCancel}>
                   Batal
                 </button>
-                <button type="submit" style={styles.btnModalSave}>
+                <button type="submit" className="btn-primary-green" style={styles.btnModalSave}>
                   Simpan
                 </button>
               </div>
@@ -976,10 +979,10 @@ export default function DataModul() {
               Apakah Anda yakin ingin menghapus modul ini?
             </p>
             <div style={styles.deleteModalActions}>
-              <button onClick={handleCancelDelete} style={styles.btnDeleteCancel}>
+              <button onClick={handleCancelDelete} className="btn-secondary-outline" style={styles.btnDeleteCancel}>
                 Batal
               </button>
-              <button onClick={handleConfirmDelete} style={styles.btnDeleteConfirm}>
+              <button onClick={handleConfirmDelete} className="btn-danger-red" style={styles.btnDeleteConfirm}>
                 Hapus
               </button>
             </div>

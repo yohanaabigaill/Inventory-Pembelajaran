@@ -948,6 +948,7 @@ export default function StokOpname() {
                 type="button"
                 disabled={isPeriodDisabled}
                 onClick={handleSamakanDenganSistem}
+                className="btn-secondary-outline"
                 style={{
                   ...styles.btnSamakan,
                   ...(isPeriodDisabled ? styles.btnActionDisabled : {})
@@ -964,6 +965,7 @@ export default function StokOpname() {
               <button
                 disabled={isPeriodDisabled}
                 onClick={handleSimpanDraf}
+                className="btn-secondary-outline"
                 style={{
                   ...styles.btnDraf,
                   ...(isPeriodDisabled ? styles.btnActionDisabled : {})
@@ -1232,6 +1234,7 @@ export default function StokOpname() {
                   <button
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    className="btn-page-arrow"
                     style={{ ...styles.btnPageArrow, opacity: currentPage === 1 ? 0.4 : 1 }}
                   >
                     &lt;
@@ -1240,6 +1243,7 @@ export default function StokOpname() {
                     <button
                       key={num}
                       onClick={() => setCurrentPage(num)}
+                      className={`btn-page-num ${currentPage === num ? 'active' : ''}`}
                       style={{
                         ...styles.btnPageNum,
                         ...(currentPage === num ? styles.btnPageNumActive : {})
@@ -1251,6 +1255,7 @@ export default function StokOpname() {
                   <button
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    className="btn-page-arrow"
                     style={{ ...styles.btnPageArrow, opacity: currentPage === totalPages ? 0.4 : 1 }}
                   >
                     &gt;
@@ -1262,6 +1267,7 @@ export default function StokOpname() {
               <button
                 disabled={isPeriodDisetujui || isPeriodMenunggu || (isPastMonth && !isPeriodDitolak)}
                 onClick={handleAjukanVerifikasi}
+                className="btn-primary-green"
                 style={{
                   ...styles.btnAjukan,
                   ...(isPeriodDisetujui || isPeriodMenunggu || (isPastMonth && !isPeriodDitolak) ? styles.btnActionDisabled : {}),

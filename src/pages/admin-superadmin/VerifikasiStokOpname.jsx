@@ -960,6 +960,7 @@ export default function VerifikasiStokOpname() {
                   <button
                     type="button"
                     onClick={() => handleTandaiStatusTerpilih('Ditolak')}
+                    className="btn-danger-soft"
                     style={styles.btnTolak}
                   >
                     <HighlightOffOutlinedIcon sx={{ fontSize: 18 }} />
@@ -968,6 +969,7 @@ export default function VerifikasiStokOpname() {
                   <button
                     type="button"
                     onClick={() => handleTandaiStatusTerpilih('Disetujui')}
+                    className="btn-primary-green"
                     style={styles.btnSetujui}
                   >
                     <CheckCircleOutlinedIcon sx={{ fontSize: 18 }} />
@@ -990,6 +992,7 @@ export default function VerifikasiStokOpname() {
                         showToast('Centang modul di tabel untuk menandai status Ditolak.', 'info');
                       }
                     }}
+                    className="btn-danger-soft"
                     style={{
                       ...styles.btnTolak,
                       ...(isNotSubmitted ? {
@@ -1024,6 +1027,7 @@ export default function VerifikasiStokOpname() {
                         showToast('Centang modul di tabel untuk menandai status Disetujui.', 'info');
                       }
                     }}
+                    className="btn-primary-green"
                     style={{
                       ...styles.btnSetujui,
                       ...(isNotSubmitted ? {
@@ -1244,6 +1248,7 @@ export default function VerifikasiStokOpname() {
                   <button
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    className="btn-page-arrow"
                     style={{ ...styles.btnPageArrow, opacity: currentPage === 1 ? 0.4 : 1 }}
                   >
                     &lt;
@@ -1252,6 +1257,7 @@ export default function VerifikasiStokOpname() {
                     <button
                       key={num}
                       onClick={() => setCurrentPage(num)}
+                      className={`btn-page-num ${currentPage === num ? 'active' : ''}`}
                       style={{
                         ...styles.btnPageNum,
                         ...(currentPage === num ? styles.btnPageNumActive : {})
@@ -1263,6 +1269,7 @@ export default function VerifikasiStokOpname() {
                   <button
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    className="btn-page-arrow"
                     style={{ ...styles.btnPageArrow, opacity: currentPage === totalPages ? 0.4 : 1 }}
                   >
                     &gt;
@@ -1273,7 +1280,7 @@ export default function VerifikasiStokOpname() {
               {/* Tombol Kirim Verifikasi di Paling Bawah Tabel */}
               <button
                 type="button"
-                className="btn-kirim-responsive"
+                className={`btn-kirim-responsive ${isCanVerify && isAllVerified ? 'btn-primary-green' : 'btn-kirim-pending'}`}
                 disabled={isPeriodFinalized}
                 onClick={() => {
                   if (isNotSubmitted) {
@@ -1293,15 +1300,7 @@ export default function VerifikasiStokOpname() {
                   setErrorAlasan('');
                   setIsModalKirimVerifikasiOpen(true);
                 }}
-                style={{
-                  ...styles.btnKirimVerifikasi,
-                  ...(!isCanVerify || !isAllVerified ? {
-                    backgroundColor: '#94a3b8',
-                    cursor: 'not-allowed',
-                    boxShadow: 'none',
-                    opacity: 0.65
-                  } : {})
-                }}
+                style={styles.btnKirimVerifikasi}
               >
                 <SendOutlinedIcon sx={{ fontSize: 18 }} />
                 <span>Kirim Verifikasi</span>
@@ -1338,6 +1337,7 @@ export default function VerifikasiStokOpname() {
                   setIsModalKirimVerifikasiOpen(false);
                   setErrorAlasan('');
                 }}
+                className="btn-modal-close-icon"
                 style={styles.modalCloseBtn}
               >
                 <CloseOutlinedIcon sx={{ fontSize: 20 }} />
@@ -1416,6 +1416,7 @@ export default function VerifikasiStokOpname() {
                   setIsModalKirimVerifikasiOpen(false);
                   setErrorAlasan('');
                 }}
+                className="btn-secondary-outline"
                 style={styles.btnModalBatal}
               >
                 Batal
@@ -1423,6 +1424,7 @@ export default function VerifikasiStokOpname() {
               <button
                 type="button"
                 onClick={handleKirimVerifikasiFinal}
+                className="btn-primary-green"
                 style={styles.btnModalConfirmSetujui}
               >
                 <SendOutlinedIcon sx={{ fontSize: 18 }} />

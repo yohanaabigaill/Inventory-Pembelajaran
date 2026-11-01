@@ -215,6 +215,7 @@ export default function Sidebar({
               <button
                 type="button"
                 onClick={() => setShowLogoutModal(false)}
+                className="btn-secondary-outline"
                 style={styles.btnModalBatal}
               >
                 Batal
@@ -225,6 +226,7 @@ export default function Sidebar({
                   setShowLogoutModal(false);
                   navigate('/login');
                 }}
+                className="btn-danger-red"
                 style={styles.btnModalKeluar}
               >
                 <LogoutOutlinedIcon sx={{ fontSize: 18 }} />
