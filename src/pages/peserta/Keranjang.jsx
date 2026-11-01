@@ -169,6 +169,7 @@ export default function Keranjang() {
             <button
               type="button"
               onClick={() => navigate('/katalog-modul')}
+              className="btn-secondary-outline"
               style={styles.btnKembaliKatalog}
             >
               <ArrowBackOutlinedIcon sx={{ fontSize: 18 }} />
@@ -189,6 +190,7 @@ export default function Keranjang() {
               <button
                 type="button"
                 onClick={() => navigate('/katalog-modul')}
+                className="btn-primary-green"
                 style={styles.btnMulaiBelanja}
               >
                 Jelajahi Katalog Modul
@@ -206,7 +208,6 @@ export default function Keranjang() {
                         size="small"
                         checked={isAllChecked}
                         onChange={(e) => handleToggleSelectAll(e.target.checked)}
-                        title="Pilih Semua Modul"
                         sx={{
                           color: '#23573c',
                           '&.Mui-checked': { color: '#23573c' },
@@ -279,6 +280,7 @@ export default function Keranjang() {
                               onClick={() =>
                                 handleUpdateCartQty(item.id, (Number(item.qty) || 1) - 1)
                               }
+                              className="btn-stepper-qty"
                               style={styles.btnStepper}
                               aria-label="Kurangi"
                             >
@@ -313,6 +315,7 @@ export default function Keranjang() {
                                 }
                                 handleUpdateCartQty(item.id, (Number(item.qty) || 0) + 1);
                               }}
+                              className="btn-stepper-qty"
                               style={{
                                 ...styles.btnStepper,
                                 opacity: Number(item.qty) >= item.stok ? 0.35 : 1,
@@ -338,8 +341,8 @@ export default function Keranjang() {
                           <button
                             type="button"
                             onClick={() => handleRemoveFromCart(item.id)}
+                            className="btn-action-delete"
                             style={styles.btnRowDelete}
-                            title="Hapus dari keranjang"
                           >
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <polyline points="3 6 5 6 21 6" />

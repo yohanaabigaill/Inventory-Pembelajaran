@@ -279,6 +279,283 @@ button:disabled {
   transform: scale(1.1) !important;
   filter: none !important;
 }
+
+.btn-danger-outline-soft {
+  background-color: #fff5f5 !important;
+  color: #dc2626 !important;
+  border: 1.5px solid #f87171 !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.btn-danger-outline-soft:hover:not(:disabled) {
+  background-color: #dc2626 !important;
+  border-color: #dc2626 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.28) !important;
+  transform: translateY(-1px) !important;
+  filter: none !important;
+}
+
+.btn-danger-outline-soft:active:not(:disabled) {
+  background-color: #b91c1c !important;
+  border-color: #b91c1c !important;
+  color: #ffffff !important;
+  transform: translateY(0) !important;
+}
+
+/* Responsive Invoice & Kwitansi Modal */
+@media screen and (max-width: 640px) {
+  .kwitansi-modal-wrapper {
+    width: calc(100vw - 20px) !important;
+    max-width: 100% !important;
+    max-height: 94vh !important;
+    border-radius: 12px !important;
+    margin: 0 auto !important;
+  }
+
+  .kwitansi-action-bar {
+    padding: 10px 14px !important;
+  }
+
+  .kwitansi-action-bar span {
+    font-size: 13.5px !important;
+  }
+
+  .kwitansi-action-bar .btn-primary-green {
+    padding: 6px 10px !important;
+    font-size: 11.5px !important;
+    gap: 5px !important;
+  }
+
+  .printable-kwitansi-sheet {
+    padding: 14px 14px 22px !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    border-radius: 0 0 12px 12px !important;
+  }
+
+  /* Header inside invoice/kwitansi */
+  .printable-kwitansi-sheet .kwitansi-header-logo {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .printable-kwitansi-sheet .kwitansi-brand-title {
+    font-size: 14px !important;
+    line-height: 1.2 !important;
+  }
+
+  .printable-kwitansi-sheet .invoice-doc-type {
+    font-size: 13.5px !important;
+  }
+
+  .printable-kwitansi-sheet .invoice-doc-no {
+    font-size: 11px !important;
+  }
+
+  .printable-kwitansi-sheet .invoice-doc-date {
+    font-size: 10px !important;
+  }
+
+  /* Parties Grid: Stack Dari & Untuk cleanly on mobile */
+  .invoice-parties-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .invoice-parties-grid table td {
+    font-size: 11.5px !important;
+  }
+
+  /* Meta Bar (Pembayaran & Pengiriman) */
+  .invoice-meta-bar {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+    padding: 8px 10px !important;
+    font-size: 11.5px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .invoice-meta-bar .invoice-meta-item {
+    min-width: 100% !important;
+    width: 100% !important;
+  }
+
+  /* Invoice Table */
+  .invoice-table-scroll-container {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .invoice-item-table {
+    width: 100% !important;
+    font-size: 11.5px !important;
+  }
+
+  .invoice-item-table th,
+  .invoice-item-table td {
+    padding: 7px 6px !important;
+    font-size: 11.5px !important;
+  }
+
+  .invoice-item-table th:nth-child(2),
+  .invoice-item-table td:nth-child(2) {
+    width: 45px !important;
+  }
+
+  .invoice-item-table th:nth-child(3),
+  .invoice-item-table td:nth-child(3) {
+    width: 80px !important;
+  }
+
+  .invoice-item-table th:nth-child(4),
+  .invoice-item-table td:nth-child(4) {
+    width: 85px !important;
+  }
+
+  /* Kwitansi Meta Table */
+  .kwitansi-meta-table td:first-child {
+    width: 100px !important;
+    font-size: 11.5px !important;
+  }
+
+  .kwitansi-meta-table td {
+    font-size: 11.5px !important;
+    padding: 2px 0 !important;
+  }
+}
+
+/* Peserta Button Styles & Hover Effects */
+
+/* Qty Buttons (+ and -) di Keranjang & Checkout */
+.btn-stepper-qty {
+  transition: all 0.15s ease !important;
+  cursor: pointer !important;
+}
+
+.btn-stepper-qty:hover:not(:disabled) {
+  background-color: #e2ede6 !important;
+  color: #1a3e2b !important;
+  transform: scale(1.1) !important;
+  border-color: #23573c !important;
+}
+
+.btn-stepper-qty:active:not(:disabled) {
+  background-color: #c8ded1 !important;
+  transform: scale(0.96) !important;
+}
+
+/* Checkout Button */
+.btn-checkout,
+.btn-checkout-confirm {
+  background-color: #23573c !important;
+  color: #ffffff !important;
+  border: none !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 12px rgba(35, 87, 60, 0.25) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.btn-checkout:hover:not(:disabled),
+.btn-checkout-confirm:hover:not(:disabled) {
+  background-color: #1b4530 !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 18px rgba(27, 69, 48, 0.38) !important;
+  transform: translateY(-2px) !important;
+  filter: none !important;
+}
+
+.btn-checkout:active:not(:disabled),
+.btn-checkout-confirm:active:not(:disabled) {
+  background-color: #143525 !important;
+  transform: translateY(0) scale(0.99) !important;
+}
+
+/* Checkout Cancel Button */
+.btn-checkout-cancel {
+  background-color: #ffffff !important;
+  color: #23573c !important;
+  border: 1px solid #23573c !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.btn-checkout-cancel:hover:not(:disabled) {
+  background-color: #eef7f2 !important;
+  border-color: #1b4530 !important;
+  color: #1b4530 !important;
+  box-shadow: 0 3px 10px rgba(35, 87, 60, 0.15) !important;
+  transform: translateY(-1px) !important;
+  filter: none !important;
+}
+
+.btn-checkout-cancel:active:not(:disabled) {
+  background-color: #dceee4 !important;
+  transform: translateY(0) !important;
+}
+
+/* Delete Selected Items Button in Keranjang */
+.btn-delete-selected {
+  background-color: #fef2f2 !important;
+  color: #dc2626 !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.btn-delete-selected:hover:not(:disabled) {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3) !important;
+  transform: translateY(-1px) !important;
+  filter: none !important;
+}
+
+.btn-delete-selected:active:not(:disabled) {
+  background-color: #b91c1c !important;
+  transform: translateY(0) !important;
+}
+
+/* Reset Filter Button in Pesanan Saya */
+.pesanan-btn-reset {
+  background-color: #ffffff !important;
+  color: #23573c !important;
+  border: 1px solid #23573c !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.pesanan-btn-reset:hover:not(:disabled) {
+  background-color: #eef7f2 !important;
+  border-color: #1b4530 !important;
+  color: #1b4530 !important;
+  box-shadow: 0 3px 10px rgba(35, 87, 60, 0.15) !important;
+  transform: translateY(-1px) !important;
+  filter: none !important;
+}
+
+.pesanan-btn-reset:active:not(:disabled) {
+  background-color: #dceee4 !important;
+  transform: translateY(0) !important;
+}
+
+/* Pesanan Saya Detail & Action Buttons */
+.pesanan-btn-action {
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.pesanan-btn-action:hover:not(:disabled) {
+  transform: translateY(-1px) !important;
+  filter: brightness(0.92) !important;
+}
 select:focus {
   border-color: #23573c !important;
   outline: 2px solid rgba(35, 87, 60, 0.25) !important;

@@ -34,10 +34,14 @@ export default function DetailPesanan() {
   const [copiedBank, setCopiedBank] = useState(false);
   const [showLightbox, setShowLightbox] = useState(false);
   const [lightboxImg, setLightboxImg] = useState('');
+  const [lightboxTitle, setLightboxTitle] = useState('Bukti Foto');
   const [isCancelling, setIsCancelling] = useState(false);
   const [newProofFile, setNewProofFile] = useState(null);
   const [showKwitansiModal, setShowKwitansiModal] = useState(false);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [showKonfirmasiSelesai, setShowKonfirmasiSelesai] = useState(false);
+  const [buktiSampaiFile, setBuktiSampaiFile] = useState(null);
+  const [isSubmittingSelesai, setIsSubmittingSelesai] = useState(false);
 
   // Toast
   const [notification, setNotification] = useState(null);
@@ -78,9 +82,9 @@ export default function DetailPesanan() {
     }
   }, [id, order]);
 
-  // Kunci scroll saat lightbox atau modal batal atau modal kuitansi terbuka
+  // Kunci scroll saat lightbox atau modal batal atau modal kuitansi/selesai terbuka
   useEffect(() => {
-    if (showLightbox || isCancelling || showKwitansiModal || showInvoiceModal) {
+    if (showLightbox || isCancelling || showKwitansiModal || showInvoiceModal || showKonfirmasiSelesai) {
       document.body.style.overflow = 'hidden';
       document.documentElement.style.overflow = 'hidden';
     } else {
@@ -91,7 +95,7 @@ export default function DetailPesanan() {
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
     };
-  }, [showLightbox, isCancelling, showKwitansiModal, showInvoiceModal]);
+  }, [showLightbox, isCancelling, showKwitansiModal, showInvoiceModal, showKonfirmasiSelesai]);
 
   const formatRupiah = (number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -419,6 +423,58 @@ export default function DetailPesanan() {
     showToast('Pesanan berhasil dibatalkan', 'success');
   };
 
+  const handleFileBuktiSampai = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      showToast('Format foto harus berupa JPG, JPEG, atau PNG', 'error');
+      e.target.value = '';
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Ukuran foto maksimal 5MB', 'error');
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setBuktiSampaiFile(reader.result);
+      showToast('Foto bukti modul berhasil dipilih', 'success');
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleConfirmPesananSelesai = () => {
+    setIsSubmittingSelesai(true);
+    setTimeout(() => {
+      const now = new Date();
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      const nowStr = `${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+      const updatedOrder = {
+        ...order,
+        status: 'Selesai',
+        statusPengiriman: 'Selesai',
+        statusColor: '#16a34a',
+        statusBg: '#dcfce7',
+        buktiSampai: {
+          fotoUrl: buktiSampaiFile || null,
+          tanggal: nowStr
+        }
+      };
+
+      setOrder(updatedOrder);
+      setIsSubmittingSelesai(false);
+      setShowKonfirmasiSelesai(false);
+      showToast('Alhamdulillah, pesanan telah selesai dan diterima!');
+    }, 350);
+  };
+
   const handlePesanLagi = () => {
     if (!order || !order.items) return;
     try {
@@ -468,6 +524,7 @@ export default function DetailPesanan() {
               <button
                 type="button"
                 onClick={() => navigate('/pesanan')}
+                className="btn-primary-green"
                 style={styles.btnPrimaryLg}
               >
                 Kembali ke Pesanan Saya
@@ -514,6 +571,9 @@ export default function DetailPesanan() {
       order.statusPembayaran === 'Menunggu Verifikasi') &&
     order.status !== 'Dibatalkan';
   const canCancelOrder = canEditProof;
+  const isDikirim =
+    (order.status || '').toLowerCase().trim() === 'dikirim' ||
+    (order.statusPengiriman || '').toLowerCase().trim() === 'dikirim';
   const displayedProof = order.buktiTf || newProofFile;
 
   const ongkir =
@@ -564,6 +624,7 @@ export default function DetailPesanan() {
             <button
               type="button"
               onClick={() => navigate('/pesanan')}
+              className="btn-secondary-outline"
               style={styles.btnKembali}
             >
               <ArrowBackOutlinedIcon sx={{ fontSize: 18 }} />
@@ -584,6 +645,7 @@ export default function DetailPesanan() {
                     <button
                       type="button"
                       onClick={() => setShowInvoiceModal(true)}
+                      className="btn-secondary-outline"
                       style={styles.btnLihatInvoiceHeader}
                     >
                       <DescriptionOutlinedIcon sx={{ fontSize: 18 }} />
@@ -594,6 +656,7 @@ export default function DetailPesanan() {
                     <button
                       type="button"
                       onClick={() => setShowKwitansiModal(true)}
+                      className="btn-secondary-outline"
                       style={styles.btnLihatKwitansiHeader}
                     >
                       <ReceiptLongOutlinedIcon sx={{ fontSize: 18 }} />
@@ -692,6 +755,61 @@ export default function DetailPesanan() {
               </div>
             </div>
 
+            {/* Bukti Penerimaan Modul jika pesanan Selesai */}
+            {order.status === 'Selesai' && (
+              <div style={styles.sectionCard}>
+                <div style={styles.sectionCardHeader}>
+                  <div style={{ ...styles.sectionIconBadge, backgroundColor: '#dcfce7' }}>
+                    <CheckCircleOutlinedIcon sx={{ fontSize: 18, color: '#16a34a' }} />
+                  </div>
+                  <h2 style={styles.sectionHeading}>Bukti Penerimaan Modul</h2>
+                </div>
+
+                {order.buktiSampai?.fotoUrl ? (
+                  <div style={styles.buktiSampaiSelesaiCard}>
+                    <div style={styles.buktiSampaiSelesaiImgWrap}>
+                      <img
+                        src={order.buktiSampai.fotoUrl}
+                        alt="Foto Bukti Modul Sampai"
+                        style={styles.buktiSampaiSelesaiImg}
+                        onClick={() => {
+                          setLightboxImg(order.buktiSampai.fotoUrl);
+                          setLightboxTitle('Bukti Modul Diterima');
+                          setShowLightbox(true);
+                        }}
+                      />
+                      <span style={styles.buktiSampaiZoomHint}>Klik untuk memperbesar</span>
+                    </div>
+                    <div style={styles.buktiSampaiSelesaiInfo}>
+                      <div style={styles.buktiSampaiBadgeSuccess}>
+                        <CheckCircleOutlinedIcon sx={{ fontSize: 15 }} />
+                        <span>Modul Diterima Peserta</span>
+                      </div>
+                      {order.buktiSampai.tanggal && (
+                        <p style={styles.buktiSampaiTanggal}>
+                          Waktu Konfirmasi: <strong>{order.buktiSampai.tanggal}</strong>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div style={styles.buktiSampaiSelesaiNoPhoto}>
+                    <CheckCircleOutlinedIcon sx={{ fontSize: 22, color: '#16a34a', flexShrink: 0 }} />
+                    <div>
+                      <p style={{ margin: 0, fontWeight: '700', color: '#166534', fontSize: '13.5px' }}>
+                        Pesanan Selesai & Diterima
+                      </p>
+                      <p style={{ margin: '2px 0 0', color: '#15803d', fontSize: '12px', lineHeight: '1.5' }}>
+                        {order.buktiSampai?.tanggal
+                          ? `Dikonfirmasi diterima oleh peserta pada ${order.buktiSampai.tanggal} (tanpa lampiran foto).`
+                          : 'Modul telah berhasil diserahkan dan diterima oleh peserta.'}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* SECTION 2: Rekening Pembayaran & Bukti Transfer */}
             {(!order.metodeBayar || order.metodeBayar === 'Transfer Bank') && (
               <div style={styles.sectionCard}>
@@ -713,6 +831,7 @@ export default function DetailPesanan() {
                           <button
                             type="button"
                             onClick={handleCopyRekening}
+                            className="btn-secondary-outline"
                             style={styles.btnSalinRekening}
                           >
                             <ContentCopyOutlinedIcon sx={{ fontSize: 14 }} />
@@ -766,6 +885,7 @@ export default function DetailPesanan() {
                               <button
                                 type="button"
                                 onClick={handleHapusBukti}
+                                className="btn-danger-red"
                                 style={styles.btnDeleteProof}
                               >
                                 Hapus
@@ -867,15 +987,29 @@ export default function DetailPesanan() {
             </div>
 
             {/* Bottom Actions Card */}
-            {(canCancelOrder || order.status === 'Selesai') && (
+            {(canCancelOrder || isDikirim || order.status === 'Selesai') && (
               <div className="detail-bottom-actions" style={styles.bottomActionsCard}>
                 {canCancelOrder && (
                   <button
                     type="button"
                     onClick={() => setIsCancelling(true)}
+                    className="btn-danger-outline-soft"
                     style={styles.btnBatalkanOrder}
                   >
-                    Batalkan Pesanan
+                    <CloseOutlinedIcon sx={{ fontSize: 17 }} />
+                    <span>Batalkan Pesanan</span>
+                  </button>
+                )}
+
+                {isDikirim && (
+                  <button
+                    type="button"
+                    onClick={() => setShowKonfirmasiSelesai(true)}
+                    className="btn-primary-green"
+                    style={styles.btnKonfirmasiSelesai}
+                  >
+                    <CheckCircleOutlinedIcon sx={{ fontSize: 18 }} />
+                    <span>Konfirmasi Pesanan Diterima</span>
                   </button>
                 )}
 
@@ -883,6 +1017,7 @@ export default function DetailPesanan() {
                   <button
                     type="button"
                     onClick={handlePesanLagi}
+                    className="btn-primary-green"
                     style={styles.btnPesanLagi}
                   >
                     <ShoppingBagOutlinedIcon sx={{ fontSize: 18 }} />
@@ -904,6 +1039,7 @@ export default function DetailPesanan() {
               <button
                 type="button"
                 onClick={() => setIsCancelling(false)}
+                className="btn-modal-close-icon"
                 style={styles.modalCloseBtn}
               >
                 <CloseOutlinedIcon sx={{ fontSize: 18 }} />
@@ -921,6 +1057,7 @@ export default function DetailPesanan() {
               <button
                 type="button"
                 onClick={() => setIsCancelling(false)}
+                className="btn-secondary-outline"
                 style={styles.btnBatalModal}
               >
                 Batal
@@ -928,6 +1065,7 @@ export default function DetailPesanan() {
               <button
                 type="button"
                 onClick={handleConfirmBatal}
+                className="btn-danger-red"
                 style={styles.btnConfirmCancelModal}
               >
                 Ya, Batalkan Pesanan
@@ -937,22 +1075,131 @@ export default function DetailPesanan() {
         </div>
       )}
 
-      {/* LIGHTBOX BUKTI TRANSFER */}
+      {/* LIGHTBOX BUKTI TRANSFER & MODUL */}
       {showLightbox && (
         <div style={styles.lightboxOverlay} onClick={() => setShowLightbox(false)}>
           <div style={styles.lightboxContent} onClick={(e) => e.stopPropagation()}>
             <div style={styles.lightboxHeader}>
-              <span style={styles.lightboxTitle}>Bukti Transfer - {order.id}</span>
+              <span style={styles.lightboxTitle}>{lightboxTitle} - {order.id}</span>
               <button
                 type="button"
                 onClick={() => setShowLightbox(false)}
+                className="btn-modal-close-icon"
                 style={styles.lightboxCloseBtn}
               >
                 <CloseOutlinedIcon sx={{ fontSize: 20 }} />
               </button>
             </div>
             <div style={styles.lightboxImgWrap}>
-              <img src={lightboxImg} alt="Bukti Transfer Penuh" style={styles.lightboxImg} />
+              <img src={lightboxImg} alt="Bukti Foto Penuh" style={styles.lightboxImg} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL KONFIRMASI PESANAN DITERIMA & UPLOAD BUKTI SAMPAI (OPSIONAL) */}
+      {showKonfirmasiSelesai && (
+        <div style={styles.modalOverlay} onClick={() => !isSubmittingSelesai && setShowKonfirmasiSelesai(false)}>
+          <div style={styles.modalContentKonfirmasiSelesai} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalHeaderKonfirmasiSelesai}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={styles.modalIconWrapGreen}>
+                  <CheckCircleOutlinedIcon sx={{ fontSize: 22, color: '#16a34a' }} />
+                </div>
+                <div>
+                  <h3 style={styles.modalKonfirmasiTitle}>Konfirmasi Pesanan Diterima</h3>
+                  <p style={styles.modalKonfirmasiSubtitle}>No. Pesanan: {order.id}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => !isSubmittingSelesai && setShowKonfirmasiSelesai(false)}
+                className="btn-modal-close-icon"
+                style={styles.modalCloseBtn}
+              >
+                <CloseOutlinedIcon sx={{ fontSize: 18 }} />
+              </button>
+            </div>
+
+            <div style={styles.modalKonfirmasiBody}>
+              <div style={styles.konfirmasiAlertBox}>
+                <p style={styles.konfirmasiAlertText}>
+                  Apakah paket modul Anda sudah sampai dan Anda terima dengan baik? Klik tombol di bawah untuk menyelesaikan pesanan.
+                </p>
+              </div>
+
+              {/* Area Upload Bukti Modul Sampai (Opsional) */}
+              <div style={{ marginTop: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <label style={styles.uploadBuktiLabel}>
+                    Foto Bukti Modul Sampai
+                  </label>
+                  <span style={styles.badgeOpsional}>Opsional</span>
+                </div>
+
+                {buktiSampaiFile ? (
+                  <div style={styles.buktiSampaiPreviewBox}>
+                    <img
+                      src={buktiSampaiFile}
+                      alt="Preview Bukti Sampai"
+                      style={styles.buktiSampaiPreviewImg}
+                      onClick={() => {
+                        setLightboxImg(buktiSampaiFile);
+                        setLightboxTitle('Bukti Modul Diterima');
+                        setShowLightbox(true);
+                      }}
+                    />
+                    <div style={styles.buktiSampaiPreviewActions}>
+                      <span style={{ fontSize: '12px', color: '#15803d', fontWeight: '600' }}>✓ Foto Berhasil Dipilih</span>
+                      <button
+                        type="button"
+                        onClick={() => setBuktiSampaiFile(null)}
+                        className="btn-danger-red"
+                        style={styles.btnHapusBuktiSampai}
+                      >
+                        Hapus Foto
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <label style={styles.dropzoneBuktiSampai}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={handleFileBuktiSampai}
+                    />
+                    <CloudUploadOutlinedIcon sx={{ fontSize: 28, color: '#23573c', mb: 0.5 }} />
+                    <span style={styles.dropzoneTextPrimary}>
+                      Unggah Foto Modul
+                    </span>
+                    <span style={styles.dropzoneTextSecondary}>
+                      Format: PNG, JPG, JPEG (Maks. 5MB)
+                    </span>
+                  </label>
+                )}
+              </div>
+            </div>
+
+            <div style={styles.modalKonfirmasiFooter}>
+              <button
+                type="button"
+                disabled={isSubmittingSelesai}
+                onClick={() => setShowKonfirmasiSelesai(false)}
+                className="btn-secondary-outline"
+                style={styles.btnBatalModalKonfirmasi}
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                disabled={isSubmittingSelesai}
+                onClick={handleConfirmPesananSelesai}
+                className="btn-primary-green"
+                style={styles.btnSubmitKonfirmasiSelesai}
+              >
+                {isSubmittingSelesai ? 'Menyimpan...' : 'Ya, Pesanan Diterima'}
+              </button>
             </div>
           </div>
         </div>
@@ -967,12 +1214,13 @@ export default function DetailPesanan() {
             className="kwitansi-modal-wrapper"
           >
             {/* Action Bar (Download PDF) */}
-            <div style={styles.kwitansiActionBar} className="no-print">
+            <div style={styles.kwitansiActionBar} className="kwitansi-action-bar no-print">
               <span style={{ fontWeight: '700', fontSize: '15px', color: '#1a3e2b' }}>Pratinjau Invoice</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <button
                   type="button"
                   onClick={handlePrintInvoice}
+                  className="btn-primary-green"
                   style={styles.btnDownloadPdf}
                 >
                   <FileDownloadOutlinedIcon sx={{ fontSize: 19 }} />
@@ -981,6 +1229,7 @@ export default function DetailPesanan() {
                 <button
                   type="button"
                   onClick={() => setShowInvoiceModal(false)}
+                  className="btn-modal-close-icon"
                   style={styles.modalCloseBtn}
                 >
                   <CloseOutlinedIcon sx={{ fontSize: 20 }} />
@@ -990,19 +1239,19 @@ export default function DetailPesanan() {
 
             <div id="printable-invoice" style={styles.kwitansiPaper} className="printable-kwitansi-sheet">
               {/* Header Dokumen */}
-              <div style={styles.kwitansiHeader}>
+              <div style={styles.kwitansiHeader} className="kwitansi-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <img src={logoRsq} alt="Logo RSQ" style={styles.kwitansiLogo} />
+                  <img src={logoRsq} alt="Logo RSQ" style={styles.kwitansiLogo} className="kwitansi-header-logo" />
                   <div>
-                    <div style={styles.kwitansiBrandName}>RUMAH SAHABAT QUR'AN</div>
+                    <div style={styles.kwitansiBrandName} className="kwitansi-brand-title">RUMAH SAHABAT QUR'AN</div>
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={styles.kwitansiDocType}>INVOICE</div>
-                  <div style={styles.invoiceDocNumber}>
+                  <div style={styles.kwitansiDocType} className="invoice-doc-type">INVOICE</div>
+                  <div style={styles.invoiceDocNumber} className="invoice-doc-no">
                     NO: INV/{(order.id || '').replace(/^ORD-/, '')}
                   </div>
-                  <div style={{ ...styles.kwitansiDocDate, fontSize: '11px', whiteSpace: 'nowrap' }}>
+                  <div className="invoice-doc-date" style={{ ...styles.kwitansiDocDate, fontSize: '11px', whiteSpace: 'nowrap' }}>
                     Tanggal Dokumen : {formatTanggal(order.tanggal)}
                   </div>
                 </div>
@@ -1011,7 +1260,7 @@ export default function DetailPesanan() {
               <div style={styles.kwitansiDivider} />
 
               {/* Data Penyedia & Pembeli */}
-              <div style={styles.invoicePartiesGrid}>
+              <div style={styles.invoicePartiesGrid} className="invoice-parties-grid">
                 <div style={styles.invoicePartyCol}>
                   <div style={styles.invoicePartyHeader}>Dari</div>
                   <table style={styles.invoicePartyTable}>
@@ -1057,14 +1306,14 @@ export default function DetailPesanan() {
               </div>
 
               {/* Data Pembayaran & Pengiriman */}
-              <div style={styles.invoiceMetaBar}>
-                <div style={{ flex: 1, minWidth: '200px' }}>
+              <div style={styles.invoiceMetaBar} className="invoice-meta-bar">
+                <div className="invoice-meta-item" style={{ flex: 1, minWidth: '130px' }}>
                   <span style={styles.invoiceMetaBarLabel}>Pembayaran:</span>
                   <span style={styles.invoiceMetaBarValue}>
                     {order.metodeBayar || 'Transfer Bank (BSI)'}
                   </span>
                 </div>
-                <div style={{ flex: 1, minWidth: '200px' }}>
+                <div className="invoice-meta-item" style={{ flex: 1, minWidth: '130px' }}>
                   <span style={styles.invoiceMetaBarLabel}>Metode Pengiriman:</span>
                   <span style={styles.invoiceMetaBarValue}>
                     {order.metodePengiriman || 'Via Kurir'}
@@ -1073,10 +1322,10 @@ export default function DetailPesanan() {
               </div>
 
               {/* Tabel Rincian Modul */}
-              <div style={{ position: 'relative', marginTop: '16px' }}>
+              <div className="invoice-table-scroll-container" style={{ position: 'relative', marginTop: '16px', width: '100%', overflowX: 'auto' }}>
                 <div style={styles.invoiceRincianHeading}>Rincian Modul</div>
 
-                <table style={styles.invoiceItemTable}>
+                <table className="invoice-item-table" style={styles.invoiceItemTable}>
                   <thead>
                     <tr style={styles.invoiceThRow}>
                       <th style={{ ...styles.invoiceTh, textAlign: 'left' }}>Judul Modul</th>
@@ -1185,12 +1434,13 @@ export default function DetailPesanan() {
             className="kwitansi-modal-wrapper"
           >
             {/* Action Bar (Download PDF) */}
-            <div style={styles.kwitansiActionBar} className="no-print">
+            <div style={styles.kwitansiActionBar} className="kwitansi-action-bar no-print">
               <span style={{ fontWeight: '700', fontSize: '15px', color: '#1a3e2b' }}>Pratinjau Kuitansi</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <button
                   type="button"
                   onClick={handlePrintKwitansi}
+                  className="btn-primary-green"
                   style={styles.btnDownloadPdf}
                 >
                   <FileDownloadOutlinedIcon sx={{ fontSize: 19 }} />
@@ -1199,6 +1449,7 @@ export default function DetailPesanan() {
                 <button
                   type="button"
                   onClick={() => setShowKwitansiModal(false)}
+                  className="btn-modal-close-icon"
                   style={styles.modalCloseBtn}
                 >
                   <CloseOutlinedIcon sx={{ fontSize: 20 }} />
@@ -1207,11 +1458,11 @@ export default function DetailPesanan() {
             </div>
 
             <div id="printable-kwitansi" style={styles.kwitansiPaper} className="printable-kwitansi-sheet">
-              <div style={styles.kwitansiHeader}>
+              <div style={styles.kwitansiHeader} className="kwitansi-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <img src={logoRsq} alt="Logo RSQ" style={styles.kwitansiLogo} />
+                  <img src={logoRsq} alt="Logo RSQ" style={styles.kwitansiLogo} className="kwitansi-header-logo" />
                   <div>
-                    <div style={styles.kwitansiBrandName}>RUMAH SAHABAT QUR'AN</div>
+                    <div style={styles.kwitansiBrandName} className="kwitansi-brand-title">RUMAH SAHABAT QUR'AN</div>
                   </div>
                 </div>
               </div>
@@ -1219,7 +1470,7 @@ export default function DetailPesanan() {
               <div style={styles.kwitansiDivider} />
 
               <h2 style={styles.kwitansiTitle}>Kuitansi/Bukti Pembayaran</h2>
-              <table style={styles.kwitansiMetaTable}>
+              <table style={styles.kwitansiMetaTable} className="kwitansi-meta-table">
                 <tbody>
                   <tr>
                     <td style={styles.metaLabelCol}>Nomor</td>
@@ -1378,14 +1629,16 @@ const styles = {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '8px',
-    backgroundColor: 'transparent',
-    border: 'none',
+    padding: '8px 16px',
+    borderRadius: '10px',
+    border: '1px solid #c7d9cd',
+    backgroundColor: '#ffffff',
     color: '#23573c',
     fontSize: '13.5px',
     fontWeight: '700',
     cursor: 'pointer',
-    padding: '4px 0',
-    width: 'fit-content'
+    width: 'fit-content',
+    transition: 'all 0.15s ease'
   },
   pageTitleWrap: {
     display: 'flex',
@@ -1871,9 +2124,13 @@ const styles = {
   },
   btnBatalkanOrder: {
     width: '100%',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
     padding: '11px 20px',
     borderRadius: '8px',
-    border: '1px solid #fecaca',
+    border: '1.5px solid #f87171',
     backgroundColor: '#fff5f5',
     color: '#dc2626',
     fontSize: '13.5px',
@@ -1896,6 +2153,237 @@ const styles = {
     fontSize: '13.5px',
     fontWeight: '700',
     cursor: 'pointer'
+  },
+  btnKonfirmasiSelesai: {
+    width: '100%',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    padding: '12px 20px',
+    borderRadius: '8px',
+    border: 'none',
+    backgroundColor: '#23573c',
+    color: '#ffffff',
+    fontSize: '14px',
+    fontWeight: '700',
+    cursor: 'pointer',
+    textAlign: 'center',
+    boxShadow: '0 4px 12px rgba(35, 87, 60, 0.25)',
+    transition: 'all 0.15s ease'
+  },
+  buktiSampaiSelesaiCard: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '16px',
+    padding: '16px',
+    backgroundColor: '#f8fafc',
+    border: '1px solid #e2e8f0',
+    borderRadius: '12px'
+  },
+  buktiSampaiSelesaiImgWrap: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '4px',
+    flexShrink: 0
+  },
+  buktiSampaiSelesaiImg: {
+    width: '100px',
+    height: '100px',
+    objectFit: 'cover',
+    borderRadius: '10px',
+    border: '1px solid #cbd5e1',
+    cursor: 'pointer',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+  },
+  buktiSampaiZoomHint: {
+    fontSize: '10.5px',
+    color: '#64748b',
+    textAlign: 'center'
+  },
+  buktiSampaiSelesaiInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+    flex: 1
+  },
+  buktiSampaiBadgeSuccess: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '4px 10px',
+    borderRadius: '6px',
+    backgroundColor: '#dcfce7',
+    color: '#15803d',
+    fontSize: '12px',
+    fontWeight: '700',
+    width: 'fit-content'
+  },
+  buktiSampaiTanggal: {
+    margin: 0,
+    fontSize: '12.5px',
+    color: '#334155'
+  },
+  buktiSampaiSelesaiNoPhoto: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '12px',
+    padding: '14px 16px',
+    backgroundColor: '#f0fdf4',
+    border: '1px solid #bbf7d0',
+    borderRadius: '12px'
+  },
+  modalContentKonfirmasiSelesai: {
+    backgroundColor: '#ffffff',
+    borderRadius: '16px',
+    maxWidth: '500px',
+    width: '95%',
+    maxHeight: '90vh',
+    display: 'flex',
+    flexDirection: 'column',
+    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)',
+    overflow: 'hidden'
+  },
+  modalHeaderKonfirmasiSelesai: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '16px 20px',
+    borderBottom: '1px solid #f1f5f9'
+  },
+  modalIconWrapGreen: {
+    width: '38px',
+    height: '38px',
+    borderRadius: '50%',
+    backgroundColor: '#dcfce7',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0
+  },
+  modalKonfirmasiTitle: {
+    fontSize: '15px',
+    fontWeight: '700',
+    color: '#0f172a',
+    margin: 0
+  },
+  modalKonfirmasiSubtitle: {
+    fontSize: '12px',
+    color: '#64748b',
+    margin: '2px 0 0'
+  },
+  modalKonfirmasiBody: {
+    padding: '18px 20px',
+    overflowY: 'auto'
+  },
+  konfirmasiAlertBox: {
+    backgroundColor: '#f0fdf4',
+    border: '1px solid #bbf7d0',
+    borderRadius: '10px',
+    padding: '12px 14px'
+  },
+  konfirmasiAlertText: {
+    fontSize: '13px',
+    color: '#166534',
+    lineHeight: '1.5',
+    margin: 0
+  },
+  uploadBuktiLabel: {
+    fontSize: '13px',
+    fontWeight: '700',
+    color: '#1e293b',
+    display: 'block'
+  },
+  badgeOpsional: {
+    fontSize: '11px',
+    fontWeight: '600',
+    color: '#0284c7',
+    backgroundColor: '#e0f2fe',
+    padding: '2px 8px',
+    borderRadius: '999px'
+  },
+  dropzoneBuktiSampai: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '20px 14px',
+    border: '2px dashed #cbd5e1',
+    borderRadius: '10px',
+    backgroundColor: '#f8fafc',
+    cursor: 'pointer',
+    textAlign: 'center',
+    transition: 'all 0.2s ease',
+    marginTop: '4px'
+  },
+  dropzoneTextPrimary: {
+    fontSize: '13px',
+    fontWeight: '700',
+    color: '#23573c',
+    marginBottom: '2px'
+  },
+  dropzoneTextSecondary: {
+    fontSize: '11.5px',
+    color: '#64748b'
+  },
+  buktiSampaiPreviewBox: {
+    border: '1px solid #e2e8f0',
+    borderRadius: '10px',
+    padding: '10px',
+    backgroundColor: '#f8fafc',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    marginTop: '4px'
+  },
+  buktiSampaiPreviewImg: {
+    width: '64px',
+    height: '64px',
+    objectFit: 'cover',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    border: '1px solid #cbd5e1'
+  },
+  buktiSampaiPreviewActions: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px'
+  },
+  btnHapusBuktiSampai: {
+    padding: '4px 10px',
+    fontSize: '11.5px',
+    fontWeight: '600',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    width: 'fit-content'
+  },
+  modalKonfirmasiFooter: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: '10px',
+    padding: '14px 20px',
+    borderTop: '1px solid #f1f5f9',
+    backgroundColor: '#ffffff'
+  },
+  btnBatalModalKonfirmasi: {
+    padding: '9px 18px',
+    fontSize: '13px',
+    fontWeight: '600',
+    borderRadius: '8px',
+    cursor: 'pointer'
+  },
+  btnSubmitKonfirmasiSelesai: {
+    padding: '9px 20px',
+    fontSize: '13px',
+    fontWeight: '700',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    backgroundColor: '#23573c',
+    color: '#ffffff',
+    border: 'none',
+    boxShadow: '0 3px 10px rgba(35, 87, 60, 0.25)'
   },
   emptyCard: {
     backgroundColor: '#ffffff',
@@ -2080,7 +2568,7 @@ const styles = {
     backgroundColor: '#ffffff',
     borderRadius: '16px',
     maxWidth: '600px',
-    width: '95%',
+    width: '100%',
     maxHeight: '92vh',
     display: 'flex',
     flexDirection: 'column',
@@ -2121,6 +2609,7 @@ const styles = {
     borderRadius: '0 0 16px 16px',
     boxShadow: 'none',
     overflowY: 'auto',
+    overflowX: 'hidden',
     fontFamily: "'Times New Roman', Times, serif, 'Poppins', sans-serif"
   },
   kwitansiHeader: {

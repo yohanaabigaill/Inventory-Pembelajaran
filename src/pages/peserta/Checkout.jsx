@@ -378,6 +378,7 @@ export default function Checkout() {
                   navigate('/keranjang');
                 }
               }}
+              className="btn-secondary-outline"
               style={styles.btnKembali}
             >
               <ArrowBackOutlinedIcon sx={{ fontSize: 18 }} />
@@ -400,6 +401,7 @@ export default function Checkout() {
               <button
                 type="button"
                 onClick={() => navigate('/katalog-modul')}
+                className="btn-primary-green"
                 style={styles.btnPrimaryLg}
               >
                 Jelajahi Katalog Modul
@@ -768,6 +770,7 @@ export default function Checkout() {
                             <button
                               type="button"
                               onClick={handleCopyRekening}
+                              className="btn-secondary-outline"
                               style={styles.btnSalinRekening}
                             >
                               <ContentCopyOutlinedIcon sx={{ fontSize: 14 }} />
@@ -817,6 +820,7 @@ export default function Checkout() {
                               <button
                                 type="button"
                                 onClick={handleHapusBukti}
+                                className="btn-danger-red"
                                 style={styles.btnDeleteProof}
                               >
                                 Hapus
@@ -888,6 +892,7 @@ export default function Checkout() {
                                   type="button"
                                   disabled={Number(item.qty) <= 1}
                                   onClick={() => handleUpdateQty(item.id, (Number(item.qty) || 1) - 1)}
+                                  className="btn-stepper-qty"
                                   style={{
                                     ...styles.btnStepper,
                                     opacity: Number(item.qty) <= 1 ? 0.35 : 1,
@@ -923,6 +928,7 @@ export default function Checkout() {
                                     }
                                     handleUpdateQty(item.id, (Number(item.qty) || 1) + 1);
                                   }}
+                                  className="btn-stepper-qty"
                                   style={{
                                     ...styles.btnStepper,
                                     opacity: item.stok && Number(item.qty) >= item.stok ? 0.35 : 1,
@@ -1027,6 +1033,7 @@ export default function Checkout() {
             <button
               type="button"
               onClick={() => setShowLightbox(false)}
+              className="btn-modal-close-icon"
               style={styles.lightboxCloseBtn}
             >
               ✕
@@ -1073,14 +1080,16 @@ const styles = {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '8px',
-    backgroundColor: 'transparent',
-    border: 'none',
+    padding: '8px 16px',
+    borderRadius: '10px',
+    border: '1px solid #c7d9cd',
+    backgroundColor: '#ffffff',
     color: '#23573c',
     fontSize: '13.5px',
     fontWeight: '700',
     cursor: 'pointer',
-    padding: '4px 0',
-    width: 'fit-content'
+    width: 'fit-content',
+    transition: 'all 0.15s ease'
   },
   pageTitleWrap: {
     display: 'flex',
