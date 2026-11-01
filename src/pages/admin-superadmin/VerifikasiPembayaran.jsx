@@ -1556,6 +1556,7 @@ export default function VerifikasiPembayaran() {
                                       e.stopPropagation();
                                       setApprovingOrder(item);
                                     }}
+                                    className="btn-action-edit"
                                     style={styles.btnApprove}
                                   >
                                     <CheckCircleOutlinedIcon sx={{ fontSize: 21 }} />
@@ -1567,6 +1568,7 @@ export default function VerifikasiPembayaran() {
                                       e.stopPropagation();
                                       handleOpenTolakModal(item);
                                     }}
+                                    className="btn-action-delete"
                                     style={styles.btnReject}
                                   >
                                     <CancelOutlinedIcon sx={{ fontSize: 21 }} />
@@ -1684,6 +1686,7 @@ export default function VerifikasiPembayaran() {
               <button
                 type="button"
                 onClick={() => setApprovingOrder(null)}
+                className="btn-secondary-outline"
                 style={styles.btnSimpleCancel}
               >
                 Batal
@@ -1694,6 +1697,7 @@ export default function VerifikasiPembayaran() {
                   handleSetujuiPembayaran(approvingOrder);
                   setApprovingOrder(null);
                 }}
+                className="btn-primary-green"
                 style={styles.btnSimpleConfirmApprove}
               >
                 Setujui
@@ -1750,6 +1754,7 @@ export default function VerifikasiPembayaran() {
               <button
                 type="button"
                 onClick={() => setRejectingOrder(null)}
+                className="btn-secondary-outline"
                 style={styles.btnSimpleCancel}
               >
                 Batal
@@ -1757,6 +1762,7 @@ export default function VerifikasiPembayaran() {
               <button
                 type="button"
                 onClick={handleConfirmTolak}
+                className="btn-danger-red"
                 style={styles.btnSimpleConfirm}
               >
                 Tolak Pembayaran
@@ -1781,6 +1787,7 @@ export default function VerifikasiPembayaran() {
                 <button
                   type="button"
                   onClick={handlePrintKwitansi}
+                  className="btn-primary-green"
                   style={styles.btnDownloadPdf}
                 >
                   <FileDownloadOutlinedIcon sx={{ fontSize: 19 }} />
@@ -2107,6 +2114,7 @@ export default function VerifikasiPembayaran() {
               <button
                 type="button"
                 onClick={handleCloseDetailModal}
+                className="btn-secondary-outline"
                 style={styles.btnModalClose}
               >
                 {selectedDetail.status === 'Menunggu Verifikasi' ? 'Batal' : 'Tutup'}
@@ -2120,6 +2128,7 @@ export default function VerifikasiPembayaran() {
                     setSelectedDetail(null);
                     setSelectedKwitansi(detail);
                   }}
+                  className="btn-secondary-outline"
                   style={styles.btnModalKwitansi}
                 >
                   <ReceiptLongOutlinedIcon sx={{ fontSize: 18 }} />
@@ -2138,6 +2147,7 @@ export default function VerifikasiPembayaran() {
                   <button
                     type="button"
                     onClick={() => handleOpenTolakModal(selectedDetail)}
+                    className="btn-danger-red"
                     style={styles.btnModalReject}
                   >
                     <CancelOutlinedIcon sx={{ fontSize: 18 }} />
@@ -2147,6 +2157,7 @@ export default function VerifikasiPembayaran() {
                   <button
                     type="button"
                     onClick={() => setApprovingOrder(selectedDetail)}
+                    className="btn-primary-green"
                     style={styles.btnModalApprove}
                   >
                     <CheckCircleOutlinedIcon sx={{ fontSize: 18 }} />

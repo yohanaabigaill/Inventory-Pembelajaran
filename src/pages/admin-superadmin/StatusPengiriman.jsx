@@ -238,7 +238,6 @@ function CustomDropdown({
         }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        title={disabled ? 'Status sudah selesai (tidak dapat diubah lagi)' : undefined}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -664,7 +663,6 @@ function CustomDatePicker({
               }}
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f3f4')}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-              title={isMonthYearOpen ? 'Kembali ke Kalender Hari' : 'Pilih Bulan & Tahun'}
             >
               <span>{MONTH_NAMES[viewMonth]} {viewYear}</span>
               <span
@@ -685,7 +683,6 @@ function CustomDatePicker({
                 <button
                   type="button"
                   onClick={prevMonth}
-                  title="Bulan sebelumnya"
                   style={{
                     background: 'none',
                     border: 'none',
@@ -720,7 +717,6 @@ function CustomDatePicker({
                 <button
                   type="button"
                   onClick={nextMonth}
-                  title="Bulan berikutnya"
                   style={{
                     background: 'none',
                     border: 'none',
@@ -1077,7 +1073,6 @@ function DetailPengirimanModal({
             type="button"
             onClick={onClose}
             style={styles.modalCloseBtn}
-            title="Tutup Modal"
           >
             <CloseOutlinedIcon sx={{ fontSize: 20 }} />
           </button>
@@ -1269,9 +1264,8 @@ function DetailPengirimanModal({
           <button
             type="button"
             onClick={onClose}
+            className="btn-secondary-outline"
             style={styles.btnModalClose}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f5f3')}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ffffff')}
           >
             Batal
           </button>
@@ -1279,6 +1273,7 @@ function DetailPengirimanModal({
           <button
             type="button"
             onClick={() => onSave(selectedDetail)}
+            className="btn-primary-green"
             style={styles.btnModalSave}
           >
             Simpan
@@ -1507,7 +1502,6 @@ export default function StatusPengiriman() {
                         setCurrentPage(1);
                       }}
                       style={styles.searchClearBtn}
-                      title="Hapus pencarian"
                     >
                       <CloseOutlinedIcon sx={{ fontSize: 16 }} />
                     </button>
@@ -1594,6 +1588,7 @@ export default function StatusPengiriman() {
                                 id={`btn-detail-${index + 1}`}
                                 type="button"
                                 onClick={() => setSelectedDetail(item)}
+                                className="btn-action-detail"
                                 style={styles.btnActionDetailOnly}
                               >
                                 <VisibilityOutlinedIcon sx={{ fontSize: 16 }} />
@@ -1627,6 +1622,7 @@ export default function StatusPengiriman() {
                     type="button"
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    className="btn-page-arrow"
                     style={{
                       ...styles.btnPageArrow,
                       opacity: currentPage === 1 ? 0.4 : 1,
@@ -1641,6 +1637,7 @@ export default function StatusPengiriman() {
                       key={page}
                       type="button"
                       onClick={() => setCurrentPage(page)}
+                      className={`btn-page-num ${currentPage === page ? 'active' : ''}`}
                       style={{
                         ...styles.btnPageNum,
                         ...(currentPage === page ? styles.btnPageNumActive : {})
@@ -1654,6 +1651,7 @@ export default function StatusPengiriman() {
                     type="button"
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    className="btn-page-arrow"
                     style={{
                       ...styles.btnPageArrow,
                       opacity: currentPage === totalPages ? 0.4 : 1,
@@ -1690,7 +1688,6 @@ export default function StatusPengiriman() {
               type="button"
               onClick={() => setPreviewProofImg(null)}
               style={styles.lightboxCloseBtn}
-              title="Tutup Preview Foto"
             >
               <CloseOutlinedIcon sx={{ fontSize: 20 }} />
             </button>

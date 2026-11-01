@@ -204,7 +204,7 @@ export default function JenisModul() {
             </div>
 
             {/* Tombol Tambah Jenis Modul */}
-            <button onClick={handleOpenAdd} className="btn-add-responsive" style={styles.btnAdd}>
+            <button onClick={handleOpenAdd} className="btn-add-responsive btn-primary-green" style={styles.btnAdd}>
               <AddOutlinedIcon sx={{ fontSize: 18 }} />
               <span>Tambah Jenis Modul</span>
             </button>
@@ -247,7 +247,7 @@ export default function JenisModul() {
                             <div style={styles.actionFlex}>
                               <button
                                 onClick={() => handleOpenEdit(item)}
-                                title="Edit Modul"
+                                className="btn-action-edit"
                                 style={styles.btnActionEdit}
                               >
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -257,7 +257,7 @@ export default function JenisModul() {
                               </button>
                               <button
                                 onClick={() => handleRequestDelete(item)}
-                                title="Hapus Modul"
+                                className="btn-action-delete"
                                 style={styles.btnActionDelete}
                               >
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -290,6 +290,7 @@ export default function JenisModul() {
                 <button
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  className="btn-page-arrow"
                   style={{ ...styles.btnPageArrow, opacity: currentPage === 1 ? 0.4 : 1 }}
                 >
                   &lt;
@@ -298,6 +299,7 @@ export default function JenisModul() {
                   <button
                     key={num}
                     onClick={() => setCurrentPage(num)}
+                    className={`btn-page-num ${currentPage === num ? 'active' : ''}`}
                     style={{
                       ...styles.btnPageNum,
                       ...(currentPage === num ? styles.btnPageNumActive : {})
@@ -309,6 +311,7 @@ export default function JenisModul() {
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  className="btn-page-arrow"
                   style={{ ...styles.btnPageArrow, opacity: currentPage === totalPages ? 0.4 : 1 }}
                 >
                   &gt;
@@ -361,11 +364,12 @@ export default function JenisModul() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
+                  className="btn-secondary-outline"
                   style={styles.btnModalCancel}
                 >
                   Batal
                 </button>
-                <button type="submit" style={styles.btnModalSave}>
+                <button type="submit" className="btn-primary-green" style={styles.btnModalSave}>
                   Simpan
                 </button>
               </div>
@@ -403,6 +407,7 @@ export default function JenisModul() {
                   setIsDeleteModalOpen(false);
                   setItemToDelete(null);
                 }}
+                className="btn-secondary-outline"
                 style={styles.btnDeleteCancel}
               >
                 Batal
@@ -410,6 +415,7 @@ export default function JenisModul() {
               <button
                 type="button"
                 onClick={handleConfirmDelete}
+                className="btn-danger-red"
                 style={styles.btnDeleteConfirm}
               >
                 Hapus

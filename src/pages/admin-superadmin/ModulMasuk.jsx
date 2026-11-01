@@ -642,6 +642,7 @@ export default function ModulMasuk() {
                             <button
                               type="button"
                               onClick={() => handleHapusBaris(item.id)}
+                              className="btn-action-delete"
                               style={styles.btnActionDelete}
                             >
                               <DeleteOutlineOutlinedIcon sx={{ fontSize: 18 }} />
@@ -692,6 +693,7 @@ export default function ModulMasuk() {
                         <button
                           type="button"
                           onClick={() => handleHapusBaris(item.id)}
+                          className="btn-action-delete"
                           style={styles.btnActionDelete}
                         >
                           <DeleteOutlineOutlinedIcon sx={{ fontSize: 18 }} />
