@@ -7,6 +7,8 @@ import logoRsq from '../../assets/logo rsq.jpeg';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import html2pdf from 'html2pdf.js';
 
 // Icons
@@ -1022,6 +1024,7 @@ export default function VerifikasiPembayaran() {
   // Modal State
   const [selectedDetail, setSelectedDetail] = useState(null);
   const [selectedKwitansi, setSelectedKwitansi] = useState(null);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [approvingOrder, setApprovingOrder] = useState(null);
   const [rejectingOrder, setRejectingOrder] = useState(null);
   const [alasanTolak, setAlasanTolak] = useState('');
@@ -1059,6 +1062,20 @@ export default function VerifikasiPembayaran() {
     };
   }, []);
 
+  useEffect(() => {
+    if (selectedDetail || selectedKwitansi || selectedInvoice || approvingOrder || rejectingOrder) {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, [selectedDetail, selectedKwitansi, selectedInvoice, approvingOrder, rejectingOrder]);
+
   // Format Rupiah
   const terbilang = (nominal) => {
     const angka = Math.floor(Math.abs(Number(nominal) || 0));
@@ -1074,7 +1091,74 @@ export default function VerifikasiPembayaran() {
     return terbilang(Math.floor(angka / 1000000000)) + ' Miliar' + (angka % 1000000000 !== 0 ? ' ' + terbilang(angka % 1000000000) : '');
   };
 
-  // Cetak / Unduh PDF Kwitansi
+  // Unduh PDF Invoice
+  const handlePrintInvoice = () => {
+    const element = document.getElementById('printable-invoice');
+    if (!element) return;
+    const nomorInvoice = selectedInvoice
+      ? 'INV-' + (selectedInvoice.id || '').replace(/^ORD-/, '')
+      : 'Invoice';
+
+    const offscreen = document.createElement('div');
+    offscreen.style.position = 'fixed';
+    offscreen.style.left = '-9999px';
+    offscreen.style.top = '0';
+    offscreen.style.width = '700px';
+    offscreen.style.backgroundColor = '#ffffff';
+    offscreen.style.zIndex = '-9999';
+
+    const clone = element.cloneNode(true);
+    clone.style.width = '700px';
+    clone.style.maxWidth = '700px';
+    clone.style.padding = '8px 14px';
+    clone.style.boxSizing = 'border-box';
+    clone.style.overflow = 'visible';
+    clone.style.margin = '0';
+    clone.style.boxShadow = 'none';
+    clone.style.border = 'none';
+
+    offscreen.appendChild(clone);
+    document.body.appendChild(offscreen);
+
+    const opt = {
+      margin: [10, 15, 10, 15],
+      filename: nomorInvoice + '.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, width: 700, letterRendering: true, scrollX: 0, scrollY: 0 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    };
+
+    const cleanup = () => {
+      if (document.body.contains(offscreen)) {
+        document.body.removeChild(offscreen);
+      }
+    };
+
+    try {
+      const exporter = typeof html2pdf === 'function' ? html2pdf : (html2pdf && html2pdf.default ? html2pdf.default : window.html2pdf);
+      if (typeof exporter === 'function') {
+        exporter()
+          .set(opt)
+          .from(clone)
+          .save()
+          .then(cleanup)
+          .catch((err) => {
+            console.error('Error in save invoice:', err);
+            cleanup();
+          });
+      } else {
+        window.print();
+        cleanup();
+      }
+    } catch (e) {
+      console.error(e);
+      window.print();
+      cleanup();
+    }
+  };
+
+  // Unduh PDF Kwitansi
   const handlePrintKwitansi = () => {
     const element = document.getElementById('printable-kwitansi');
     if (!element) return;
@@ -1575,7 +1659,18 @@ export default function VerifikasiPembayaran() {
                                   </button>
                                 </div>
                               ) : (
-                                <span style={{ color: '#94a3b8', fontWeight: '500' }}>-</span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedDetail(item);
+                                  }}
+                                  className="btn-action-detail"
+                                  style={styles.btnActionDetailOnly}
+                                >
+                                  <VisibilityOutlinedIcon sx={{ fontSize: 16 }} />
+                                  <span>Detail</span>
+                                </button>
                               )}
                             </td>
                           </tr>
@@ -1892,15 +1987,235 @@ export default function VerifikasiPembayaran() {
         </div>
       )}
 
+      {/* Modal Pratinjau Invoice */}
+      {selectedInvoice && (
+        <div style={{ ...styles.modalOverlay, zIndex: 999999, backgroundColor: 'rgba(0, 0, 0, 0.45)' }} onClick={() => setSelectedInvoice(null)}>
+          <div
+            style={styles.kwitansiModalContainer}
+            onClick={(e) => e.stopPropagation()}
+            className="kwitansi-modal-wrapper"
+          >
+            <div style={styles.kwitansiActionBar} className="kwitansi-action-bar no-print">
+              <span style={{ fontWeight: '700', fontSize: '15px', color: '#1a3e2b' }}>Pratinjau Invoice</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={handlePrintInvoice}
+                  className="btn-primary-green"
+                  style={styles.btnDownloadPdf}
+                >
+                  <FileDownloadOutlinedIcon sx={{ fontSize: 19 }} />
+                  <span>Unduh Invoice (PDF)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedInvoice(null)}
+                  className="btn-modal-close-icon"
+                  style={styles.modalCloseBtn}
+                >
+                  <CloseOutlinedIcon sx={{ fontSize: 20 }} />
+                </button>
+              </div>
+            </div>
+
+            <div id="printable-invoice" style={styles.kwitansiPaper} className="printable-kwitansi-sheet">
+              {/* Header Dokumen */}
+              <div style={styles.kwitansiHeader} className="kwitansi-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <img src={logoRsq} alt="Logo RSQ" style={styles.kwitansiLogo} className="kwitansi-header-logo" />
+                  <div>
+                    <div style={styles.kwitansiBrandName} className="kwitansi-brand-title">RUMAH SAHABAT QUR'AN</div>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={styles.kwitansiDocType} className="invoice-doc-type">INVOICE</div>
+                  <div style={styles.invoiceDocNumber} className="invoice-doc-no">
+                    NO: INV/{(selectedInvoice.id || '').replace(/^ORD-/, '')}
+                  </div>
+                  <div className="invoice-doc-date" style={{ ...styles.kwitansiDocDate, fontSize: '11px', whiteSpace: 'nowrap' }}>
+                    Tanggal Dokumen : {formatTanggal(selectedInvoice.tanggal)}
+                  </div>
+                </div>
+              </div>
+
+              <div style={styles.kwitansiDivider} />
+
+              {/* Data Penyedia & Pembeli */}
+              <div style={styles.invoicePartiesGrid} className="invoice-parties-grid">
+                <div style={styles.invoicePartyCol}>
+                  <div style={styles.invoicePartyHeader}>Dari</div>
+                  <table style={styles.invoicePartyTable}>
+                    <tbody>
+                      <tr>
+                        <td style={styles.invoicePartyLabel}>Nama Penyedia</td>
+                        <td style={styles.invoicePartyColon}>:</td>
+                        <td style={styles.invoicePartyValue}>RUMAH SAHABAT QUR'AN</td>
+                      </tr>
+                      <tr>
+                        <td style={styles.invoicePartyLabel}>Alamat</td>
+                        <td style={styles.invoicePartyColon}>:</td>
+                        <td style={styles.invoicePartyValue}>Tiban Bukit Asri B no.20 RT 1 RW X</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div style={styles.invoicePartyCol}>
+                  <div style={styles.invoicePartyHeader}>Untuk</div>
+                  <table style={styles.invoicePartyTable}>
+                    <tbody>
+                      <tr>
+                        <td style={styles.invoicePartyLabel}>Nama Pembeli</td>
+                        <td style={styles.invoicePartyColon}>:</td>
+                        <td style={styles.invoicePartyValue}>
+                          {selectedInvoice.namaPembeli || 'Fulan bin Fulan'}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={styles.invoicePartyLabel}>No. HP / WA</td>
+                        <td style={styles.invoicePartyColon}>:</td>
+                        <td style={styles.invoicePartyValue}>{selectedInvoice.noHp || '-'}</td>
+                      </tr>
+                      <tr>
+                        <td style={styles.invoicePartyLabel}>Alamat</td>
+                        <td style={styles.invoicePartyColon}>:</td>
+                        <td style={styles.invoicePartyValue}>{selectedInvoice.alamat || '-'}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Data Pembayaran & Pengiriman */}
+              <div style={styles.invoiceMetaBar} className="invoice-meta-bar">
+                <div className="invoice-meta-item" style={{ flex: 1, minWidth: '130px' }}>
+                  <span style={styles.invoiceMetaBarLabel}>Pembayaran:</span>
+                  <span style={styles.invoiceMetaBarValue}>
+                    {selectedInvoice.metodeBayar || 'Transfer Bank'}
+                  </span>
+                </div>
+                <div className="invoice-meta-item" style={{ flex: 1, minWidth: '130px' }}>
+                  <span style={styles.invoiceMetaBarLabel}>Metode Pengiriman:</span>
+                  <span style={styles.invoiceMetaBarValue}>
+                    {selectedInvoice.metodePengiriman || 'Via Kurir'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Tabel Rincian Modul */}
+              <div className="invoice-table-scroll-container" style={{ position: 'relative', marginTop: '16px', width: '100%', overflowX: 'auto' }}>
+                <div style={styles.invoiceRincianHeading}>Rincian Modul</div>
+
+                <table className="invoice-item-table" style={styles.invoiceItemTable}>
+                  <thead>
+                    <tr style={styles.invoiceThRow}>
+                      <th style={{ ...styles.invoiceTh, textAlign: 'left' }}>Judul Modul</th>
+                      <th style={{ ...styles.invoiceTh, textAlign: 'center', width: '90px' }}>Jumlah</th>
+                      <th style={{ ...styles.invoiceTh, textAlign: 'right', width: '130px' }}>Harga Satuan</th>
+                      <th style={{ ...styles.invoiceTh, textAlign: 'right', width: '140px' }}>Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(selectedInvoice.itemModul || []).map((item, idx) => (
+                      <tr key={idx} style={styles.invoiceTr}>
+                        <td style={{ ...styles.invoiceTd, textAlign: 'left' }}>{item.nama}</td>
+                        <td style={{ ...styles.invoiceTd, textAlign: 'center' }}>{item.qty}</td>
+                        <td style={{ ...styles.invoiceTd, textAlign: 'right' }}>
+                          {formatRupiah(item.harga || 0)}
+                        </td>
+                        <td style={{ ...styles.invoiceTd, textAlign: 'right', fontWeight: '700', color: '#0f172a' }}>
+                          {formatRupiah((item.harga || 0) * (item.qty || 1))}
+                        </td>
+                      </tr>
+                    ))}
+
+                    {/* Biaya Kurir jika ada */}
+                    {selectedInvoice.metodePengiriman === 'Via Kurir' && (
+                      <tr style={styles.invoiceTr}>
+                        <td style={{ ...styles.invoiceTd, textAlign: 'left' }}>Biaya Kurir</td>
+                        <td style={{ ...styles.invoiceTd, textAlign: 'center' }}>-</td>
+                        <td style={{ ...styles.invoiceTd, textAlign: 'right' }}>
+                          {formatRupiah(ONGKIR_FLAT_KURIR)}
+                        </td>
+                        <td style={{ ...styles.invoiceTd, textAlign: 'right', fontWeight: '700', color: '#0f172a' }}>
+                          {formatRupiah(ONGKIR_FLAT_KURIR)}
+                        </td>
+                      </tr>
+                    )}
+
+                    {/* Baris Total */}
+                    <tr>
+                      <td colSpan={2} style={{ padding: '16px 12px 6px', border: 'none' }}></td>
+                      <td style={styles.invoiceTotalLabel}>
+                        Total:
+                      </td>
+                      <td style={styles.invoiceTotalValue}>
+                        {formatRupiah(selectedInvoice.totalBayar || 0)}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Status invoice: Lunas jika disetujui, Tagihan jika belum */}
+              {selectedInvoice.status === 'Disetujui' ? (
+                <div style={styles.invoicePaidBanner}>
+                  <div style={styles.invoicePaidBannerHead}>
+                    Pembayaran Lunas dengan Nominal:
+                  </div>
+                  <div style={styles.invoicePaidBannerNominal}>
+                    {formatRupiah(selectedInvoice.totalBayar || 0)}
+                  </div>
+                  <div style={styles.invoicePaidBannerTerbilang}>
+                    {terbilang(selectedInvoice.totalBayar || 0)} Rupiah
+                  </div>
+                </div>
+              ) : (
+                <div style={styles.invoiceUnpaidBanner}>
+                  <div style={styles.invoiceUnpaidBannerHead}>
+                    Total Tagihan Pembayaran:
+                  </div>
+                  <div style={styles.invoiceUnpaidBannerNominal}>
+                    {formatRupiah(selectedInvoice.totalBayar || 0)}
+                  </div>
+                  <div style={styles.invoiceUnpaidBannerTerbilang}>
+                    {terbilang(selectedInvoice.totalBayar || 0)} Rupiah
+                  </div>
+                </div>
+              )}
+
+              {/* Diterbitkan Atas Nama */}
+              <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '24px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                <div style={{ textAlign: 'left', minWidth: '220px', paddingLeft: '4px' }}>
+                  <div style={{ fontSize: '12px', color: '#334155' }}>Diterbitkan Atas Nama</div>
+                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a', marginTop: '2px' }}>
+                    RUMAH SAHABAT QUR'AN
+                  </div>
+                  
+                  {/* Ruang Tanda Tangan */}
+                  <div style={{ height: '70px' }} />
+
+                  <div><span style={{ display: 'inline-block', borderBottom: '1.5px solid #0f172a', paddingBottom: '3px', fontSize: '12.5px', fontWeight: '700', color: '#0f172a', lineHeight: '1.4' }}>
+                    Ekowati</span>
+                  </div>
+                  <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '6px', lineHeight: '1.6', letterSpacing: '0.3px', paddingLeft: '2px' }}>Bendahara RSQ Pusat</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
         @media print {
           body * {
             visibility: hidden !important;
           }
-          #printable-kwitansi, #printable-kwitansi * {
+          #printable-kwitansi, #printable-kwitansi *,
+          #printable-invoice, #printable-invoice * {
             visibility: visible !important;
           }
-          #printable-kwitansi {
+          #printable-kwitansi, #printable-invoice {
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
@@ -2120,6 +2435,24 @@ export default function VerifikasiPembayaran() {
                 {selectedDetail.status === 'Menunggu Verifikasi' ? 'Batal' : 'Tutup'}
               </button>
 
+              {/* Tombol Lihat Invoice */}
+              {selectedDetail.status !== 'Ditolak' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const detail = selectedDetail;
+                    setSelectedDetail(null);
+                    setSelectedInvoice(detail);
+                  }}
+                  className="btn-secondary-outline"
+                  style={styles.btnModalInvoice}
+                >
+                  <DescriptionOutlinedIcon sx={{ fontSize: 18 }} />
+                  <span>Lihat Invoice</span>
+                </button>
+              )}
+
+              {/* Tombol Lihat Kuitansi */}
               {selectedDetail.status === 'Disetujui' && (
                 <button
                   type="button"
@@ -2135,13 +2468,8 @@ export default function VerifikasiPembayaran() {
                   <span>Lihat Kuitansi</span>
                 </button>
               )}
-              {/*
-                </button>
-              )}
 
-              </button>
-
-              */}{/* Tombol Aksi */}
+              {/* Tombol Aksi */}
               {selectedDetail.status === 'Menunggu Verifikasi' && (
                 <>
                   <button
@@ -3183,5 +3511,199 @@ const styles = {
     fontSize: '14px',
     fontWeight: '700',
     color: '#166534'
+  },
+  btnActionDetailOnly: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    backgroundColor: '#ecfdf5',
+    color: '#166534',
+    border: '1px solid #a7f3d0',
+    borderRadius: '8px',
+    padding: '6px 14px',
+    fontSize: '12.5px',
+    fontWeight: '700',
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
+    whiteSpace: 'nowrap'
+  },
+  btnModalInvoice: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '10px 18px',
+    backgroundColor: '#ffffff',
+    color: '#23573c',
+    border: '1.5px solid #23573c',
+    borderRadius: '10px',
+    fontSize: '13.5px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease'
+  },
+  invoiceDocNumber: {
+    fontSize: '12px',
+    fontWeight: '700',
+    color: '#0f172a',
+    marginTop: '3px'
+  },
+  invoicePartiesGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '24px',
+    marginBottom: '16px',
+    fontSize: '12px',
+    lineHeight: '1.6'
+  },
+  invoicePartyCol: {
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  invoicePartyHeader: {
+    fontWeight: '700',
+    fontSize: '13px',
+    color: '#0f172a',
+    marginBottom: '6px'
+  },
+  invoicePartyTable: {
+    width: '100%',
+    borderCollapse: 'collapse'
+  },
+  invoicePartyLabel: {
+    color: '#475569',
+    width: '95px',
+    padding: '2px 0',
+    verticalAlign: 'top',
+    fontSize: '11.5px'
+  },
+  invoicePartyColon: {
+    width: '10px',
+    textAlign: 'center',
+    padding: '2px 0',
+    verticalAlign: 'top',
+    color: '#475569'
+  },
+  invoicePartyValue: {
+    color: '#0f172a',
+    padding: '2px 0',
+    verticalAlign: 'top',
+    fontSize: '11.5px'
+  },
+  invoiceMetaBar: {
+    display: 'flex',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '16px',
+    padding: '8px 12px',
+    backgroundColor: '#f8fafc',
+    border: '1px solid #e2e8f0',
+    borderRadius: '6px',
+    fontSize: '12px',
+    marginBottom: '14px'
+  },
+  invoiceMetaBarLabel: {
+    fontWeight: '700',
+    color: '#475569',
+    marginRight: '6px'
+  },
+  invoiceMetaBarValue: {
+    color: '#0f172a',
+    fontWeight: '600'
+  },
+  invoiceRincianHeading: {
+    fontSize: '15px',
+    fontWeight: '700',
+    color: '#1a3e2b',
+    marginBottom: '10px',
+    letterSpacing: '-0.2px'
+  },
+  invoiceItemTable: {
+    width: '100%',
+    borderCollapse: 'collapse',
+    fontSize: '12.5px',
+    border: 'none'
+  },
+  invoiceThRow: {
+    backgroundColor: '#f8fafc'
+  },
+  invoiceTh: {
+    padding: '9px 12px',
+    border: 'none',
+    fontWeight: '700',
+    color: '#334155',
+    fontSize: '12.5px'
+  },
+  invoiceTr: {
+    borderBottom: '1px solid #f1f5f9'
+  },
+  invoiceTd: {
+    padding: '11px 12px',
+    border: 'none',
+    color: '#334155',
+    fontSize: '12.5px'
+  },
+  invoiceTotalLabel: {
+    padding: '16px 12px 6px',
+    textAlign: 'right',
+    fontWeight: '700',
+    fontSize: '13.5px',
+    color: '#0f172a',
+    border: 'none'
+  },
+  invoiceTotalValue: {
+    padding: '16px 12px 6px',
+    textAlign: 'right',
+    fontWeight: '700',
+    fontSize: '15px',
+    color: '#166534',
+    border: 'none'
+  },
+  invoicePaidBanner: {
+    marginTop: '16px',
+    borderLeft: '4px solid #16a34a',
+    backgroundColor: '#f0fdf4',
+    padding: '10px 14px',
+    borderRadius: '0 8px 8px 0'
+  },
+  invoicePaidBannerHead: {
+    fontSize: '11.5px',
+    color: '#166534',
+    fontWeight: '600'
+  },
+  invoicePaidBannerNominal: {
+    fontSize: '18px',
+    fontWeight: '800',
+    color: '#166534',
+    marginTop: '2px'
+  },
+  invoicePaidBannerTerbilang: {
+    fontSize: '12px',
+    fontStyle: 'italic',
+    color: '#15803d',
+    marginTop: '2px'
+  },
+  invoiceUnpaidBanner: {
+    marginTop: '16px',
+    borderLeft: '4px solid #d97706',
+    backgroundColor: '#fffbeb',
+    padding: '10px 14px',
+    borderRadius: '0 8px 8px 0'
+  },
+  invoiceUnpaidBannerHead: {
+    fontSize: '11.5px',
+    color: '#92400e',
+    fontWeight: '600'
+  },
+  invoiceUnpaidBannerNominal: {
+    fontSize: '18px',
+    fontWeight: '800',
+    color: '#b45309',
+    marginTop: '2px'
+  },
+  invoiceUnpaidBannerTerbilang: {
+    fontSize: '12px',
+    fontStyle: 'italic',
+    color: '#92400e',
+    marginTop: '2px'
   }
 };
