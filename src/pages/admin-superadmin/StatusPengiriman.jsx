@@ -17,7 +17,6 @@ import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
 
 // Konstanta
 const ONGKIR_FLAT_KURIR = 10000;
-
 const METODE_OPTIONS = [
   'Semua Metode',
   'Ambil di RSQ Pusat',
@@ -162,7 +161,8 @@ const INITIAL_PENGIRIMAN = [
     tanggalKirim: '2026-10-10',
     status: 'Selesai',
     buktiSampai: {
-      fotoUrl: buktiSampaiImg
+      fotoUrl: buktiSampaiImg,
+      tanggal: '2026-10-10 14:30'
     },
     itemModul: [
       { nama: 'Buku Prestasi Anak', qty: 5, harga: 15000 }
@@ -181,7 +181,8 @@ const INITIAL_PENGIRIMAN = [
     tanggalKirim: '2026-10-09',
     status: 'Selesai',
     buktiSampai: {
-      fotoUrl: buktiSampaiImg
+      fotoUrl: null,
+      tanggal: '2026-10-09'
     },
     itemModul: [
       { nama: 'Tilawah Asasi', qty: 4, harga: 25000 },
@@ -558,7 +559,6 @@ function CustomDatePicker({
       className="custom-datepicker-container"
       style={{ position: 'relative', width: '100%', userSelect: 'none', ...style }}
     >
-      {/* Input Display Bar */}
       <div
         id="btn-datepicker-trigger"
         onClick={() => {
@@ -1031,6 +1031,7 @@ function DetailPengirimanModal({
     );
   }, [selectedDetail.itemModul]);
 
+  // Hitung ongkir dan total akhir bayar
   const ongkirKurir = selectedDetail.metode === 'Via Kurir' ? ONGKIR_FLAT_KURIR : 0;
   const totalHarga = subtotalModul + ongkirKurir;
 
@@ -1038,23 +1039,47 @@ function DetailPengirimanModal({
     return pengirimanList.find((p) => p.id === selectedDetail.id)?.status || selectedDetail.status;
   }, [pengirimanList, selectedDetail.id, selectedDetail.status]);
 
-  const statusOptions = originalStatus === 'Perlu Dikirim'
-    ? ['Perlu Dikirim', 'Dikirim']
-    : ['Dikirim', 'Selesai'];
+  const statusOptions = useMemo(() => {
+    // Ambil di RSQ Pusat
+    if (selectedDetail.metode === 'Ambil di RSQ Pusat') {
+      return originalStatus === 'Selesai'
+        ? ['Selesai']
+        : ['Perlu Dikirim', 'Selesai'];
+    }
 
+    // Titip ke Ustazah & Via Kurir 
+    if (originalStatus === 'Perlu Dikirim') {
+      return ['Perlu Dikirim', 'Dikirim'];
+    }
+
+    return ['Dikirim', 'Selesai'];
+  }, [selectedDetail.metode, originalStatus]);
+
+  // Mengubah status
   const handleStatusChange = (newStatus) => {
     setSelectedDetail((prev) => {
       const today = new Date().toISOString().split('T')[0];
-      const autoBuktiSampai =
-        prev.buktiSampai || { fotoUrl: buktiSampaiImg };
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      const formattedDate = `${today} ${timeStr}`;
+
+      // Foto bukti modul sampai
+      const updatedBuktiSampai =
+        newStatus === 'Selesai'
+          ? {
+              fotoUrl: prev.buktiSampai?.fotoUrl || null,
+              tanggal: prev.buktiSampai?.tanggal || formattedDate
+            }
+          : prev.buktiSampai;
 
       return {
         ...prev,
         status: newStatus,
         tanggalKirim:
-          newStatus === 'Dikirim' && !prev.tanggalKirim ? today : prev.tanggalKirim,
-        buktiSampai:
-          newStatus === 'Selesai' ? autoBuktiSampai : prev.buktiSampai
+          (newStatus === 'Dikirim' || (newStatus === 'Selesai' && prev.metode === 'Ambil di RSQ Pusat')) && !prev.tanggalKirim
+            ? today
+            : prev.tanggalKirim,
+        buktiSampai: updatedBuktiSampai
       };
     });
   };
@@ -1157,8 +1182,6 @@ function DetailPengirimanModal({
                   <div style={styles.detailFieldValue}>{selectedDetail.alamat}</div>
                 </div>
               )}
-
-              
             </div>
           </div>
 
@@ -1243,11 +1266,10 @@ function DetailPengirimanModal({
             </div>
           </div>
 
-          {/* Foto Bukti Diterima */}
-          {(selectedDetail.status === 'Selesai' || selectedDetail.status === 'Terkirim') && (
-            <div style={styles.detailSection}>
-              <div style={styles.detailSectionTitle}>Foto Bukti Diterima</div>
-              {selectedDetail.buktiSampai?.fotoUrl ? (
+          {(selectedDetail.status === 'Selesai' || selectedDetail.status === 'Terkirim') &&
+            Boolean(selectedDetail.buktiSampai?.fotoUrl) && (
+              <div style={styles.detailSection}>
+                <div style={styles.detailSectionTitle}>Foto Bukti Modul Sampai</div>
                 <div style={styles.detailReceiptWrapper}>
                   <img
                     src={selectedDetail.buktiSampai.fotoUrl}
@@ -1255,40 +1277,9 @@ function DetailPengirimanModal({
                     style={{ ...styles.detailReceiptImg, cursor: 'pointer' }}
                     onClick={() => onPreviewProof(selectedDetail.buktiSampai.fotoUrl)}
                   />
-                  {selectedDetail.buktiSampai?.catatan && (
-                    <div style={{ marginTop: '8px', fontSize: '12.5px', color: '#475569', fontStyle: 'italic' }}>
-                      Catatan: "{selectedDetail.buktiSampai.catatan}"
-                    </div>
-                  )}
-                  {selectedDetail.buktiSampai?.tanggal && (
-                    <div style={{ marginTop: '4px', fontSize: '11px', color: '#64748b' }}>
-                      Waktu Konfirmasi: {selectedDetail.buktiSampai.tanggal}
-                    </div>
-                  )}
                 </div>
-              ) : (
-                <div style={{
-                  padding: '12px 14px',
-                  backgroundColor: '#f0fdf4',
-                  border: '1px solid #bbf7d0',
-                  borderRadius: '8px',
-                  fontSize: '12.5px',
-                  color: '#166534',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}>
-                  <CheckCircleOutlinedIcon sx={{ fontSize: 18, color: '#16a34a' }} />
-                  <div>
-                    <span style={{ fontWeight: '600' }}>Dikonfirmasi Selesai</span>
-                    <span style={{ display: 'block', fontSize: '11.5px', color: '#15803d', marginTop: '2px' }}>
-                      {selectedDetail.buktiSampai?.catatan || 'Peserta menyelesaikan pesanan tanpa mengunggah foto (opsional).'}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+              </div>
+            )}
         </div>
 
         {/* Tombol Batal & Simpan */}
@@ -1352,7 +1343,7 @@ export default function StatusPengiriman() {
     };
   }, []);
 
-  // Filter Data
+  // Filter Status
   const filteredPengiriman = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
@@ -2314,18 +2305,17 @@ const styles = {
     alignItems: 'center',
     backgroundColor: '#f8fafc',
     borderRadius: '10px',
-    padding: '12px',
+    overflow: 'hidden',
     border: '1px solid #e2e8f0',
     marginTop: '6px'
   },
   detailReceiptImg: {
     width: '100%',
-    maxWidth: '320px',
-    maxHeight: '260px',
+    maxHeight: '300px',
     objectFit: 'cover',
-    borderRadius: '6px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-    border: '1px solid #e2e8f0'
+    display: 'block',
+    cursor: 'pointer',
+    transition: 'transform 0.2s ease'
   },
   modalActions: {
     display: 'flex',
@@ -2360,21 +2350,23 @@ const styles = {
   },
   lightboxContainer: {
     position: 'relative',
-    maxWidth: '90vw',
-    maxHeight: '85vh',
+    maxWidth: '540px',
+    width: '88%',
+    maxHeight: '70vh',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#ffffff',
     borderRadius: '12px',
-    padding: '10px',
+    padding: '8px',
     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
   },
   lightboxImg: {
     maxWidth: '100%',
-    maxHeight: '80vh',
+    maxHeight: '58vh',
     objectFit: 'contain',
-    borderRadius: '8px'
+    borderRadius: '8px',
+    display: 'block'
   },
   lightboxCloseBtn: {
     position: 'absolute',
