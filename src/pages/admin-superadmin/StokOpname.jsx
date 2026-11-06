@@ -333,7 +333,7 @@ function MonthYearCalendarPicker({
           >
             {MONTH_NAMES.map((m) => {
               const isSelected = selectedMonth === m && String(viewYear) === String(selectedYear);
-              const isCurrentCalendarMonth = m === 'Oktober' && viewYear === CURRENT_YEAR;
+              const isCurrentCalendarMonth = m === (MONTH_NAMES[CURRENT_MONTH_INDEX] || 'November') && viewYear === CURRENT_YEAR;
 
               return (
                 <div
@@ -438,6 +438,7 @@ const INITIAL_MODULS = [
   { id: 47, kategori: 'Al Quran', nama: 'Mushaf Al Kamil A6 tanpa Terjemah', stokSistem: 205 }
 ];
 
+// untuk data modul untuk periode baru
 const createDefaultModulData = (defaultStatus = 'Belum Diinput') =>
   INITIAL_MODULS.map((m) => ({
     ...m,
@@ -446,23 +447,38 @@ const createDefaultModulData = (defaultStatus = 'Belum Diinput') =>
     status: defaultStatus
   }));
 
+// Riwayat stok opname per bulan (Juli - November)
 const getInitialMonthlyData = () => {
   const defaults = {};
 
-  // September 2026 (Menunggu Verifikasi)
-  defaults['2026-09'] = {
+  // Oktober 2026 (Menunggu Verifikasi)
+  defaults['2026-10'] = {
     statusPeriode: 'Menunggu Verifikasi',
     catatanPenolakan: '',
     tanggalVerifikasi: null,
     items: INITIAL_MODULS.map((m) => {
       if (m.id === 1) {
-        return { ...m, inputFisik: 445, catatan: '5 buku rusak di rak bawah', status: 'Menunggu Verifikasi' };
+        return { ...m, inputFisik: 445, catatan: '5 buku rusak di rak bawah karena lembap', status: 'Menunggu Verifikasi' };
       }
       if (m.id === 3) {
-        return { ...m, inputFisik: 314, catatan: 'Kurang 6 eks saat pengiriman', status: 'Menunggu Verifikasi' };
+        return { ...m, inputFisik: 314, catatan: 'Kurang 6 eks saat pengiriman distributor', status: 'Menunggu Verifikasi' };
       }
       return { ...m, inputFisik: m.stokSistem, catatan: '', status: 'Menunggu Verifikasi' };
     })
+  };
+
+  // September 2026 (Disetujui)
+  defaults['2026-09'] = {
+    statusPeriode: 'Disetujui',
+    catatanPenolakan: '',
+    tanggalVerifikasi: '30 September 2026, 16:00 WIB',
+    items: INITIAL_MODULS.map((m) => ({
+      ...m,
+      inputFisik: m.stokSistem,
+      catatan: '',
+      status: 'Disetujui',
+      isLocked: true
+    }))
   };
 
   // Agustus 2026 (Disetujui)
@@ -492,8 +508,8 @@ const getInitialMonthlyData = () => {
     })
   };
 
-  // Oktober 2026 (Belum Diinput)
-  defaults['2026-10'] = {
+  // November 2026 (Belum Diinput)
+  defaults['2026-11'] = {
     statusPeriode: 'Belum Diinput',
     catatanPenolakan: '',
     tanggalVerifikasi: null,
@@ -506,7 +522,7 @@ const getInitialMonthlyData = () => {
 export default function StokOpname() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [selectedTahun, setSelectedTahun] = useState('2026');
-  const [selectedBulan, setSelectedBulan] = useState('Oktober');
+  const [selectedBulan, setSelectedBulan] = useState(MONTH_NAMES[CURRENT_MONTH_INDEX] || 'November');
 
   // jika Super Admin menolak stok opname
   const [monthlyData, setMonthlyData] = useState(() => getInitialMonthlyData());
@@ -540,7 +556,7 @@ export default function StokOpname() {
     };
   }, []);
 
-  const effectiveBulan = selectedBulan === 'Bulan' ? 'Oktober' : selectedBulan;
+  const effectiveBulan = selectedBulan === 'Bulan' ? (MONTH_NAMES[CURRENT_MONTH_INDEX] || 'November') : selectedBulan;
   const effectiveYear = selectedTahun === 'Tahun' ? '2026' : selectedTahun;
 
   const selectedMonthIndex = useMemo(() => {
@@ -553,6 +569,13 @@ export default function StokOpname() {
   const isPastMonth = useMemo(() => {
     if (selectedYearNum < CURRENT_YEAR) return true;
     if (selectedYearNum === CURRENT_YEAR && selectedMonthIndex < CURRENT_MONTH_INDEX) return true;
+    return false;
+  }, [selectedYearNum, selectedMonthIndex]);
+
+  // Validasi sesuai bulan
+  const isFutureMonth = useMemo(() => {
+    if (selectedYearNum > CURRENT_YEAR) return true;
+    if (selectedYearNum === CURRENT_YEAR && selectedMonthIndex > CURRENT_MONTH_INDEX) return true;
     return false;
   }, [selectedYearNum, selectedMonthIndex]);
 
@@ -590,11 +613,11 @@ export default function StokOpname() {
   const isPeriodDitolak = statusPeriode === 'Ditolak' || currentModulList.some((it) => it.status === 'Ditolak');
   const isPeriodMenunggu = statusPeriode === 'Menunggu Verifikasi' || (!isPeriodDitolak && currentModulList.every((it) => it.status === 'Menunggu Verifikasi'));
   const isPeriodDisetujui = statusPeriode === 'Disetujui' || (!isPeriodDitolak && !isPeriodMenunggu && currentModulList.every((it) => it.status === 'Disetujui'));
-  const isPeriodDisabled = isPeriodDisetujui || isPeriodMenunggu || (isPastMonth && !isPeriodDitolak);
-
+  const isPeriodDisabled = isPeriodDisetujui || isPeriodMenunggu || isFutureMonth;
 
   // Handler Perubahan Input Fisik (jika modul ditolak)
   const handleFisikChange = (id, val) => {
+    if (isFutureMonth) return;
     const numericVal = val === '' ? '' : parseInt(val, 10);
     if (numericVal !== '' && isNaN(numericVal)) return;
 
@@ -609,19 +632,21 @@ export default function StokOpname() {
 
       const updatedItems = itemsList.map((item) => {
         if (item.id === id) {
-          // Modul yang terkunci / sudah disetujui / sedang menunggu verifikasi
+          // Modul yang terkunci untuk status disetujui dan menunggu verifikasi
           if (item.isLocked || item.status === 'Disetujui' || item.status === 'Menunggu Verifikasi') {
             return item;
           }
           return {
             ...item,
             inputFisik: numericVal,
+            // ubah status Sudah Diinput
             status: numericVal === '' ? 'Belum Diinput' : 'Sudah Diinput'
           };
         }
         return item;
       });
 
+      // Simpan pembaruan data modul ke periode yang aktif
       const nextData = {
         ...prev,
         [selectedMonthKey]: Array.isArray(existing)
@@ -655,6 +680,7 @@ export default function StokOpname() {
         return item;
       });
 
+      // Simpan pembaruan data modul ke periode yang aktif
       const nextData = {
         ...prev,
         [selectedMonthKey]: Array.isArray(existing)
@@ -744,9 +770,9 @@ export default function StokOpname() {
     return filteredData.slice(start, start + itemsPerPage);
   }, [filteredData, currentPage]);
 
-  // Simpan Draf (bisa untuk 1 modul atau beberapa modul)
+  // Simpan Draf
   const handleSimpanDraf = () => {
-    if (isPeriodDisetujui || isPeriodMenunggu) return;
+    if (isPeriodDisetujui || isPeriodMenunggu || isFutureMonth) return;
     const filledCount = currentModulList.filter((item) => item.inputFisik !== '').length;
 
     if (filledCount === 0) {
@@ -769,6 +795,7 @@ export default function StokOpname() {
         }
         return {
           ...item,
+          // ubah status Draf
           status: item.inputFisik !== '' ? 'Draf' : 'Belum Diinput'
         };
       });
@@ -787,7 +814,7 @@ export default function StokOpname() {
 
   // Ajukan Verifikasi / Ajukan Verifikasi Ulang
   const handleAjukanVerifikasi = () => {
-    if (isPeriodDisetujui || isPeriodMenunggu) return;
+    if (isPeriodDisetujui || isPeriodMenunggu || isFutureMonth) return;
     const uncompletedItems = currentModulList.filter((item) => item.inputFisik === '');
 
     if (uncompletedItems.length > 0) {
@@ -810,6 +837,7 @@ export default function StokOpname() {
         }
         return {
           ...item,
+          // ubah status Menunggu Verifikasi
           status: 'Menunggu Verifikasi'
         };
       });
@@ -828,7 +856,7 @@ export default function StokOpname() {
     });
 
     if (isPeriodDitolak) {
-      showToast('Revisi stok opname berhasil diajukan ulang ke Super Admin!', 'success');
+      showToast('Revisi stok opname berhasil diajukan ulang!', 'success');
     } else {
       showToast('Stok opname berhasil diajukan!', 'success');
     }
@@ -977,7 +1005,7 @@ export default function StokOpname() {
             </div>
           </div>
 
-          {/* Rejection Alert Banner (Hanya muncul jika periode Ditolak / Perlu Revisi) */}
+          {/* Rejection Alert Banner (muncul jika periode Ditolak) */}
           {isPeriodDitolak && (
             <div style={styles.rejectionBanner}>
               <div style={styles.rejectionBannerHeader}>
@@ -1096,10 +1124,9 @@ export default function StokOpname() {
                           {/* CHECKBOX */}
                           <td style={{ ...styles.td, textAlign: 'center' }}>
                             {(() => {
-                              const isLocked = item.isLocked || item.status === 'Disetujui';
-                              const isWaiting = item.status === 'Menunggu Verifikasi';
-                              const isRejected = item.status === 'Ditolak';
-                              const isItemDisabled = isLocked || isWaiting || (isPastMonth && !isRejected);
+                              const isLocked = item.isLocked || item.status === 'Disetujui' || isPeriodDisetujui;
+                              const isWaiting = item.status === 'Menunggu Verifikasi' || isPeriodMenunggu;
+                              const isItemDisabled = isLocked || isWaiting || isFutureMonth;
 
                               return (
                                 <input
@@ -1151,10 +1178,11 @@ export default function StokOpname() {
                           {/* INPUT FISIK */}
                           <td style={{ ...styles.td, textAlign: 'center' }}>
                             {(() => {
-                              const isLocked = item.isLocked || item.status === 'Disetujui';
-                              const isWaiting = item.status === 'Menunggu Verifikasi';
-                              const isRejected = item.status === 'Ditolak';
-                              const isDisabled = isLocked || isWaiting || (isPastMonth && !isRejected);
+                              const isLocked = item.isLocked || item.status === 'Disetujui' || isPeriodDisetujui;
+                              const isWaiting = item.status === 'Menunggu Verifikasi' || isPeriodMenunggu;
+                              const hasSelisih = isInputted && !isMatch;
+                              const isRejectedWithSelisih = (item.status === 'Ditolak' || isPeriodDitolak) && hasSelisih && !isLocked;
+                              const isDisabled = isLocked || isWaiting || isFutureMonth;
 
                               return (
                                 <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
@@ -1167,19 +1195,23 @@ export default function StokOpname() {
                                     placeholder="0"
                                     style={{
                                       ...styles.inputFisik,
-                                      borderColor: isRejected
+                                      borderColor: isRejectedWithSelisih
                                         ? '#ef4444'
                                         : isDisabled
                                         ? '#dce4de'
                                         : (isInputted && !isMatch ? '#f59e0b' : '#c7d9cd'),
-                                      backgroundColor: isRejected
+                                      backgroundColor: isRejectedWithSelisih
                                         ? '#fff5f5'
                                         : isDisabled
                                         ? '#f8fafc'
                                         : (isInputted && !isMatch ? '#fffbeb' : '#ffffff'),
-                                      color: isDisabled ? '#64748b' : (isRejected ? '#991b1b' : '#1a3e2b'),
+                                      color: isDisabled
+                                        ? '#64748b'
+                                        : isRejectedWithSelisih
+                                        ? '#991b1b'
+                                        : '#1a3e2b',
                                       cursor: isDisabled ? 'not-allowed' : 'text',
-                                      boxShadow: isRejected ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : 'none'
+                                      boxShadow: isRejectedWithSelisih ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : 'none'
                                     }}
                                   />
                                 </div>
@@ -1224,7 +1256,7 @@ export default function StokOpname() {
               </table>
             </div>
 
-            {/* Pagination & Tombol Ajukan Verifikasi di Ujung Kanan Bawah */}
+            {/* Pagination & Tombol Ajukan Verifikasi */}
             <div className="pagination-responsive" style={styles.cardFooter}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
                 <div style={styles.pageInfo}>
@@ -1263,27 +1295,19 @@ export default function StokOpname() {
                 </div>
               </div>
 
-              {/* Tombol Ajukan Verifikasi di Ujung Kanan Bawah */}
+              {/* Tombol Ajukan Verifikasi */}
               <button
-                disabled={isPeriodDisetujui || isPeriodMenunggu || (isPastMonth && !isPeriodDitolak)}
+                disabled={isPeriodDisetujui || isPeriodMenunggu || isFutureMonth}
                 onClick={handleAjukanVerifikasi}
                 className="btn-primary-green"
                 style={{
                   ...styles.btnAjukan,
-                  ...(isPeriodDisetujui || isPeriodMenunggu || (isPastMonth && !isPeriodDitolak) ? styles.btnActionDisabled : {}),
+                  ...(isPeriodDisetujui || isPeriodMenunggu || isFutureMonth ? styles.btnActionDisabled : {}),
                   ...(isPeriodDitolak ? { backgroundColor: '#23573c', color: '#ffffff' } : {})
                 }}
               >
                 <SendOutlinedIcon sx={{ fontSize: 16 }} />
-                <span>
-                  {isPeriodDitolak
-                    ? 'Ajukan Verifikasi Ulang'
-                    : isPeriodMenunggu
-                    ? 'Menunggu Verifikasi'
-                    : isPeriodDisetujui
-                    ? 'Telah Disetujui'
-                    : 'Ajukan Verifikasi'}
-                </span>
+                <span>Ajukan Verifikasi</span>
               </button>
             </div>
           </div>
@@ -1451,7 +1475,7 @@ const styles = {
     opacity: 0.45,
     cursor: 'not-allowed',
     boxShadow: 'none',
-    pointerEvents: 'none'
+    pointerEvents: 'auto'
   },
   tableResponsive: {
     width: '100%',
