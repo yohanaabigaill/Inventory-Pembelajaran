@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import Navbar from '../../components/Navbar';
 
@@ -10,30 +11,51 @@ import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
+import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 
 export default function Profile() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-
   const [isEditing, setIsEditing] = useState(false);
 
-  // Menyesuaikan role Super Admin / Admin
-  const savedRole = localStorage.getItem('user_role') || localStorage.getItem('role') || 'admin';
+  // Ambil role yang sedang aktif
+  const location = useLocation();
+  const passedRole = location.state?.role;
+  const savedRole = passedRole || localStorage.getItem('user_role') || localStorage.getItem('role') || 'admin';
+
+  // Validasi role untuk menentukan tampilan profil
   const isSuperAdmin = savedRole === 'super_admin' || savedRole === 'SUPER ADMIN' || savedRole === 'superadmin';
+  const isPeserta = savedRole === 'peserta' || savedRole === 'PESERTA' || savedRole === 'santri';
 
-  // Role & Inisial Icon
-  const roleDisplay = isSuperAdmin ? 'Super Admin' : 'Admin';
-  const avatarText = isSuperAdmin ? 'SA' : 'AD';
-  const defaultEmail = isSuperAdmin ? 'superadmin@gmail.com' : 'admin@gmail.com';
+  // Role, Inisial Icon, Email & Nama
+  const roleDisplay = isSuperAdmin ? 'Super Admin' : isPeserta ? 'Peserta' : 'Admin';
+  const avatarText = isSuperAdmin ? 'SA' : isPeserta ? 'RI' : 'AD';
+  const defaultEmail = isSuperAdmin ? 'superadmin@gmail.com' : isPeserta ? 'ririn@gmail.com' : 'admin@gmail.com';
+  const defaultName = isPeserta ? 'Ririn' : '';
+  const defaultPhone = isPeserta ? '081234567890' : '';
 
-  // Email pengguna
-  const email = localStorage.getItem('user_email') || defaultEmail;
-
-  // State Foto Profil
+  // Data profil
+  const [profileName, setProfileName] = useState(defaultName);
+  const [profilePhone, setProfilePhone] = useState(defaultPhone);
+  const [profileEmail, setProfileEmail] = useState(defaultEmail);
   const [profilePhoto, setProfilePhoto] = useState(null);
 
-  // State Form Edit
-  const [editPhoto, setEditPhoto] = useState(profilePhoto);
+  // Form Edit
+  const [editName, setEditName] = useState(defaultName);
+  const [editPhone, setEditPhone] = useState(defaultPhone);
+  const [editPhoto, setEditPhoto] = useState(null);
   const fileInputRef = useRef(null);
+
+  // Sinkronisasi saat role berganti
+  useEffect(() => {
+    setProfileName(defaultName);
+    setProfilePhone(defaultPhone);
+    setProfileEmail(defaultEmail);
+    setProfilePhoto(null);
+    setEditName(defaultName);
+    setEditPhone(defaultPhone);
+    setEditPhoto(null);
+  }, [defaultName, defaultPhone, defaultEmail]);
 
   // Checkbox Ubah Kata Sandi
   const [changePassword, setChangePassword] = useState(false);
@@ -50,7 +72,7 @@ export default function Profile() {
   const [showNewPass, setShowNewPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
 
-  // Notifikasi
+  // Notifikasi Toast
   const [notification, setNotification] = useState(null);
   const toastTimeoutRef = useRef(null);
 
@@ -75,6 +97,8 @@ export default function Profile() {
   // Masuk ke mode edit
   const handleOpenEdit = () => {
     setEditPhoto(profilePhoto);
+    setEditName(profileName);
+    setEditPhone(profilePhone);
     setChangePassword(false);
     setPasswordData({ newPassword: '', confirmPassword: '' });
     setErrors({});
@@ -84,6 +108,8 @@ export default function Profile() {
   // Batal dari mode edit
   const handleCancel = () => {
     setEditPhoto(profilePhoto);
+    setEditName(profileName);
+    setEditPhone(profilePhone);
     setChangePassword(false);
     setPasswordData({ newPassword: '', confirmPassword: '' });
     setErrors({});
@@ -151,17 +177,19 @@ export default function Profile() {
     e.preventDefault();
     const newErrors = {};
 
-    // Validasi jika tidak ada data yang diisi/diubah
-    if (!changePassword && editPhoto === profilePhoto) {
-      setChangePassword(true);
-      newErrors.newPassword = 'Kata sandi baru wajib diisi';
-      newErrors.confirmPassword = 'Konfirmasi kata sandi baru wajib diisi';
-      setErrors(newErrors);
-      showToast('Harap lengkapi data yang ingin diperbarui', 'error');
-      return;
+    // Validasi Nama Lengkap & No. WA
+    if (isPeserta) {
+      if (!editName.trim()) {
+        newErrors.nama = 'Nama lengkap wajib diisi';
+      }
+      if (!editPhone.trim()) {
+        newErrors.noHp = 'No. WhatsApp / HP wajib diisi';
+      } else if (editPhone.length < 10) {
+        newErrors.noHp = 'No. WhatsApp minimal 10 digit';
+      }
     }
 
-    // Validasi Kata Sandi jika checkbox 'Ubah Kata Sandi' diklik
+    // Validasi Kata Sandi
     if (changePassword) {
       if (!passwordData.newPassword.trim()) {
         newErrors.newPassword = 'Kata sandi baru wajib diisi';
@@ -176,12 +204,28 @@ export default function Profile() {
       }
     }
 
+    // Cek apakah ada perubahan
+    const isPhotoChanged = editPhoto !== profilePhoto;
+    const isNameChanged = isPeserta && editName.trim() !== profileName;
+    const isPhoneChanged = isPeserta && editPhone.trim() !== profilePhone;
+    const isPassChanged = changePassword;
+
+    if (!isPhotoChanged && !isNameChanged && !isPhoneChanged && !isPassChanged) {
+      showToast('Tidak ada data yang diubah', 'info');
+      setIsEditing(false);
+      return;
+    }
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
-    // Simpan Foto Profil
+    // Simpan Data Profil
+    if (isPeserta) {
+      setProfileName(editName.trim());
+      setProfilePhone(editPhone.trim());
+    }
     setProfilePhoto(editPhoto);
 
     setErrors({});
@@ -195,7 +239,7 @@ export default function Profile() {
     <div style={styles.layoutContainer}>
       {/* Sidebar */}
       <Sidebar
-        role={isSuperAdmin ? 'super_admin' : 'admin'}
+        role={isSuperAdmin ? 'super_admin' : isPeserta ? 'peserta' : 'admin'}
         activeMenu="Profil Saya"
         isOpen={isMobileSidebarOpen}
         onClose={() => setIsMobileSidebarOpen(false)}
@@ -290,16 +334,51 @@ export default function Profile() {
                 {/* Email */}
                 <div className="profile-data-row" style={styles.dataRow}>
                   <span className="profile-data-label" style={styles.dataLabel}>Email</span>
-                  <div className="profile-data-box" style={styles.dataBox}>
-                    <span className="profile-data-value" style={styles.dataValue}>{email}</span>
+                  <div
+                    className="profile-data-box"
+                    style={{ ...styles.dataBox, cursor: 'not-allowed' }}
+                  >
+                    <span
+                      className="profile-data-value"
+                      style={{ ...styles.dataValue, cursor: 'not-allowed' }}
+                    >
+                      {profileEmail}
+                    </span>
                   </div>
                 </div>
+
+                {/* Nama & No. WA hanya ditampilkan jika role adalah Peserta */}
+                {isPeserta && (
+                  <>
+                    <div className="profile-data-row" style={styles.dataRow}>
+                      <span className="profile-data-label" style={styles.dataLabel}>Nama</span>
+                      <div className="profile-data-box" style={styles.dataBox}>
+                        <span className="profile-data-value" style={styles.dataValue}>{profileName}</span>
+                      </div>
+                    </div>
+
+                    <div className="profile-data-row" style={styles.dataRow}>
+                      <span className="profile-data-label" style={styles.dataLabel}>No. WA</span>
+                      <div className="profile-data-box" style={styles.dataBox}>
+                        <span className="profile-data-value" style={styles.dataValue}>{profilePhone}</span>
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 {/* Role */}
                 <div className="profile-data-row" style={styles.dataRow}>
                   <span className="profile-data-label" style={styles.dataLabel}>Role</span>
-                  <div className="profile-data-box" style={styles.dataBox}>
-                    <span className="profile-data-value" style={styles.dataValue}>{roleDisplay}</span>
+                  <div
+                    className="profile-data-box"
+                    style={{ ...styles.dataBox, cursor: 'not-allowed' }}
+                  >
+                    <span
+                      className="profile-data-value"
+                      style={{ ...styles.dataValue, cursor: 'not-allowed' }}
+                    >
+                      {roleDisplay}
+                    </span>
                   </div>
                 </div>
 
@@ -411,7 +490,7 @@ export default function Profile() {
                   {/* Email Disabled */}
                   <div style={styles.formGroup}>
                     <label style={styles.label}>Email</label>
-                    <div style={styles.inputWrapper}>
+                    <div style={{ ...styles.inputWrapper, cursor: 'not-allowed' }}>
                       <EmailOutlinedIcon
                         sx={{
                           ...styles.inputIcon,
@@ -420,13 +499,93 @@ export default function Profile() {
                       />
                       <input
                         type="email"
-                        value={email}
-                        disabled
-                        style={styles.disabledInputField}
+                        value={profileEmail}
+                        readOnly
+                        tabIndex={-1}
+                        style={{
+                          ...styles.disabledInputField,
+                          cursor: 'not-allowed',
+                          pointerEvents: 'auto'
+                        }}
                         placeholder="nama@gmail.com"
                       />
                     </div>
                   </div>
+
+                  {/* Input Nama & No. WA hanya ditampilkan jika role adalah Peserta */}
+                  {isPeserta && (
+                    <>
+                      {/* Input Nama Lengkap */}
+                      <div style={styles.formGroup}>
+                        <label style={styles.label}>Nama Lengkap</label>
+                        <div style={styles.inputWrapper}>
+                          <PersonOutlineOutlinedIcon
+                            sx={{
+                              ...styles.inputIcon,
+                              color: errors.nama ? '#ef4444' : '#23573c'
+                            }}
+                          />
+                          <input
+                            id="input-edit-nama"
+                            type="text"
+                            value={editName}
+                            onChange={(e) => {
+                              setEditName(e.target.value);
+                              if (errors.nama) {
+                                setErrors((prev) => ({ ...prev, nama: '' }));
+                              }
+                            }}
+                            style={{
+                              ...styles.inputField,
+                              borderColor: errors.nama ? '#ef4444' : '#23573c'
+                            }}
+                            placeholder="Masukkan Nama Lengkap"
+                          />
+                        </div>
+                        {errors.nama && (
+                          <span style={styles.errorText}>{errors.nama}</span>
+                        )}
+                      </div>
+
+                      {/* Input No. WhatsApp */}
+                      <div style={styles.formGroup}>
+                        <label style={styles.label}>No. WhatsApp / HP</label>
+                        <div style={styles.inputWrapper}>
+                          <PhoneOutlinedIcon
+                            sx={{
+                              ...styles.inputIcon,
+                              color: errors.noHp ? '#ef4444' : '#23573c'
+                            }}
+                          />
+                          <input
+                            id="input-edit-nohp"
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            maxLength={13}
+                            value={editPhone}
+                            onChange={(e) => {
+                              const val = e.target.value.replace(/[^0-9]/g, '');
+                              if (val.length <= 13) {
+                                setEditPhone(val);
+                              }
+                              if (errors.noHp) {
+                                setErrors((prev) => ({ ...prev, noHp: '' }));
+                              }
+                            }}
+                            style={{
+                              ...styles.inputField,
+                              borderColor: errors.noHp ? '#ef4444' : '#23573c'
+                            }}
+                            placeholder="Contoh: 081234567890"
+                          />
+                        </div>
+                        {errors.noHp && (
+                          <span style={styles.errorText}>{errors.noHp}</span>
+                        )}
+                      </div>
+                    </>
+                  )}
 
                   {/* Checkbox Ubah Kata Sandi */}
                   <div style={styles.checkboxContainer}>
@@ -467,7 +626,7 @@ export default function Profile() {
                     </label>
                   </div>
 
-                  {/* Form Kata Sandi Muncul Jika Checkbox Dicentang */}
+                  {/* Form Kata Sandi */}
                   {changePassword && (
                     <>
                       {/* Kata Sandi Baru */}
@@ -521,7 +680,7 @@ export default function Profile() {
                             sx={{
                               ...styles.inputIcon,
                               color: errors.confirmPassword ? '#ef4444' : '#23573c'
-								                          }}
+                            }}
                           />
                           <input
                             id="input-confirm-password"
@@ -744,41 +903,40 @@ const styles = {
     gap: '12px'
   },
   backBtn: {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    color: '#23573c',
+    width: '36px',
+    height: '36px',
+    borderRadius: '8px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '6px',
-    borderRadius: '8px',
-    transition: 'background-color 0.2s',
-    outline: 'none'
+    backgroundColor: '#ffffff',
+    border: '1.5px solid #d1d5db',
+    color: '#334155',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    padding: 0
   },
   cardTitle: {
     margin: 0,
-    fontSize: '22px',
+    fontSize: '18px',
     fontWeight: '700',
-    color: '#1a3e2b'
+    color: '#23573c'
   },
   cardBody: {
-    padding: '24px 28px 32px',
+    padding: '28px 28px 32px',
     display: 'flex',
     flexDirection: 'column',
-    gap: '18px'
+    gap: '20px'
   },
   photoUploadSection: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '12px',
-    padding: '6px 0 16px',
-    borderBottom: '1px solid #f1f5f9'
+    marginBottom: '10px'
   },
   photoAvatarWrapper: {
     position: 'relative',
-    display: 'inline-block'
+    marginBottom: '14px'
   },
   photoAvatarImg: {
     width: '92px',
@@ -791,8 +949,8 @@ const styles = {
   },
   cameraBadgeBtn: {
     position: 'absolute',
-    bottom: '0',
-    right: '0',
+    bottom: '0px',
+    right: '0px',
     width: '32px',
     height: '32px',
     borderRadius: '50%',
@@ -802,73 +960,34 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.25)',
-    transition: 'transform 0.15s ease, background-color 0.2s',
-    outline: 'none'
+    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)',
+    padding: 0
   },
   photoActionButtons: {
     display: 'flex',
-    alignItems: 'center',
     gap: '10px'
   },
   btnChoosePhoto: {
-    background: 'none',
-    border: '1px solid #23573c',
-    color: '#23573c',
-    borderRadius: '6px',
-    padding: '6px 16px',
+    padding: '7px 16px',
+    borderRadius: '8px',
     fontSize: '13px',
     fontWeight: '600',
+    border: '1.5px solid #23573c',
+    color: '#23573c',
+    backgroundColor: '#ffffff',
     cursor: 'pointer',
-    fontFamily: 'inherit',
-    transition: 'all 0.15s ease'
+    transition: 'all 0.2s ease'
   },
   btnDeletePhoto: {
-    background: 'none',
-    border: '1px solid #ef4444',
-    color: '#ef4444',
-    borderRadius: '6px',
-    padding: '6px 14px',
+    padding: '7px 16px',
+    borderRadius: '8px',
     fontSize: '13px',
     fontWeight: '600',
+    border: '1.5px solid #ef4444',
+    color: '#ef4444',
+    backgroundColor: '#ffffff',
     cursor: 'pointer',
-    fontFamily: 'inherit',
-    transition: 'all 0.15s ease'
-  },
-  checkboxContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '4px 0 2px'
-  },
-  checkboxLabel: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '10px',
-    cursor: 'pointer',
-    userSelect: 'none'
-  },
-  checkboxInput: {
-    position: 'absolute',
-    opacity: 0,
-    cursor: 'pointer',
-    height: 0,
-    width: 0
-  },
-  checkboxCustom: {
-    width: '18px',
-    height: '18px',
-    borderRadius: '5px',
-    border: '2px solid #23573c',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.15s ease',
-    boxSizing: 'border-box'
-  },
-  checkboxText: {
-    fontSize: '13.5px',
-    fontWeight: '600',
-    color: '#1a3e2b'
+    transition: 'all 0.2s ease'
   },
   formGroup: {
     display: 'flex',
@@ -880,12 +999,6 @@ const styles = {
     fontWeight: '600',
     color: '#334155'
   },
-  errorText: {
-    fontSize: '12px',
-    color: '#ef4444',
-    fontWeight: '500',
-    marginTop: '4px'
-  },
   inputWrapper: {
     position: 'relative',
     display: 'flex',
@@ -894,36 +1007,35 @@ const styles = {
   inputIcon: {
     position: 'absolute',
     left: '14px',
-    color: '#23573c',
-    fontSize: '19px',
+    fontSize: '20px',
     pointerEvents: 'none'
   },
   inputField: {
     width: '100%',
-    padding: '11px 42px 11px 42px',
+    height: '46px',
+    padding: '0 44px',
     borderRadius: '10px',
     border: '1px solid #23573c',
+    backgroundColor: '#ffffff',
     fontSize: '14px',
-    fontFamily: 'inherit',
-    color: '#1e293b',
-    outline: 'none',
+    color: '#334155',
     boxSizing: 'border-box',
-    transition: 'border-color 0.2s',
-    backgroundColor: '#ffffff'
+    outline: 'none',
+    transition: 'border-color 0.2s ease',
+    fontFamily: 'inherit'
   },
   disabledInputField: {
     width: '100%',
-    padding: '11px 42px 11px 42px',
+    height: '46px',
+    padding: '0 44px',
     borderRadius: '10px',
     border: '1px solid #d1d5db',
-    fontSize: '14px',
-    fontFamily: 'inherit',
-    color: '#64748b',
-    outline: 'none',
-    boxSizing: 'border-box',
     backgroundColor: '#f1f5f9',
+    fontSize: '14px',
+    color: '#64748b',
+    boxSizing: 'border-box',
     cursor: 'not-allowed',
-    userSelect: 'none'
+    fontFamily: 'inherit'
   },
   eyeBtn: {
     position: 'absolute',
@@ -931,48 +1043,76 @@ const styles = {
     background: 'none',
     border: 'none',
     cursor: 'pointer',
-    color: '#23573c',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     padding: '4px'
   },
-  buttonGroup: {
+  errorText: {
+    fontSize: '12px',
+    color: '#ef4444',
+    fontWeight: '500',
+    marginTop: '2px'
+  },
+  checkboxContainer: {
     display: 'flex',
     alignItems: 'center',
+    marginTop: '4px',
+    marginBottom: '4px'
+  },
+  checkboxLabel: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    cursor: 'pointer',
+    userSelect: 'none'
+  },
+  checkboxInput: {
+    display: 'none'
+  },
+  checkboxCustom: {
+    width: '18px',
+    height: '18px',
+    borderRadius: '4px',
+    border: '2px solid #94a3b8',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.15s ease'
+  },
+  checkboxText: {
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#23573c'
+  },
+  buttonGroup: {
+    display: 'flex',
     justifyContent: 'flex-end',
     gap: '12px',
-    marginTop: '12px'
-  },
-  btnSecondary: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '10px 24px',
-    borderRadius: '8px',
-    backgroundColor: '#ffffff',
-    color: '#23573c',
-    border: '1px solid #23573c',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    fontFamily: 'inherit',
-    transition: 'all 0.2s ease'
+    marginTop: '10px'
   },
   btnPrimary: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '10px 26px',
-    borderRadius: '8px',
+    padding: '11px 26px',
+    borderRadius: '10px',
     backgroundColor: '#23573c',
     color: '#ffffff',
-    border: '1px solid #23573c',
+    border: 'none',
     fontSize: '14px',
     fontWeight: '600',
     cursor: 'pointer',
-    fontFamily: 'inherit',
-    boxShadow: '0 2px 6px rgba(35, 87, 60, 0.25)',
-    userSelect: 'none'
+    boxShadow: '0 4px 12px rgba(35, 87, 60, 0.25)',
+    transition: 'all 0.2s ease',
+    letterSpacing: '0.2px'
+  },
+  btnSecondary: {
+    padding: '11px 24px',
+    borderRadius: '10px',
+    backgroundColor: '#ffffff',
+    color: '#475569',
+    border: '1.5px solid #cbd5e1',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease'
   }
 };

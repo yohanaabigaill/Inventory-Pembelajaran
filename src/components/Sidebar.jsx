@@ -166,7 +166,13 @@ export default function Sidebar({
               ...styles.footerItem,
               ...(!showLogoutModal && activeMenu === 'Profil Saya' ? styles.footerItemActive : {})
             }}
-            onClick={() => navigate('/profil')}
+            onClick={() => {
+              try {
+                localStorage.setItem('user_role', role);
+              } catch (e) {}
+              navigate('/profil', { state: { role } });
+              onClose();
+            }}
           >
             <span style={!showLogoutModal && activeMenu === 'Profil Saya' ? styles.navIconActive : styles.navIcon}>
               <PersonOutlineOutlinedIcon sx={{ fontSize: 20 }} />
