@@ -23,7 +23,7 @@ import logoRsq from '../../assets/logo rsq.jpeg';
 
 // Covers
 import coverAsasi from '../../assets/asasi.jpg';
-import { INITIAL_DEMO_PESANAN } from './PesananSaya';
+import { getSessionOrders, updateSessionOrder, lepasCadanganStok, INITIAL_DEMO_PESANAN } from '../../utils/stockManager';
 
 export default function DetailPesanan() {
   const navigate = useNavigate();
@@ -57,15 +57,14 @@ export default function DetailPesanan() {
 
   // Ambil data order
   const [order, setOrder] = useState(() => {
-    // 1. Dari location.state
     if (location.state?.order && (!id || location.state.order.id === id)) {
       return location.state.order;
     }
 
-    // 2. Dari INITIAL_DEMO_PESANAN
     if (id) {
-      const foundDemo = INITIAL_DEMO_PESANAN.find((o) => o.id === id);
-      if (foundDemo) return foundDemo;
+      const allOrders = getSessionOrders(INITIAL_DEMO_PESANAN);
+      const found = allOrders.find((o) => o.id === id);
+      if (found) return found;
     }
 
     return null;
@@ -75,9 +74,10 @@ export default function DetailPesanan() {
   useEffect(() => {
     window.scrollTo(0, 0);
     if (!order && id) {
-      const foundDemo = INITIAL_DEMO_PESANAN.find((o) => o.id === id);
-      if (foundDemo) {
-        setOrder(foundDemo);
+      const allOrders = getSessionOrders(INITIAL_DEMO_PESANAN);
+      const found = allOrders.find((o) => o.id === id);
+      if (found) {
+        setOrder(found);
       }
     }
   }, [id, order]);
@@ -387,6 +387,7 @@ export default function DetailPesanan() {
         statusBg: '#fef3c7'
       };
       setOrder(updatedOrder);
+      updateSessionOrder(updatedOrder);
       setNewProofFile(null);
       showToast('Bukti transfer berhasil diunggah', 'success');
     };
@@ -396,18 +397,23 @@ export default function DetailPesanan() {
 
   const handleHapusBukti = () => {
     setNewProofFile(null);
-    setOrder((prev) => ({
-      ...prev,
+    const updatedOrder = {
+      ...order,
       buktiTf: null,
       status: 'Belum Bayar',
       statusPembayaran: 'Belum Bayar',
       statusColor: '#ef4444',
       statusBg: '#fef2f2'
-    }));
+    };
+    setOrder(updatedOrder);
+    updateSessionOrder(updatedOrder);
     showToast('Bukti transfer berhasil dihapus', 'success');
   };
 
   const handleConfirmBatal = () => {
+    // Kembalikan cadangan stok jika pesanan dibatalkan
+    lepasCadanganStok(order?.items || []);
+
     const updatedOrder = {
       ...order,
       status: 'Dibatalkan',
@@ -417,6 +423,7 @@ export default function DetailPesanan() {
     };
 
     setOrder(updatedOrder);
+    updateSessionOrder(updatedOrder);
     setIsCancelling(false);
     setNewProofFile(null);
 
@@ -469,6 +476,7 @@ export default function DetailPesanan() {
       };
 
       setOrder(updatedOrder);
+      updateSessionOrder(updatedOrder);
       setIsSubmittingSelesai(false);
       setShowKonfirmasiSelesai(false);
       showToast('Alhamdulillah, pesanan telah selesai dan diterima!');
@@ -949,7 +957,14 @@ export default function DetailPesanan() {
                     <div style={styles.summaryItemInfo}>
                       {/* Baris 1: Nama Modul di kiri */}
                       <div style={styles.summaryItemTopRow}>
-                        <div style={styles.summaryItemTitle}>{item.nama}</div>
+                        <div style={styles.summaryItemTitle}>
+                          {item.nama}
+                          {item.isPo && (
+                            <span style={{ marginLeft: '8px', fontSize: '10.5px', fontWeight: '700', color: '#b45309', backgroundColor: '#fef3c7', border: '1px solid #fde68a', padding: '1px 6px', borderRadius: '4px' }}>
+                              Pre-Order (PO)
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       {/* Baris 2: Harga Satuan di kiri, Total Harga di kanan */}

@@ -15,7 +15,30 @@ import {
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
+import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
 import Logo from "../../components/Logo";
+
+// 3 Data Akun Demo
+export const DUMMY_USERS = [
+  {
+    role: "super_admin",
+    email: "superadmin@gmail.com",
+    password: "12345678",
+    target: "/dashboard"
+  },
+  {
+    role: "admin",
+    email: "admin@gmail.com",
+    password: "12345678",
+    target: "/dashboard"
+  },
+  {
+    role: "peserta",
+    email: "pembeli@gmail.com",
+    password: "12345678",
+    target: "/katalog-modul"
+  }
+];
 
 export default function Login() {
   const navigate = useNavigate();
@@ -46,11 +69,28 @@ export default function Login() {
       return;
     }
 
+    const trimmedEmail = email.trim().toLowerCase();
+    const matched = DUMMY_USERS.find(
+      (u) =>
+        (u.email.toLowerCase() === trimmedEmail || (u.role === 'peserta' && trimmedEmail === 'peserta@gmail.com')) &&
+        u.password === password
+    );
+
+    if (!matched) {
+      setErrors({
+        auth: "Email atau password salah. Silakan periksa kembali email dan password Anda."
+      });
+      return;
+    }
+
     setErrors({});
+    localStorage.setItem("user_role", matched.role);
+    localStorage.setItem("user_email", matched.email);
+
     setToast("Berhasil masuk!");
     setTimeout(() => {
-      navigate("/dashboard");
-    }, 1500);
+      navigate(matched.target);
+    }, 1200);
   };
 
   return (
@@ -162,6 +202,26 @@ export default function Login() {
               Silakan masukkan akun Anda untuk masuk
             </Typography>
           </Box>
+
+          {errors.auth && (
+            <Box
+              sx={{
+                p: 1.2,
+                mb: 1.8,
+                borderRadius: "8px",
+                bgcolor: "#fef2f2",
+                border: "1px solid #fecaca",
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
+              <ErrorOutlineOutlinedIcon sx={{ fontSize: 18, color: "#dc2626", flexShrink: 0 }} />
+              <Typography sx={{ color: "#dc2626", fontSize: "0.78rem", fontWeight: 500, lineHeight: 1.4 }}>
+                {errors.auth}
+              </Typography>
+            </Box>
+          )}
 
           <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 0.5 }}>
             <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: "#111827", mb: 0.4, display: "block" }}>

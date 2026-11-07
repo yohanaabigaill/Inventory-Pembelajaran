@@ -1836,8 +1836,8 @@ select option:active {
 
   .pesanan-order-header {
     padding: 11px 13px !important;
-    gap: 6px !important;
-    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
     align-items: center !important;
     justify-content: space-between !important;
   }
@@ -1845,10 +1845,18 @@ select option:active {
   .pesanan-order-header-left {
     display: flex !important;
     align-items: center !important;
-    gap: 4px !important;
+    gap: 5px !important;
     min-width: 0 !important;
-    flex-shrink: 1 !important;
+    flex-shrink: 0 !important;
     white-space: nowrap !important;
+  }
+
+  .pesanan-order-header-right {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-end !important;
   }
 
   .pesanan-order-number-label {

@@ -22,8 +22,9 @@ export default function Sidebar({
 }) {
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const isSuperAdmin = role === 'super_admin' || role === 'SUPER ADMIN' || role === 'superadmin';
-  const isPeserta = role === 'peserta' || role === 'PESERTA' || role === 'santri';
+  const currentRole = localStorage.getItem('user_role') || role;
+  const isSuperAdmin = currentRole === 'super_admin' || currentRole === 'SUPER ADMIN' || currentRole === 'superadmin';
+  const isPeserta = currentRole === 'peserta' || currentRole === 'PESERTA' || currentRole === 'santri' || role === 'peserta';
 
   const handleMenuClick = (item) => {
     if (onSelectMenu) {
@@ -230,6 +231,9 @@ export default function Sidebar({
                 type="button"
                 onClick={() => {
                   setShowLogoutModal(false);
+                  localStorage.removeItem('user_role');
+                  localStorage.removeItem('user_email');
+                  localStorage.removeItem('user_name');
                   navigate('/login');
                 }}
                 className="btn-danger-red"

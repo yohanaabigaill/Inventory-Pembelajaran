@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import Navbar from '../../components/Navbar';
+import { potongStokSaatDikirim } from '../../utils/stockManager';
 import buktiSampaiImg from '../../assets/bukti_pengiriman.jpg';
 
 // Icons
@@ -1388,6 +1389,12 @@ export default function StatusPengiriman() {
   // Simpan Perubahan dari Pop-up Detail
   const handleSaveDetail = (updatedDetail) => {
     if (!updatedDetail) return;
+
+    // Cek jika status berubah jadi Dikirim (kurangi stok fisik & reserved)
+    const prevItem = pengirimanList.find((p) => p.id === updatedDetail.id);
+    if (prevItem && prevItem.status !== 'Dikirim' && (updatedDetail.status === 'Dikirim' || (updatedDetail.status === 'Selesai' && prevItem.status === 'Perlu Dikirim'))) {
+      potongStokSaatDikirim(updatedDetail.itemModul || updatedDetail.items || []);
+    }
     setPengirimanList((prevList) =>
       prevList.map((item) => (item.id === updatedDetail.id ? { ...updatedDetail } : item))
     );

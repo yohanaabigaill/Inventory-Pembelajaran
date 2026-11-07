@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import Navbar from '../../components/Navbar';
+import { cadangkanStokPesanan, addSessionOrder, INITIAL_DEMO_PESANAN } from '../../utils/stockManager';
 
 // Icons
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
@@ -187,7 +188,8 @@ export default function Checkout() {
         if (item.id === itemId) {
           if (newQty === '') return { ...item, qty: '' };
           const parsed = Number(newQty);
-          const maxStok = item.stok || 999;
+          const isPoItem = !!item.isPo || (item.stok !== undefined && item.stok <= 0);
+          const maxStok = isPoItem ? 999 : (item.stok || 999);
           if (parsed > maxStok) {
             showToast('Jumlah melebihi sisa stok', 'error');
           }
@@ -270,7 +272,8 @@ export default function Checkout() {
       kategori: it.kategori,
       hargaJual: it.hargaJual,
       qty: Number(it.qty) || 1,
-      cover: it.cover
+      cover: it.cover,
+      isPo: !!it.isPo || (it.stok !== undefined && it.stok <= 0)
     }));
 
     const isTfWithoutProof = metodeBayar === 'Transfer Bank' && !buktiTransfer;
@@ -278,7 +281,12 @@ export default function Checkout() {
     const statusColor = isTfWithoutProof ? '#2563eb' : '#d97706';
     const statusBg = isTfWithoutProof ? '#dbeafe' : '#fef3c7';
 
+    const hasPoItem = finalItems.some((it) => it.isPo);
+
     const newOrder = {
+      tipePesanan: hasPoItem ? 'Pre-Order' : 'Ready Stock',
+      hasPoItem: hasPoItem,
+      estimasiKirim: hasPoItem ? '7-14 Hari Kerja (Pre-Order)' : '1-3 Hari Kerja',
       id: `ORD-${Date.now().toString().slice(-8)}`,
       tanggal: `${new Date().toLocaleDateString('id-ID')} ${new Date().toLocaleTimeString('id-ID', {
         hour: '2-digit',
@@ -307,6 +315,12 @@ export default function Checkout() {
       items: finalItems,
       totalHarga: totalPembayaran
     };
+
+    // Cadangkan stok ready saat pesanan dibuat (tercatat sebagai dipesan)
+    cadangkanStokPesanan(finalItems);
+
+    // Simpan pesanan ke session memory agar tahan navigasi
+    addSessionOrder(newOrder, INITIAL_DEMO_PESANAN);
 
     // Bersihkan cart di localStorage jika pesanan berasal dari keranjang
     try {
@@ -873,6 +887,12 @@ export default function Checkout() {
 
                   {/* List Item Modul */}
                   <div style={styles.summaryItemsScroll}>
+                    {checkoutItems.some((it) => it.isPo || (it.stok !== undefined && it.stok <= 0)) && (
+                      <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '8px 12px', marginBottom: '10px', fontSize: '11.5px', color: '#92400e', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <ErrorOutlineOutlinedIcon sx={{ fontSize: 16, color: '#d97706' }} />
+                        <span>Pesanan memuat modul <strong>Pre-Order (PO)</strong>. Estimasi kirim 7-14 hari kerja.</span>
+                      </div>
+                    )}
                     {checkoutItems.map((item) => (
                       <div key={item.id} style={styles.summaryItemRow}>
                         {item.cover && (
@@ -885,7 +905,14 @@ export default function Checkout() {
                         <div style={styles.summaryItemInfo}>
                           {/* Baris 1: Nama Modul di kiri, Tombol Atur Qty di kanan */}
                           <div style={styles.summaryItemTopRow}>
-                            <div style={styles.summaryItemTitle}>{item.nama}</div>
+                            <div style={styles.summaryItemTitle}>
+                              {item.nama}
+                              {(item.isPo || (item.stok !== undefined && item.stok <= 0)) && (
+                                <span style={{ marginLeft: '6px', fontSize: '10px', fontWeight: '700', color: '#b45309', backgroundColor: '#fef3c7', border: '1px solid #fde68a', padding: '1px 5px', borderRadius: '4px' }}>
+                                  PO
+                                </span>
+                              )}
+                            </div>
                             {canEditQty && (
                               <div style={styles.stepperContainer}>
                                 <button
@@ -921,7 +948,8 @@ export default function Checkout() {
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    const maxStok = item.stok || 999;
+                                    const isPoItem = !!item.isPo || (item.stok !== undefined && item.stok <= 0);
+          const maxStok = isPoItem ? 999 : (item.stok || 999);
                                     if (Number(item.qty) >= maxStok) {
                                       showToast('Jumlah melebihi sisa stok', 'error');
                                       return;

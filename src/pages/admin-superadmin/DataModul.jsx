@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
 import Navbar from '../../components/Navbar';
+import { getStoredModuls, saveStoredModuls, getStokTersedia } from '../../utils/stockManager';
 import coverAsasi from '../../assets/asasi.jpg';
 import coverTahmidi from '../../assets/tahmidi.jpg';
 import coverAlHisan1 from '../../assets/alhisan1.jpg';
@@ -177,10 +178,22 @@ export default function DataModul() {
   const fileInputRef = useRef(null);
 
   // Data Modul
-  const [modulList, setModulList] = useState([
+  const [modulList, setModulList] = useState(() => getStoredModuls());
+  useEffect(() => {
+    const handleSync = () => {
+      setModulList(getStoredModuls());
+    };
+    window.addEventListener('inventory_moduls_updated', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('inventory_moduls_updated', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
+  }, []);
+
+  const [, _setUnusedDummy] = useState([
     {
       id: 1,
-      sku: 'HQ-AS-01',
       nama: 'Asasi',
       kategori: 'Al Haqq',
       hpp: 40000,
@@ -191,7 +204,6 @@ export default function DataModul() {
     },
     {
       id: 2,
-      sku: 'HQ-TH-02',
       nama: 'Tahmidi',
       kategori: 'Al Haqq',
       hpp: 40000,
@@ -202,7 +214,6 @@ export default function DataModul() {
     },
     {
       id: 3,
-      sku: 'HS-01-01',
       nama: 'Al Hisan 1',
       kategori: 'Al Hisan',
       hpp: 25000,
@@ -213,7 +224,6 @@ export default function DataModul() {
     },
     {
       id: 4,
-      sku: 'US-UT-01',
       nama: 'Utsmani 1',
       kategori: 'Tahsin Usmani',
       hpp: 25000,
@@ -224,7 +234,6 @@ export default function DataModul() {
     },
     {
       id: 5,
-      sku: 'RK-BD-01',
       nama: 'Buku Doa',
       kategori: 'RSQ Kids',
       hpp: 15000,
@@ -235,7 +244,6 @@ export default function DataModul() {
     },
     {
       id: 6,
-      sku: 'QW-SA5-01',
       nama: 'Mushaf Ash Shahib A5 Terjemah',
       kategori: 'Al Quran Wakaf',
       hpp: 115000,
@@ -246,7 +254,6 @@ export default function DataModul() {
     },
     {
       id: 7,
-      sku: 'AQ-KA5-01',
       nama: 'Mushaf Al Kamil A5 Terjemah',
       kategori: 'Al Quran',
       hpp: 115000,
@@ -257,7 +264,6 @@ export default function DataModul() {
     },
     {
       id: 8,
-      sku: 'AQ-SA6-01',
       nama: 'Mushaf Ash Shahib A6 Terjemah',
       kategori: 'Al Quran',
       hpp: 80000,
@@ -395,7 +401,6 @@ export default function DataModul() {
     setEditingModul(modul);
     setFormErrors(INITIAL_FORM_ERRORS);
     setFormData({
-      sku: modul.sku || '',
       nama: modul.nama || '',
       kategori: modul.kategori || 'Al Haqq',
       hpp: modul.hpp ? formatNumberDots(modul.hpp) : '',
@@ -423,7 +428,9 @@ export default function DataModul() {
 
   const handleConfirmDelete = () => {
     if (deleteConfirmId !== null && deleteConfirmId !== undefined) {
-      setModulList(prev => prev.filter(item => item.id !== deleteConfirmId));
+      const nextList = modulList.filter(item => item.id !== deleteConfirmId);
+      setModulList(nextList);
+      saveStoredModuls(nextList);
       setDeleteConfirmId(null);
       showNotification('Modul berhasil dihapus!', 'success');
     }
@@ -478,8 +485,10 @@ export default function DataModul() {
     const minRestockNum = Number(formData.minRestock) || 50;
 
     let status = 'Tersedia';
-    if (stokNum === 0) status = 'Habis';
-    else if (stokNum <= minRestockNum) status = 'Stok Menipis';
+    const reserved = editingModul?.stokReserved || 0;
+    const stokTersedia = Math.max(0, stokNum - reserved);
+    if (stokTersedia === 0) status = 'Habis';
+    else if (stokTersedia <= minRestockNum) status = 'Stok Menipis';
 
     if (editingModul) {
       setModulList(prev =>
@@ -489,9 +498,10 @@ export default function DataModul() {
                 ...item,
                 ...formData,
                 id: editingModul.id,
-                sku: formData.sku || item.sku,
                 hpp: hppNum,
                 hargaJual: hargaNum,
+                stokFisik: stokNum,
+                stokReserved: reserved,
                 stok: stokNum,
                 minRestock: minRestockNum,
                 status
@@ -503,14 +513,21 @@ export default function DataModul() {
       const newItem = {
         ...formData,
         id: Date.now(),
-        sku: formData.sku || `RSQ-TH-0${modulList.length + 1}`,
         hpp: hppNum,
         hargaJual: hargaNum,
         stok: stokNum,
         minRestock: minRestockNum,
         status
       };
-      setModulList(prev => [newItem, ...prev]);
+      setModulList(prev => {
+        const next = [newItem, ...prev];
+        saveStoredModuls(next);
+        return next;
+      });
+    }
+
+    if (editingModul) {
+      saveStoredModuls(modulList.map(item => item.id === editingModul.id ? { ...item, ...formData, id: editingModul.id, hpp: hppNum, hargaJual: hargaNum, stokFisik: stokNum, stokReserved: reserved, stok: stokNum, minRestock: minRestockNum, status } : item));
     }
 
     handleCloseModal();
@@ -520,11 +537,19 @@ export default function DataModul() {
     );
   };
 
+  // Helper status dinamis berdasarkan ketersediaan stok
+  const getDynamicStatus = (item) => {
+    const tersedia = getStokTersedia(item);
+    if (tersedia === 0) return 'Habis';
+    if (tersedia <= (item.minRestock || 10)) return 'Stok Menipis';
+    return 'Tersedia';
+  };
+
   // Filter data modul berdasarkan pencarian, kategori, dan status
   const filteredList = modulList.filter(item => {
     const matchSearch = item.nama.toLowerCase().includes(searchTerm.toLowerCase());
     const matchKategori = selectedKategori === 'Semua Jenis' || item.kategori === selectedKategori;
-    const matchStatus = selectedStatus === 'Semua Status' || item.status === selectedStatus;
+    const matchStatus = selectedStatus === 'Semua Status' || getDynamicStatus(item) === selectedStatus;
     return matchSearch && matchKategori && matchStatus;
   });
 
@@ -688,19 +713,27 @@ export default function DataModul() {
 
                         {/* Stok Modul */}
                         <td style={styles.td}>
-                          <span style={styles.stokValue}>{item.stok}</span>
+                          <div>
+                            <span style={styles.stokValue}>{item.stokFisik !== undefined ? item.stokFisik : item.stok}</span>
+                            <span style={{ fontSize: '11px', color: getStokTersedia(item) > 0 ? '#16a34a' : '#dc2626', display: 'block', marginTop: '2px', whiteSpace: 'nowrap' }}>
+                              Tersedia: {getStokTersedia(item)}
+                              {Boolean(item.stokReserved) && (
+                                <span style={{ color: '#d97706', fontWeight: '600', marginLeft: '4px' }}>
+                                  ({item.stokReserved} dipesan)
+                                </span>
+                              )}
+                            </span>
+                          </div>
                         </td>
 
                         {/* Status */}
                         <td style={styles.td}>
-                          {item.status === 'Tersedia' && (
-                            <span style={styles.statusTersediaNoDot}>Tersedia</span>
-                          )}
-                          {item.status === 'Stok Menipis' && (
-                            <span style={styles.statusMenipisNoDot}>Stok Menipis</span>
-                          )}
-                          {item.status === 'Habis' && (
+                          {getDynamicStatus(item) === 'Habis' ? (
                             <span style={styles.statusHabisNoDot}>Habis</span>
+                          ) : getDynamicStatus(item) === 'Stok Menipis' ? (
+                            <span style={styles.statusMenipisNoDot}>Stok Menipis</span>
+                          ) : (
+                            <span style={styles.statusTersediaNoDot}>Tersedia</span>
                           )}
                         </td>
 
