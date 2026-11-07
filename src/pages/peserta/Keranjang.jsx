@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import Navbar from '../../components/Navbar';
+import { getStoredModuls, getStokTersedia } from '../../utils/stockManager';
 
 // Icons
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
@@ -36,6 +37,26 @@ export default function Keranjang() {
       setNotification(null);
     }, 3200);
   };
+
+  // Sinkronisasi data stok terbaru dari stock manager
+  useEffect(() => {
+    const liveModuls = getStoredModuls();
+    setCartItems((prev) => {
+      let changed = false;
+      const updated = prev.map((item) => {
+        const live = liveModuls.find((m) => m.id === item.id);
+        if (!live) return item;
+        const liveTersedia = getStokTersedia(live);
+        const isPo = liveTersedia === 0;
+        if (item.isPo !== isPo || item.stok !== liveTersedia) {
+          changed = true;
+          return { ...item, isPo, stok: liveTersedia };
+        }
+        return item;
+      });
+      return changed ? updated : prev;
+    });
+  }, []);
 
   // Simpan ke localStorage
   useEffect(() => {
@@ -90,11 +111,12 @@ export default function Keranjang() {
             return { ...item, qty: '' };
           }
           const parsed = Number(newQty);
-          if (parsed > item.stok) {
+          const isPoItem = !!item.isPo || (item.stok !== undefined && item.stok <= 0);
+          if (!isPoItem && item.stok > 0 && parsed > item.stok) {
             showToast('Jumlah melebihi sisa stok', 'error');
           }
-          const clamped = Math.max(1, Math.min(parsed, item.stok));
-          return { ...item, qty: clamped };
+          const clamped = isPoItem ? Math.max(1, parsed || 1) : Math.max(1, Math.min(parsed, item.stok || 999));
+          return { ...item, qty: clamped, isPo: isPoItem };
         }
         return item;
       });
@@ -263,7 +285,13 @@ export default function Keranjang() {
                           <div style={styles.itemDetailWrap}>
                             <span style={styles.itemKategori}>{item.kategori}</span>
                             <h4 style={styles.itemTitle}>{item.nama}</h4>
-                            <span style={styles.itemStokInfo}>Sisa stok: {item.stok}</span>
+                            {item.isPo || (item.stok !== undefined && item.stok <= 0) ? (
+                              <span style={{ fontSize: '11px', fontWeight: '700', color: '#b45309', backgroundColor: '#fef3c7', border: '1px solid #fde68a', padding: '2px 7px', borderRadius: '4px', display: 'inline-block', width: 'fit-content', marginTop: '3px' }}>
+                                Pre-Order (PO)
+                              </span>
+                            ) : (
+                              <span style={styles.itemStokInfo}>Sisa stok: {item.stok}</span>
+                            )}
                           </div>
                         </div>
 
@@ -309,7 +337,8 @@ export default function Keranjang() {
                             <button
                               type="button"
                               onClick={() => {
-                                if (Number(item.qty) >= item.stok) {
+                                const isPoItem = !!item.isPo || (item.stok !== undefined && item.stok <= 0);
+                                if (!isPoItem && item.stok > 0 && Number(item.qty) >= item.stok) {
                                   showToast('Jumlah melebihi sisa stok', 'error');
                                   return;
                                 }
@@ -318,9 +347,9 @@ export default function Keranjang() {
                               className="btn-stepper-qty"
                               style={{
                                 ...styles.btnStepper,
-                                opacity: Number(item.qty) >= item.stok ? 0.35 : 1,
+                                opacity: (!item.isPo && item.stok > 0 && Number(item.qty) >= item.stok) ? 0.35 : 1,
                                 cursor:
-                                  Number(item.qty) >= item.stok ? 'not-allowed' : 'pointer'
+                                  (!item.isPo && item.stok > 0 && Number(item.qty) >= item.stok) ? 'not-allowed' : 'pointer'
                               }}
                               aria-label="Tambah"
                             >

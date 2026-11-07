@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import Navbar from '../../components/Navbar';
+import { getStoredModuls, getStokTersedia } from '../../utils/stockManager';
 
 // Cover Modul
 import coverAsasi from '../../assets/asasi.jpg';
@@ -160,7 +161,8 @@ const KATEGORI_OPTIONS = [
 const STATUS_STOK_OPTIONS = [
   'Semua Status',
   'Tersedia',
-  'Tidak Tersedia'
+  'Pre-Order (PO)'
+
 ];
 
 // Data Modul
@@ -238,6 +240,19 @@ export default function KatalogModul() {
   const [selectedKategori, setSelectedKategori] = useState('Semua Jenis');
   const [selectedStatusStok, setSelectedStatusStok] = useState('Semua Status');
   const [isLoading, setIsLoading] = useState(true);
+  const [moduls, setModuls] = useState(() => getStoredModuls());
+  
+  useEffect(() => {
+    const handleSync = () => {
+      setModuls(getStoredModuls());
+    };
+    window.addEventListener('inventory_moduls_updated', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('inventory_moduls_updated', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -276,13 +291,14 @@ export default function KatalogModul() {
   }, [cartItems]);
 
   // Filter modul berdasarkan pencarian, kategori, dan status stok
-  const filteredModuls = INITIAL_MODULS.filter((item) => {
+  const filteredModuls = moduls.filter((item) => {
+    const stokTersedia = getStokTersedia(item);
     const matchSearch = item.nama.toLowerCase().includes(searchTerm.toLowerCase());
     const matchKategori = selectedKategori === 'Semua Jenis' || item.kategori === selectedKategori;
     const matchStock =
       selectedStatusStok === 'Semua Status' ||
-      (selectedStatusStok === 'Tersedia' && item.stok > 0) ||
-      (selectedStatusStok === 'Tidak Tersedia' && item.stok === 0);
+      (selectedStatusStok === 'Tersedia' && stokTersedia > 0) ||
+      (selectedStatusStok === 'Pre-Order (PO)' && stokTersedia === 0);
     return matchSearch && matchKategori && matchStock;
   });
 
@@ -299,28 +315,30 @@ export default function KatalogModul() {
 
   // Tambah modul ke keranjang 
   const handleAddToCart = (modul) => {
-    if (modul.stok === 0) return;
+    const stokTersedia = getStokTersedia(modul);
+    const isPo = stokTersedia === 0;
 
     setCartItems((prev) => {
       const existing = prev.find((item) => item.id === modul.id);
       if (existing) {
-        const nextQty = Math.min((Number(existing.qty) || 0) + 1, modul.stok);
+        const nextQty = isPo ? ((Number(existing.qty) || 0) + 1) : Math.min((Number(existing.qty) || 0) + 1, stokTersedia);
         return prev.map((item) =>
           item.id === modul.id ? { ...item, qty: nextQty } : item
         );
       }
-      return [...prev, { ...modul, qty: 1, checked: false }];
+      return [...prev, { ...modul, qty: 1, checked: false, isPo, stok: stokTersedia }];
     });
 
-    showToast('Berhasil ditambahkan ke keranjang');
+    showToast(isPo ? 'Modul Pre-Order ditambahkan ke keranjang' : 'Berhasil ditambahkan ke keranjang');
   };
 
   // Beli Langsung  Menuju ke Halaman Checkout
   const handleBuyNow = (modul) => {
-    if (modul.stok === 0) return;
+    const stokTersedia = getStokTersedia(modul);
+    const isPo = stokTersedia === 0;
     navigate('/checkout', {
       state: {
-        items: [{ ...modul, qty: 1 }],
+        items: [{ ...modul, qty: 1, isPo, stok: stokTersedia }],
         canEditQty: true,
         from: 'katalog'
       }
@@ -426,6 +444,8 @@ export default function KatalogModul() {
             ) : (
               <>
                 {filteredModuls.map((item) => {
+                  const stokTersedia = getStokTersedia(item);
+                  const isPo = stokTersedia === 0;
               return (
                 <div
                   key={item.id}
@@ -446,10 +466,14 @@ export default function KatalogModul() {
                         style={{
                           fontSize: '11.5px',
                           fontWeight: '600',
-                          color: item.stok > 0 ? '#475569' : '#dc2626'
+                          color: stokTersedia > 0 ? '#475569' : '#b45309',
+                          backgroundColor: stokTersedia > 0 ? 'transparent' : '#fef3c7',
+                          padding: stokTersedia > 0 ? '0' : '2px 7px',
+                          borderRadius: stokTersedia > 0 ? '0' : '5px',
+                          border: stokTersedia > 0 ? 'none' : '1px solid #fde68a'
                         }}
                       >
-                        {item.stok > 0 ? `Stok: ${item.stok}` : 'Habis'}
+                        {stokTersedia > 0 ? `Stok: ${stokTersedia}` : 'Pre-Order (PO)'}
                       </span>
                     </div>
 
@@ -463,7 +487,7 @@ export default function KatalogModul() {
                     </div>
 
                     {/* Tombol Aksi */}
-                    {item.stok === 0 ? (
+                    {false ? (
                       <button
                         type="button"
                         disabled
@@ -489,10 +513,13 @@ export default function KatalogModul() {
                           type="button"
                           onClick={() => handleBuyNow(item)}
                           className="btn-primary-green"
-                          style={styles.btnBeliLangsung}
+                          style={{
+                            ...styles.btnBeliLangsung,
+                            backgroundColor: isPo ? '#b45309' : '#23573c'
+                          }}
                         >
                           <LocalMallOutlinedIcon sx={{ fontSize: 17 }} />
-                          <span>Beli</span>
+                          <span>{isPo ? 'Pesan PO' : 'Beli'}</span>
                         </button>
                       </div>
                     )}
@@ -706,43 +733,45 @@ const styles = {
     marginTop: 'auto'
   },
   btnTambahKeranjang: {
-    flex: 1.15,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '6px',
-    padding: '10px 10px',
-    borderRadius: '10px',
-    border: '1px solid #23573c',
-    backgroundColor: '#eaf7ef',
-    color: '#23573c',
-    fontSize: '12.5px',
-    fontWeight: '700',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease',
-    fontFamily: 'inherit',
-    minHeight: '38px',
-    boxSizing: 'border-box'
-  },
-  btnBeliLangsung: {
-    flex: 0.85,
+    flex: 1,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     gap: '5px',
-    padding: '10px 12px',
+    padding: '9px 8px',
+    borderRadius: '10px',
+    border: '1px solid #23573c',
+    backgroundColor: '#eaf7ef',
+    color: '#23573c',
+    fontSize: '12px',
+    fontWeight: '700',
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
+    fontFamily: 'inherit',
+    height: '38px',
+    boxSizing: 'border-box',
+    whiteSpace: 'nowrap'
+  },
+  btnBeliLangsung: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '5px',
+    padding: '9px 8px',
     borderRadius: '10px',
     border: 'none',
     backgroundColor: '#23573c',
     color: '#ffffff',
-    fontSize: '12.5px',
+    fontSize: '12px',
     fontWeight: '700',
     cursor: 'pointer',
     transition: 'all 0.15s ease',
     boxShadow: '0 3px 8px rgba(35, 87, 60, 0.22)',
     fontFamily: 'inherit',
-    minHeight: '38px',
-    boxSizing: 'border-box'
+    height: '38px',
+    boxSizing: 'border-box',
+    whiteSpace: 'nowrap'
   },
   btnStokHabis: {
     display: 'flex',

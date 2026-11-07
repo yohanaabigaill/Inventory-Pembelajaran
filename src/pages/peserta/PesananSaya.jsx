@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import Navbar from '../../components/Navbar';
+import { lepasCadanganStok, getSessionOrders, setSessionOrders, addSessionOrder, INITIAL_DEMO_PESANAN } from '../../utils/stockManager';
 
 // Icons
 import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
@@ -16,234 +17,6 @@ import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 
 // Covers
 import coverAsasi from '../../assets/asasi.jpg';
-import coverTahmidi from '../../assets/tahmidi.jpg';
-import coverAlHisan1 from '../../assets/alhisan1.jpg';
-import coverMushafAshShahibA5 from '../../assets/mushaf_ash_shahib_a5.jpg';
-import contohBuktiTf from '../../assets/contoh bukti tf.jpeg';
-
-// Data pesanan demo
-export const INITIAL_DEMO_PESANAN = [
-  // Belum Bayar
-  {
-    id: 'ORD-73305405',
-    tanggal: '28/10/2026 14:41',
-    status: 'Belum Bayar',
-    statusPembayaran: 'Belum Bayar',
-    statusPengiriman: null,
-    statusColor: '#2563eb',
-    statusBg: '#dbeafe',
-    namaPenerima: 'Ahmad Fauzi',
-    noHp: '081234567890',
-    alamat: 'Jl. Melati No. 45, RT 02/RW 05, Pekanbaru',
-    metodePengiriman: 'Via Kurir',
-    metodeBayar: 'Transfer Bank',
-    bankTujuan: '',
-    buktiTf: null,
-    biayaKirim: 10000,
-    items: [
-      {
-        id: 4,
-        nama: 'Mushaf Ash Shahib A5 Terjemah',
-        kategori: 'Mushaf',
-        hargaJual: 115000,
-        qty: 1,
-        cover: coverMushafAshShahibA5
-      }
-    ],
-    totalHarga: 125000
-  },
-  // Menunggu Verifikasi
-  {
-    id: 'ORD-69269714',
-    tanggal: '28/10/2026 13:34',
-    status: 'Menunggu Verifikasi',
-    statusPembayaran: 'Menunggu Verifikasi',
-    statusPengiriman: null,
-    statusColor: '#d97706',
-    statusBg: '#fef3c7',
-    namaPenerima: 'Yohana Abigail',
-    noHp: '081298765432',
-    alamat: 'Jl. Anggrek No. 12, Batam Center, Batam',
-    metodePengiriman: 'Via Kurir',
-    metodeBayar: 'Transfer Bank',
-    bankTujuan: '',
-    buktiTf: contohBuktiTf,
-    biayaKirim: 10000,
-    items: [
-      {
-        id: 1,
-        nama: 'Asasi',
-        kategori: 'Al Haqq',
-        hargaJual: 40000,
-        qty: 85,
-        cover: coverAsasi
-      },
-      {
-        id: 3,
-        nama: 'Al Hisan 1',
-        kategori: 'Al Hisan',
-        hargaJual: 25000,
-        qty: 2,
-        cover: coverAlHisan1
-      }
-    ],
-    totalHarga: 3460000
-  },
-  // Perlu Dikirim
-  {
-    id: 'ORD-58210342',
-    tanggal: '27/10/2026 09:20',
-    status: 'Perlu Dikirim',
-    statusPembayaran: 'Disetujui',
-    statusPengiriman: 'Perlu Dikirim',
-    statusColor: '#d97706',
-    statusBg: '#fef3c7',
-    namaPenerima: 'Ririn Anisa',
-    noHp: '081377889900',
-    alamat: 'Jl. Dahlia No. 18, RT 01/RW 03, Sukajadi, Pekanbaru',
-    metodePengiriman: 'Via Kurir',
-    metodeBayar: 'Transfer Bank',
-    bankTujuan: '',
-    buktiTf: contohBuktiTf,
-    biayaKirim: 10000,
-    items: [
-      {
-        id: 2,
-        nama: 'Tahmidi',
-        kategori: 'Al Haqq',
-        hargaJual: 40000,
-        qty: 3,
-        cover: coverTahmidi
-      }
-    ],
-    totalHarga: 130000
-  },
-  // Dikirim
-  {
-    id: 'ORD-51920873',
-    tanggal: '26/10/2026 11:15',
-    status: 'Dikirim',
-    statusPembayaran: 'Disetujui',
-    statusPengiriman: 'Dikirim',
-    statusColor: '#2563eb',
-    statusBg: '#dbeafe',
-    namaPenerima: 'Hendra Pratama',
-    noHp: '085211223344',
-    alamat: 'Perumahan Graha Indah Blok C3 No. 5, Batam',
-    metodePengiriman: 'Via Kurir',
-    metodeBayar: 'Transfer Bank',
-    bankTujuan: '',
-    buktiTf: contohBuktiTf,
-    biayaKirim: 10000,
-    items: [
-      {
-        id: 1,
-        nama: 'Asasi',
-        kategori: 'Al Haqq',
-        hargaJual: 40000,
-        qty: 2,
-        cover: coverAsasi
-      },
-      {
-        id: 2,
-        nama: 'Tahmidi',
-        kategori: 'Al Haqq',
-        hargaJual: 40000,
-        qty: 2,
-        cover: coverTahmidi
-      }
-    ],
-    totalHarga: 170000
-  },
-  // Selesai
-  {
-    id: 'ORD-44018293',
-    tanggal: '24/10/2026 15:40',
-    status: 'Selesai',
-    statusPembayaran: 'Disetujui',
-    statusPengiriman: 'Selesai',
-    statusColor: '#16a34a',
-    statusBg: '#dcfce7',
-    namaPenerima: 'Ust. Ridwan Kamil',
-    noHp: '081122334455',
-    alamat: 'Komp. Masjid Raya Baiturrahman, Batam',
-    metodePengiriman: 'Ambil di RSQ Pusat',
-    metodeBayar: 'Transfer Bank',
-    bankTujuan: '',
-    buktiTf: contohBuktiTf,
-    biayaKirim: 0,
-    items: [
-      {
-        id: 3,
-        nama: 'Al Hisan 1',
-        kategori: 'Al Hisan',
-        hargaJual: 25000,
-        qty: 4,
-        cover: coverAlHisan1
-      }
-    ],
-    totalHarga: 100000
-  },
-  // Ditolak
-  {
-    id: 'ORD-39182746',
-    tanggal: '22/10/2026 08:50',
-    status: 'Ditolak',
-    statusPembayaran: 'Ditolak',
-    statusPengiriman: null,
-    statusColor: '#dc2626',
-    statusBg: '#fee2e2',
-    namaPenerima: 'Dewi Lestari',
-    noHp: '081399887766',
-    alamat: 'Jl. Merpati No. 7, Tiban, Batam',
-    metodePengiriman: 'Via Kurir',
-    metodeBayar: 'Transfer Bank',
-    bankTujuan: '',
-    alasanPenolakan: 'Nominal transfer di bukti struk tidak sesuai dengan total tagihan pesanan.',
-    buktiTf: contohBuktiTf,
-    biayaKirim: 10000,
-    items: [
-      {
-        id: 1,
-        nama: 'Asasi',
-        kategori: 'Al Haqq',
-        hargaJual: 40000,
-        qty: 1,
-        cover: coverAsasi
-      }
-    ],
-    totalHarga: 50000
-  },
-  // Dibatalkan
-  {
-    id: 'ORD-28491038',
-    tanggal: '20/10/2026 10:15',
-    status: 'Dibatalkan',
-    statusPembayaran: 'Dibatalkan',
-    statusPengiriman: null,
-    statusColor: '#64748b',
-    statusBg: '#f1f5f9',
-    namaPenerima: 'Ahmad Fauzi',
-    noHp: '081234567890',
-    alamat: 'Jl. Melati No. 45, RT 02/RW 05, Pekanbaru',
-    metodePengiriman: 'Via Kurir',
-    metodeBayar: 'Transfer Bank',
-    bankTujuan: '',
-    buktiTf: null,
-    biayaKirim: 10000,
-    items: [
-      {
-        id: 2,
-        nama: 'Tahmidi',
-        kategori: 'Al Haqq',
-        hargaJual: 40000,
-        qty: 1,
-        cover: coverTahmidi
-      }
-    ],
-    totalHarga: 50000
-  }
-];
 
 // Opsi filter
 const STATUS_BAYAR_OPTIONS = [
@@ -424,10 +197,46 @@ export default function PesananSaya() {
   const [searchQuery, setSearchQuery] = useState('');
   const [orders, setOrders] = useState(() => {
     if (location.state?.newOrder) {
-      return [location.state.newOrder, ...INITIAL_DEMO_PESANAN];
+      return addSessionOrder(location.state.newOrder, INITIAL_DEMO_PESANAN);
     }
-    return INITIAL_DEMO_PESANAN;
+    return getSessionOrders(INITIAL_DEMO_PESANAN);
   });
+
+  // Kembalikan posisi scroll tepat ke kartu pesanan secara instan (tanpa efek meluncur)
+  useEffect(() => {
+    const lastId = sessionStorage.getItem('last_viewed_order_id');
+    const lastScrollY = sessionStorage.getItem('last_viewed_scroll_y');
+
+    if (lastId || lastScrollY) {
+      sessionStorage.removeItem('last_viewed_order_id');
+      sessionStorage.removeItem('last_viewed_scroll_y');
+
+      const restorePos = () => {
+        const el = lastId ? document.getElementById(`order-card-${lastId}`) : null;
+        if (el) {
+          el.scrollIntoView({ behavior: 'auto', block: 'center' });
+        } else if (lastScrollY) {
+          window.scrollTo({ top: Number(lastScrollY), behavior: 'auto' });
+        }
+      };
+
+      restorePos();
+      requestAnimationFrame(restorePos);
+      const timer = setTimeout(restorePos, 50);
+      return () => clearTimeout(timer);
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, []);
+
+  // Sinkronisasi pesanan saat ada pembaruan sesi
+  useEffect(() => {
+    const handleSyncOrders = () => {
+      setOrders(getSessionOrders(INITIAL_DEMO_PESANAN));
+    };
+    window.addEventListener('inventory_orders_updated', handleSyncOrders);
+    return () => window.removeEventListener('inventory_orders_updated', handleSyncOrders);
+  }, []);
 
   const [cancellingOrder, setCancellingOrder] = useState(null);
 
@@ -447,6 +256,8 @@ export default function PesananSaya() {
   const handleConfirmBatalPesanan = (orderToCancel) => {
     if (!orderToCancel) return;
     const targetId = orderToCancel.id;
+    // Kembalikan cadangan stok jika pesanan dibatalkan
+    lepasCadanganStok(orderToCancel.items || []);
     const updatedOrders = orders.map((ord) => {
       if (ord.id === targetId) {
         return {
@@ -461,22 +272,14 @@ export default function PesananSaya() {
     });
 
     setOrders(updatedOrders);
+    setSessionOrders(updatedOrders);
     setCancellingOrder(null);
     showToast('Pesanan berhasil dibatalkan', 'success');
   };
 
-  // Reset data dummy saat refresh
+  // Scroll ke atas saat halaman dibuka
   useEffect(() => {
     window.scrollTo(0, 0);
-    try {
-      localStorage.removeItem('inventory_rsq_pesanan');
-      localStorage.removeItem('inventory_rsq_pesanan_list');
-    } catch (e) {
-      console.error(e);
-    }
-    if (window.history.replaceState) {
-      window.history.replaceState({}, document.title);
-    }
   }, []);
 
   // Kunci scroll background saat modal konfirmasi batal terbuka
@@ -549,6 +352,25 @@ export default function PesananSaya() {
 
     return matchSearch && matchPayment && matchShipping;
   });
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // Pagination pesanan
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage) || 1;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedOrders = filteredOrders.slice(startIndex, startIndex + itemsPerPage);
+
+  // Reset ke halaman 1 saat pencarian atau filter status berubah
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusBayarFilter, statusKirimFilter]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -749,6 +571,7 @@ export default function PesananSaya() {
                   <span>Reset Filter</span>
                 </button>
               )}
+
             </div>
           </div>
 
@@ -779,14 +602,17 @@ export default function PesananSaya() {
                 </button>
               </div>
             ) : (
-              filteredOrders.map((order) => {
+              paginatedOrders.map((order) => {
                 const badge = getStatusBadge(order.status);
                 const isBelumBayar = (order.status === 'Belum Bayar' || order.statusPembayaran === 'Belum Bayar') && order.status !== 'Dibatalkan';
 
                 return (
                   <div
                     key={order.id}
+                    id={`order-card-${order.id}`}
                     onClick={() => {
+                      sessionStorage.setItem('last_viewed_order_id', order.id);
+                      sessionStorage.setItem('last_viewed_scroll_y', String(window.scrollY));
                       navigate(`/pesanan/${order.id}`, { state: { order } });
                     }}
                     onMouseEnter={(e) => {
@@ -806,16 +632,23 @@ export default function PesananSaya() {
                         <span className="pesanan-order-number-label" style={styles.orderNumberLabel}>No Pesanan:</span>
                         <span className="pesanan-order-number" style={styles.orderNumber}>{order.id}</span>
                       </div>
-                      <div
-                        className="pesanan-status-badge"
-                        style={{
-                          ...styles.statusBadge,
-                          color: badge.color,
-                          backgroundColor: badge.bg,
-                          border: `1px solid ${badge.border}`
-                        }}
-                      >
-                        {order.status}
+                      <div className="pesanan-order-header-right" style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                        {(order.tipePesanan === 'Pre-Order' || order.items?.some(it => it.isPo)) && (
+                          <span style={{ fontSize: '10.5px', fontWeight: '700', color: '#b45309', backgroundColor: '#fef3c7', border: '1px solid #fde68a', padding: '2px 7px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+                            Pre-Order
+                          </span>
+                        )}
+                        <div
+                          className="pesanan-status-badge"
+                          style={{
+                            ...styles.statusBadge,
+                            color: badge.color,
+                            backgroundColor: badge.bg,
+                            border: `1px solid ${badge.border}`
+                          }}
+                        >
+                          {order.status}
+                        </div>
                       </div>
                     </div>
 
@@ -883,6 +716,54 @@ export default function PesananSaya() {
                   </div>
                 );
               })
+            )}
+
+            {/* Pagination Pesanan Saya */}
+            {filteredOrders.length > 0 && (
+              <div className="pagination-responsive" style={styles.paginationCard}>
+                <div style={styles.pageInfo}>
+                  {startIndex + 1} - {Math.min(startIndex + itemsPerPage, filteredOrders.length)} dari {filteredOrders.length}
+                </div>
+                <div style={styles.paginationButtons}>
+                  <button
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    className="btn-page-arrow"
+                    style={{
+                      ...styles.btnPageArrow,
+                      opacity: currentPage === 1 ? 0.4 : 1,
+                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    &lt;
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+                    <button
+                      key={num}
+                      onClick={() => setCurrentPage(num)}
+                      className={`btn-page-num ${currentPage === num ? 'active' : ''}`}
+                      style={{
+                        ...styles.btnPageNum,
+                        ...(currentPage === num ? styles.btnPageNumActive : {})
+                      }}
+                    >
+                      {num}
+                    </button>
+                  ))}
+                  <button
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    className="btn-page-arrow"
+                    style={{
+                      ...styles.btnPageArrow,
+                      opacity: currentPage === totalPages ? 0.4 : 1,
+                      cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    &gt;
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </main>
@@ -1333,5 +1214,63 @@ const styles = {
     boxShadow: '0 8px 28px rgba(0, 0, 0, 0.22)',
     animation: 'fadeIn 0.25s ease',
     maxWidth: 'calc(100vw - 48px)'
+  },
+  paginationCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: '16px',
+    padding: '16px 24px',
+    border: '1px solid #e2e8f0',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
+    boxSizing: 'border-box',
+    marginTop: '6px'
+  },
+  pageInfo: {
+    fontSize: '13.5px',
+    color: '#64748b',
+    fontWeight: '500'
+  },
+  paginationButtons: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px'
+  },
+  btnPageArrow: {
+    width: '32px',
+    height: '32px',
+    borderRadius: '8px',
+    border: '1px solid #dce4de',
+    backgroundColor: '#ffffff',
+    color: '#3d5246',
+    fontSize: '14px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.15s'
+  },
+  btnPageNum: {
+    width: '32px',
+    height: '32px',
+    borderRadius: '8px',
+    border: '1px solid #dce4de',
+    backgroundColor: '#ffffff',
+    color: '#3d5246',
+    fontSize: '14px',
+    fontWeight: '500',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.15s'
+  },
+  btnPageNumActive: {
+    backgroundColor: '#23573c',
+    border: 'none',
+    color: '#ffffff',
+    fontWeight: '700',
+    boxShadow: '0 2px 6px rgba(35, 87, 60, 0.3)'
   }
 };

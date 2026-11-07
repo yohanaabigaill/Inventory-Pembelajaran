@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
 import Navbar from '../../components/Navbar';
+import { tambahStokFisikModul } from '../../utils/stockManager';
 
 // Icons
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
@@ -452,6 +453,13 @@ export default function ModulMasuk() {
       showToast('Mohon lengkapi seluruh formulir', 'error');
       return;
     }
+
+    // Update stok fisik modul di gudang
+    modulItems.forEach((item) => {
+      if (item.judulModul && Number(item.jumlahDiterima) > 0) {
+        tambahStokFisikModul(item.judulModul, Number(item.jumlahDiterima));
+      }
+    });
 
     // Reset
     setTanggalMasuk('');
