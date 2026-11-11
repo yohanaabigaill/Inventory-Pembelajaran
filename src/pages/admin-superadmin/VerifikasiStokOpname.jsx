@@ -12,23 +12,23 @@ import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
 
-const MONTH_NAMES = [
-  'Januari',
-  'Februari',
-  'Maret',
-  'April',
-  'Mei',
-  'Juni',
-  'Juli',
-  'Agustus',
-  'September',
-  'Oktober',
-  'November',
-  'Desember'
-];
+// Utilitas data 
+import {
+  MONTH_NAMES,
+  KATEGORI_OPTIONS,
+  INITIAL_MODULS,
+  loadMonthlyData,
+  saveMonthlyData,
+  getStoredActiveMonth,
+  saveStoredActiveMonth,
+  getStoredActiveYear,
+  saveStoredActiveYear,
+  STOK_OPNAME_UPDATE_EVENT
+} from '../../utils/stokOpnameStorage';
 
 const NOW = new Date();
 const CURRENT_YEAR = NOW.getFullYear();
+const CURRENT_MONTH_INDEX = NOW.getMonth();
 
 // Custom Dropdown
 function CustomDropdown({
@@ -337,7 +337,7 @@ function MonthYearCalendarPicker({
           >
             {MONTH_NAMES.map((m) => {
               const isSelected = selectedMonth === m && String(viewYear) === String(selectedYear);
-              const isCurrentCalendarMonth = m === 'Oktober' && viewYear === CURRENT_YEAR;
+              const isCurrentCalendarMonth = m === (MONTH_NAMES[CURRENT_MONTH_INDEX] || 'November') && viewYear === CURRENT_YEAR;
 
               return (
                 <div
@@ -380,124 +380,29 @@ function MonthYearCalendarPicker({
   );
 }
 
-const KATEGORI_OPTIONS = [
-  'Semua Jenis',
-  'Al Haqq',
-  'Al Hisan',
-  'Tahsin Usmani',
-  'RSQ Kids',
-  'Umum',
-  'Al Quran Wakaf',
-  'Al Quran'
-];
-
-
-// Daftar 47 Modul
-const INITIAL_MODULS = [
-  { id: 1, kategori: 'Al Haqq', nama: 'Asasi', stokSistem: 450 },
-  { id: 2, kategori: 'Al Haqq', nama: 'Asasi 2', stokSistem: 280 },
-  { id: 3, kategori: 'Al Haqq', nama: 'Tahmidi', stokSistem: 320 },
-  { id: 4, kategori: 'Al Haqq', nama: 'Tawasuthi', stokSistem: 190 },
-  { id: 5, kategori: 'Al Haqq', nama: 'Idadi', stokSistem: 215 },
-  { id: 6, kategori: 'Al Haqq', nama: 'Tahsini', stokSistem: 180 },
-  { id: 7, kategori: 'Al Haqq', nama: 'Tajwidi', stokSistem: 240 },
-  { id: 8, kategori: 'Al Haqq', nama: 'Makhorijul Huruf', stokSistem: 160 },
-  { id: 9, kategori: 'Al Haqq', nama: 'Tilawah Asasi', stokSistem: 175 },
-  { id: 10, kategori: 'Al Haqq', nama: 'Buku Prestasi Dewasa', stokSistem: 310 },
-  { id: 11, kategori: 'Al Haqq', nama: 'Buku Prestasi Anak', stokSistem: 420 },
-  { id: 12, kategori: 'Al Haqq', nama: 'Anak 1', stokSistem: 260 },
-  { id: 13, kategori: 'Al Haqq', nama: 'Anak 2', stokSistem: 250 },
-  { id: 14, kategori: 'Al Haqq', nama: 'Anak 3', stokSistem: 230 },
-  { id: 15, kategori: 'Al Haqq', nama: 'Syarh Tuhfatul Athfal A4', stokSistem: 140 },
-  { id: 16, kategori: 'Al Haqq', nama: 'Syarh Tuhfatul Athfal A5', stokSistem: 195 },
-  { id: 17, kategori: 'Al Hisan', nama: 'Panduan Guru', stokSistem: 95 },
-  { id: 18, kategori: 'Al Hisan', nama: 'Al Hisan 1', stokSistem: 340 },
-  { id: 19, kategori: 'Al Hisan', nama: 'Al Hisan 2', stokSistem: 310 },
-  { id: 20, kategori: 'Al Hisan', nama: 'Al Hisan 3', stokSistem: 290 },
-  { id: 21, kategori: 'Al Hisan', nama: 'Al Hisan 4', stokSistem: 275 },
-  { id: 22, kategori: 'Al Hisan', nama: 'Kamus Juz 1', stokSistem: 180 },
-  { id: 23, kategori: 'Al Hisan', nama: 'Kamus 30 juz', stokSistem: 150 },
-  { id: 24, kategori: 'Umum', nama: 'Khat', stokSistem: 120 },
-  { id: 25, kategori: 'Tahsin Usmani', nama: 'Utsmani 1', stokSistem: 230 },
-  { id: 26, kategori: 'Tahsin Usmani', nama: 'Utsmani 2', stokSistem: 210 },
-  { id: 27, kategori: 'Tahsin Usmani', nama: 'Ustmani 3', stokSistem: 195 },
-  { id: 28, kategori: 'RSQ Kids', nama: 'Buku Doa', stokSistem: 380 },
-  { id: 29, kategori: 'RSQ Kids', nama: 'Buku Hadist', stokSistem: 350 },
-  { id: 30, kategori: 'RSQ Kids', nama: 'Buku Prestasi', stokSistem: 410 },
-  { id: 31, kategori: 'Umum', nama: 'Matan Jazariyah', stokSistem: 165 },
-  { id: 32, kategori: 'Al Quran Wakaf', nama: 'Mushaf Ash Shahib A5 Terjemah', stokSistem: 220 },
-  { id: 33, kategori: 'Al Quran Wakaf', nama: 'Mushaf Ash Shahib A5 tanpa Terjemah', stokSistem: 190 },
-  { id: 34, kategori: 'Al Quran Wakaf', nama: 'Mushaf Al Kamil A5 Terjemah', stokSistem: 175 },
-  { id: 35, kategori: 'Al Quran Wakaf', nama: 'Mushaf Al Kamil A5 tanpa Terjemah', stokSistem: 160 },
-  { id: 36, kategori: 'Al Quran Wakaf', nama: 'Mushaf Ash Shahib A4 Terjemah', stokSistem: 130 },
-  { id: 37, kategori: 'Al Quran Wakaf', nama: 'Mushaf Ash Shahib A4 tanpa Terjemah', stokSistem: 115 },
-  { id: 38, kategori: 'Al Quran Wakaf', nama: 'Mushaf Ash Shahib A6 Terjemah', stokSistem: 145 },
-  { id: 39, kategori: 'Al Quran Wakaf', nama: 'Mushaf Ash Shahib A6 tanpa Terjemah', stokSistem: 140 },
-  { id: 40, kategori: 'Al Quran', nama: 'Mushaf Ash Shahib A5 Terjemah', stokSistem: 310 },
-  { id: 41, kategori: 'Al Quran', nama: 'Mushaf Ash Shahib A5 tanpa Terjemah', stokSistem: 280 },
-  { id: 42, kategori: 'Al Quran', nama: 'Mushaf Al Kamil A5 Terjemah', stokSistem: 260 },
-  { id: 43, kategori: 'Al Quran', nama: 'Mushaf Al Kamil A5 tanpa Terjemah', stokSistem: 240 },
-  { id: 44, kategori: 'Al Quran', nama: 'Mushaf Ash Shahib A4 Terjemah', stokSistem: 185 },
-  { id: 45, kategori: 'Al Quran', nama: 'Mushaf Ash Shahib A4 tanpa Terjemah', stokSistem: 170 },
-  { id: 46, kategori: 'Al Quran', nama: 'Mushaf Al Mujib A6 Terjemah', stokSistem: 195 },
-  { id: 47, kategori: 'Al Quran', nama: 'Mushaf Al Kamil A6 tanpa Terjemah', stokSistem: 205 }
-];
-
-const getInitialMonthlyVerificationData = () => {
-  const defaults = {};
-
-  // September 2026: Status Menunggu Verifikasi (Ada 2 modul dengan selisih yang diinput Admin)
-  defaults['2026-09'] = {
-    statusPeriode: 'Menunggu Verifikasi',
-    catatanPenolakan: '',
-    tanggalVerifikasi: null,
-    items: INITIAL_MODULS.map((m) => {
-      if (m.id === 1) {
-        return { ...m, inputFisik: 445, catatan: '5 buku rusak di rak bawah karena lembap', status: 'Menunggu Verifikasi' };
-      }
-      if (m.id === 3) {
-        return { ...m, inputFisik: 314, catatan: 'Kurang 6 eks saat pengiriman distributor', status: 'Menunggu Verifikasi' };
-      }
-      return { ...m, inputFisik: m.stokSistem, catatan: '', status: 'Menunggu Verifikasi' };
-    })
-  };
-
-  // Agustus 2026: Status Disetujui
-  defaults['2026-08'] = {
-    statusPeriode: 'Disetujui',
-    catatanPenolakan: '',
-    tanggalVerifikasi: '31 Agustus 2026, 16:45 WIB',
-    items: INITIAL_MODULS.map((m) => ({
-      ...m,
-      inputFisik: m.stokSistem,
-      catatan: '',
-      status: 'Disetujui'
-    }))
-  };
-
-
-  // Oktober 2026: Bulan berjalan (Belum Diinput oleh Admin)
-  defaults['2026-10'] = {
-    statusPeriode: 'Belum Diinput',
-    catatanPenolakan: '',
-    tanggalVerifikasi: null,
-    items: INITIAL_MODULS.map((m) => ({
-      ...m,
-      inputFisik: '',
-      catatan: '',
-      status: 'Belum Diinput'
-    }))
-  };
-
-  return defaults;
-};
-
 export default function VerifikasiStokOpname() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [selectedTahun, setSelectedTahun] = useState('2026');
-  const [selectedBulan, setSelectedBulan] = useState('September');
+  const [selectedTahun, setSelectedTahun] = useState(() => getStoredActiveYear());
+  const [selectedBulan, setSelectedBulan] = useState(() => getStoredActiveMonth());
 
-  const [monthlyData, setMonthlyData] = useState(getInitialMonthlyVerificationData);
+  // Data stok opname tersinkronisasi di memori sesi (reset saat refresh)
+  const [monthlyData, setMonthlyData] = useState(() => loadMonthlyData());
+
+  // Sinkronisasi otomatis antar tab / halaman dalam sesi aktif
+  useEffect(() => {
+    const handleSync = () => {
+      const latest = loadMonthlyData();
+      setMonthlyData((prev) => (prev === latest ? prev : latest));
+      const m = getStoredActiveMonth();
+      const y = getStoredActiveYear();
+      if (m) setSelectedBulan((prev) => (prev === m ? prev : m));
+      if (y) setSelectedTahun((prev) => (prev === y ? prev : y));
+    };
+    window.addEventListener(STOK_OPNAME_UPDATE_EVENT, handleSync);
+    return () => {
+      window.removeEventListener(STOK_OPNAME_UPDATE_EVENT, handleSync);
+    };
+  }, []);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchHovered, setIsSearchHovered] = useState(false);
@@ -528,7 +433,7 @@ export default function VerifikasiStokOpname() {
     }, 4000);
   };
 
-  const effectiveBulan = selectedBulan === 'Bulan' ? 'September' : selectedBulan;
+  const effectiveBulan = selectedBulan === 'Bulan' ? 'Oktober' : selectedBulan;
   const effectiveYear = selectedTahun === 'Tahun' ? '2026' : selectedTahun;
   const monthNumber = String(MONTH_NAMES.indexOf(effectiveBulan) + 1).padStart(2, '0');
   const periodKey = `${effectiveYear}-${monthNumber}`;
@@ -635,13 +540,16 @@ export default function VerifikasiStokOpname() {
         return it;
       });
 
-      return {
+      const nextData = {
         ...prev,
         [periodKey]: {
           ...existing,
           items: updatedItems
         }
       };
+
+      saveMonthlyData(nextData);
+      return nextData;
     });
 
     setSelectedItemIds(new Set());
@@ -664,7 +572,7 @@ export default function VerifikasiStokOpname() {
         return it;
       });
 
-      return {
+      const nextData = {
         ...prev,
         [periodKey]: {
           ...existing,
@@ -672,6 +580,9 @@ export default function VerifikasiStokOpname() {
           items: updatedItems
         }
       };
+
+      saveMonthlyData(nextData);
+      return nextData;
     });
 
     setSelectedItemIds(new Set());
@@ -709,7 +620,7 @@ export default function VerifikasiStokOpname() {
         return it;
       });
 
-      return {
+      const nextData = {
         ...prev,
         [periodKey]: {
           ...existing,
@@ -719,6 +630,9 @@ export default function VerifikasiStokOpname() {
           items: updatedItems
         }
       };
+
+      saveMonthlyData(nextData);
+      return nextData;
     });
 
     setSelectedItemIds(new Set());
@@ -728,37 +642,23 @@ export default function VerifikasiStokOpname() {
     showToast('Hasil verifikasi stok opname berhasil dikirim!', 'success');
   };
 
-  // Render Badge Status Periode
+  // Render Badge Status Periode & Modul
   const renderStatusBadge = (status) => {
     switch (status) {
       case 'Disetujui':
-        return (
-          <span style={{ ...styles.badgeStatus, backgroundColor: '#dcfce7', color: '#16a34a' }}>
-            <span style={{ ...styles.badgeDot, backgroundColor: '#16a34a' }} />
-            Disetujui
-          </span>
-        );
+        return <span style={styles.badgeDisetujui}>Disetujui</span>;
       case 'Menunggu Verifikasi':
-        return (
-          <span style={{ ...styles.badgeStatus, backgroundColor: '#fef3c7', color: '#d97706' }}>
-            <span style={{ ...styles.badgeDot, backgroundColor: '#d97706' }} />
-            Menunggu Verifikasi
-          </span>
-        );
+      case 'Menunggu':
+        return <span style={styles.badgeMenunggu}>Menunggu Verifikasi</span>;
       case 'Ditolak':
-        return (
-          <span style={{ ...styles.badgeStatus, backgroundColor: '#fee2e2', color: '#dc2626' }}>
-            <span style={{ ...styles.badgeDot, backgroundColor: '#dc2626' }} />
-            Ditolak
-          </span>
-        );
+        return <span style={styles.badgeDitolak}>Ditolak</span>;
+      case 'Draf':
+        return <span style={styles.badgeDraf}>Draf</span>;
+      case 'Sudah Diinput':
+        return <span style={styles.badgeSudahDiinput}>Sudah Diinput</span>;
+      case 'Belum Diinput':
       default:
-        return (
-          <span style={{ ...styles.badgeStatus, backgroundColor: '#f1f5f9', color: '#64748b' }}>
-            <span style={{ ...styles.badgeDot, backgroundColor: '#94a3b8' }} />
-            Belum Diinput
-          </span>
-        );
+        return <span style={styles.badgeBelumDiinput}>{status || 'Belum Diinput'}</span>;
     }
   };
 
@@ -945,6 +845,8 @@ export default function VerifikasiStokOpname() {
                 onSelect={(m, y) => {
                   setSelectedBulan(m);
                   setSelectedTahun(y);
+                  saveStoredActiveMonth(m);
+                  saveStoredActiveYear(y);
                   setCurrentPage(1);
                 }}
                 className="select-wrapper-responsive"
@@ -1130,7 +1032,17 @@ export default function VerifikasiStokOpname() {
                       return (
                         <tr
                           key={item.id}
-                          style={styles.tr}
+                          style={{
+                            ...styles.tr,
+                            backgroundColor:
+                              item.status === 'Ditolak'
+                                ? '#fffaf8'
+                                : item.status === 'Disetujui'
+                                ? '#fafcfb'
+                                : hasInputFisik && !isMatch
+                                ? '#fffdf7'
+                                : 'transparent'
+                          }}
                         >
                           {/* CHECKBOX */}
                           <td style={{ ...styles.td, textAlign: 'center' }}>
@@ -1176,11 +1088,11 @@ export default function VerifikasiStokOpname() {
                           </td>
 
                           {/* STOK SISTEM */}
-                          <td style={{ ...styles.td, textAlign: 'center', fontWeight: '700', color: '#1e293b' }}>
+                          <td style={{ ...styles.td, textAlign: 'center', fontWeight: '700', fontSize: '14px', color: '#162a20' }}>
                             {item.stokSistem}
                           </td>
 
-                          {/* FISIK (ADMIN) */}
+                          {/* INPUT FISIK (ADMIN) */}
                           <td style={{ ...styles.td, textAlign: 'center' }}>
                             <span
                               style={{
@@ -1202,11 +1114,9 @@ export default function VerifikasiStokOpname() {
                           {/* SELISIH */}
                           <td style={{ ...styles.td, textAlign: 'center' }}>
                             {!hasInputFisik ? (
-                              <span style={{ color: '#94a3b8', fontSize: '12px' }}>-</span>
+                              <span style={{ color: '#94a3b8', fontWeight: '500', fontSize: '13px' }}>-</span>
                             ) : isMatch ? (
-                              <span style={{ ...styles.badgeSelisih, backgroundColor: '#f0fdf4', color: '#16a34a' }}>
-                                0
-                              </span>
+                              <span style={styles.badgeCocok}>0</span>
                             ) : (
                               <span
                                 style={{
@@ -1655,30 +1565,126 @@ const styles = {
     overflow: 'hidden',
     textOverflow: 'ellipsis'
   },
+  badgeCocok: {
+    display: 'inline-block',
+    minWidth: '32px',
+    padding: '4px 8px',
+    borderRadius: '6px',
+    fontSize: '12px',
+    fontWeight: '700',
+    backgroundColor: '#f0fdf4',
+    color: '#16a34a'
+  },
   badgeSelisih: {
     display: 'inline-block',
-    minWidth: '28px',
-    padding: '3px 8px',
-    borderRadius: '12px',
+    minWidth: '32px',
+    padding: '4px 8px',
+    borderRadius: '6px',
     fontSize: '12px',
     fontWeight: '700',
     textAlign: 'center'
   },
-  badgeStatus: {
+  badgeDisetujui: {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '5px',
-    padding: '3px 8px',
-    borderRadius: '20px',
+    justifyContent: 'center',
+    minWidth: '105px',
+    height: '28px',
+    padding: '0 12px',
+    backgroundColor: '#dcfce7',
+    color: '#16a34a',
+    borderRadius: '6px',
+    fontSize: '11.5px',
+    fontWeight: '700',
+    letterSpacing: '0.4px',
+    border: '1px solid #16a34a',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
+  },
+  badgeMenunggu: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '105px',
+    height: '28px',
+    padding: '0 12px',
+    backgroundColor: '#fef3c7',
+    color: '#d97706',
+    borderRadius: '6px',
+    fontSize: '11.5px',
+    fontWeight: '700',
+    letterSpacing: '0.4px',
+    border: '1px solid #d97706',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
+  },
+  badgeDitolak: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '105px',
+    height: '28px',
+    padding: '0 12px',
+    backgroundColor: '#fee2e2',
+    color: '#dc2626',
+    borderRadius: '6px',
+    fontSize: '11.5px',
+    fontWeight: '700',
+    letterSpacing: '0.4px',
+    border: '1px solid #dc2626',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
+  },
+  badgeDraf: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '105px',
+    height: '28px',
+    padding: '0 12px',
+    backgroundColor: '#e0f2fe',
+    color: '#0284c7',
+    borderRadius: '6px',
+    fontSize: '11.5px',
+    fontWeight: '700',
+    letterSpacing: '0.4px',
+    border: '1px solid #0284c7',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
+  },
+  badgeSudahDiinput: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '105px',
+    height: '28px',
+    padding: '0 12px',
+    backgroundColor: '#ecfdf5',
+    color: '#047857',
+    borderRadius: '6px',
+    fontSize: '11.5px',
+    fontWeight: '700',
+    letterSpacing: '0.4px',
+    border: '1px solid #10b981',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
+  },
+  badgeBelumDiinput: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '105px',
+    height: '28px',
+    padding: '0 12px',
+    backgroundColor: '#f1f5f9',
+    color: '#64748b',
+    borderRadius: '6px',
     fontSize: '11.5px',
     fontWeight: '600',
-    whiteSpace: 'nowrap'
-  },
-  badgeDot: {
-    width: '6px',
-    height: '6px',
-    borderRadius: '50%',
-    flexShrink: 0
+    letterSpacing: '0.4px',
+    border: '1px solid #94a3b8',
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box'
   },
 
   // Pagination
