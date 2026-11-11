@@ -169,9 +169,9 @@ export default function Sidebar({
             }}
             onClick={() => {
               try {
-                localStorage.setItem('user_role', role);
+                localStorage.setItem('user_role', currentRole);
               } catch (e) {}
-              navigate('/profil', { state: { role } });
+              navigate('/profil', { state: { role: currentRole } });
               onClose();
             }}
           >
