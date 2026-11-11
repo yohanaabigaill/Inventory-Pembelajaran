@@ -21,16 +21,18 @@ export default function Profile() {
   // Ambil role yang sedang aktif
   const location = useLocation();
   const passedRole = location.state?.role;
-  const savedRole = passedRole || localStorage.getItem('user_role') || localStorage.getItem('role') || 'admin';
+  const storedRole = localStorage.getItem('user_role') || localStorage.getItem('role');
+  const savedRole = storedRole || passedRole || 'admin';
 
   // Validasi role untuk menentukan tampilan profil
   const isSuperAdmin = savedRole === 'super_admin' || savedRole === 'SUPER ADMIN' || savedRole === 'superadmin';
   const isPeserta = savedRole === 'peserta' || savedRole === 'PESERTA' || savedRole === 'santri';
 
   // Role, Inisial Icon, Email & Nama
+  const storedEmail = localStorage.getItem('user_email');
   const roleDisplay = isSuperAdmin ? 'Super Admin' : isPeserta ? 'Peserta' : 'Admin';
   const avatarText = isSuperAdmin ? 'SA' : isPeserta ? 'RI' : 'AD';
-  const defaultEmail = isSuperAdmin ? 'superadmin@gmail.com' : isPeserta ? 'ririn@gmail.com' : 'admin@gmail.com';
+  const defaultEmail = storedEmail || (isSuperAdmin ? 'superadmin@gmail.com' : isPeserta ? 'ririn@gmail.com' : 'admin@gmail.com');
   const defaultName = isPeserta ? 'Ririn' : '';
   const defaultPhone = isPeserta ? '081234567890' : '';
 
@@ -347,7 +349,7 @@ export default function Profile() {
                   </div>
                 </div>
 
-                {/* Nama & No. WA hanya ditampilkan jika role adalah Peserta */}
+                {/* Nama & No. WA jika role sebagai Peserta */}
                 {isPeserta && (
                   <>
                     <div className="profile-data-row" style={styles.dataRow}>
@@ -512,7 +514,7 @@ export default function Profile() {
                     </div>
                   </div>
 
-                  {/* Input Nama & No. WA hanya ditampilkan jika role adalah Peserta */}
+                  {/* Input Nama & No. WA jika role sebagai Peserta */}
                   {isPeserta && (
                     <>
                       {/* Input Nama Lengkap */}

@@ -1102,6 +1102,7 @@ export default function StokOpname() {
                       const rowNumber = (currentPage - 1) * itemsPerPage + index + 1;
                       const isInputted = item.inputFisik !== '' && item.inputFisik !== null && item.inputFisik !== undefined;
                       const inputVal = isInputted ? item.inputFisik : '';
+                      // Menghitung selisih stok
                       const numericFisik = isInputted ? Number(item.inputFisik) : null;
                       const selisih = isInputted ? numericFisik - item.stokSistem : null;
                       const isMatch = isInputted && selisih === 0;
