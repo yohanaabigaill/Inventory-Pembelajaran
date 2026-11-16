@@ -411,6 +411,8 @@ export default function DetailPesanan() {
   };
 
   const handleConfirmBatal = () => {
+    if (!canCancelOrder) return;
+
     // Kembalikan cadangan stok jika pesanan dibatalkan
     lepasCadanganStok(order?.items || []);
 
@@ -479,7 +481,7 @@ export default function DetailPesanan() {
       updateSessionOrder(updatedOrder);
       setIsSubmittingSelesai(false);
       setShowKonfirmasiSelesai(false);
-      showToast('Alhamdulillah, pesanan telah selesai dan diterima!');
+      showToast('Pesanan berhasil diterima', 'success');
     }, 350);
   };
 
@@ -504,6 +506,15 @@ export default function DetailPesanan() {
     } catch (e) {
       navigate('/katalog-modul');
     }
+  };
+
+  const handleKembaliKePesanan = () => {
+    navigate('/pesanan', {
+      state: {
+        targetOrderId: order?.id || id,
+        targetPage: location.state?.page || sessionStorage.getItem('last_viewed_order_page')
+      }
+    });
   };
 
   if (!order) {
@@ -531,7 +542,7 @@ export default function DetailPesanan() {
               </p>
               <button
                 type="button"
-                onClick={() => navigate('/pesanan')}
+                onClick={handleKembaliKePesanan}
                 className="btn-primary-green"
                 style={styles.btnPrimaryLg}
               >
@@ -578,7 +589,7 @@ export default function DetailPesanan() {
       order.statusPembayaran === 'Belum Bayar' ||
       order.statusPembayaran === 'Menunggu Verifikasi') &&
     order.status !== 'Dibatalkan';
-  const canCancelOrder = canEditProof;
+  const canCancelOrder = isBelumBayar;
   const isDikirim =
     (order.status || '').toLowerCase().trim() === 'dikirim' ||
     (order.statusPengiriman || '').toLowerCase().trim() === 'dikirim';
@@ -631,7 +642,7 @@ export default function DetailPesanan() {
           <div style={styles.pageHeaderBar}>
             <button
               type="button"
-              onClick={() => navigate('/pesanan')}
+              onClick={handleKembaliKePesanan}
               className="btn-secondary-outline"
               style={styles.btnKembali}
             >

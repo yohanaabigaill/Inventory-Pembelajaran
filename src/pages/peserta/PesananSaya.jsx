@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import Navbar from '../../components/Navbar';
@@ -202,33 +202,6 @@ export default function PesananSaya() {
     return getSessionOrders(INITIAL_DEMO_PESANAN);
   });
 
-  // Kembalikan posisi scroll tepat ke kartu pesanan secara instan (tanpa efek meluncur)
-  useEffect(() => {
-    const lastId = sessionStorage.getItem('last_viewed_order_id');
-    const lastScrollY = sessionStorage.getItem('last_viewed_scroll_y');
-
-    if (lastId || lastScrollY) {
-      sessionStorage.removeItem('last_viewed_order_id');
-      sessionStorage.removeItem('last_viewed_scroll_y');
-
-      const restorePos = () => {
-        const el = lastId ? document.getElementById(`order-card-${lastId}`) : null;
-        if (el) {
-          el.scrollIntoView({ behavior: 'auto', block: 'center' });
-        } else if (lastScrollY) {
-          window.scrollTo({ top: Number(lastScrollY), behavior: 'auto' });
-        }
-      };
-
-      restorePos();
-      requestAnimationFrame(restorePos);
-      const timer = setTimeout(restorePos, 50);
-      return () => clearTimeout(timer);
-    } else {
-      window.scrollTo(0, 0);
-    }
-  }, []);
-
   // Sinkronisasi pesanan saat ada pembaruan sesi
   useEffect(() => {
     const handleSyncOrders = () => {
@@ -276,11 +249,6 @@ export default function PesananSaya() {
     setCancellingOrder(null);
     showToast('Pesanan berhasil dibatalkan', 'success');
   };
-
-  // Scroll ke atas saat halaman dibuka
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
 
   // Kunci scroll background saat modal konfirmasi batal terbuka
   useEffect(() => {
@@ -353,16 +321,41 @@ export default function PesananSaya() {
     return matchSearch && matchPayment && matchShipping;
   });
 
-  const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+
+  const [currentPage, setCurrentPage] = useState(() => {
+    const targetPage = location.state?.targetPage || sessionStorage.getItem('last_viewed_order_page');
+    if (targetPage) {
+      const p = Number(targetPage);
+      if (!isNaN(p) && p >= 1) return p;
+    }
+    const targetId = location.state?.targetOrderId || sessionStorage.getItem('last_viewed_order_id');
+    if (targetId) {
+      const idx = filteredOrders.findIndex((o) => o.id === targetId);
+      if (idx >= 0) {
+        return Math.floor(idx / itemsPerPage) + 1;
+      }
+    }
+    return 1;
+  });
+
+  // Simpan halaman terakhir ke sessionStorage saat berpindah halaman
+  useEffect(() => {
+    sessionStorage.setItem('last_viewed_order_page', String(currentPage));
+  }, [currentPage]);
 
   // Pagination pesanan
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedOrders = filteredOrders.slice(startIndex, startIndex + itemsPerPage);
 
+  const isFirstFilterMount = useRef(true);
   // Reset ke halaman 1 saat pencarian atau filter status berubah
   useEffect(() => {
+    if (isFirstFilterMount.current) {
+      isFirstFilterMount.current = false;
+      return;
+    }
     setCurrentPage(1);
   }, [searchQuery, statusBayarFilter, statusKirimFilter]);
 
@@ -371,6 +364,43 @@ export default function PesananSaya() {
       setCurrentPage(totalPages);
     }
   }, [totalPages, currentPage]);
+
+  // Kembalikan posisi scroll tepat ke kartu pesanan secara instan
+  useEffect(() => {
+    const lastId = location.state?.targetOrderId || sessionStorage.getItem('last_viewed_order_id');
+    const lastScrollY = sessionStorage.getItem('last_viewed_scroll_y');
+
+    if (lastId || lastScrollY) {
+      const restorePos = () => {
+        const el = lastId ? document.getElementById(`order-card-${lastId}`) : null;
+        if (el) {
+          el.scrollIntoView({ behavior: 'auto', block: 'center' });
+          sessionStorage.removeItem('last_viewed_order_id');
+          sessionStorage.removeItem('last_viewed_scroll_y');
+          return true;
+        } else if (lastScrollY) {
+          window.scrollTo({ top: Number(lastScrollY), behavior: 'auto' });
+          sessionStorage.removeItem('last_viewed_order_id');
+          sessionStorage.removeItem('last_viewed_scroll_y');
+          return true;
+        }
+        return false;
+      };
+
+      restorePos();
+      requestAnimationFrame(restorePos);
+      const timer1 = setTimeout(restorePos, 50);
+      const timer2 = setTimeout(restorePos, 150);
+      const timer3 = setTimeout(restorePos, 300);
+      return () => {
+        clearTimeout(timer1);
+        clearTimeout(timer2);
+        clearTimeout(timer3);
+      };
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [currentPage, location.state]);
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -612,8 +642,9 @@ export default function PesananSaya() {
                     id={`order-card-${order.id}`}
                     onClick={() => {
                       sessionStorage.setItem('last_viewed_order_id', order.id);
+                      sessionStorage.setItem('last_viewed_order_page', String(currentPage));
                       sessionStorage.setItem('last_viewed_scroll_y', String(window.scrollY));
-                      navigate(`/pesanan/${order.id}`, { state: { order } });
+                      navigate(`/pesanan/${order.id}`, { state: { order, page: currentPage } });
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.06)';
